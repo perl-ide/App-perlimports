@@ -151,13 +151,15 @@ sub _build_imports {
             $doc->find(
                 sub {
                     $_[1]->isa('PPI::Token::Word')
-                        || $_[1]->isa('PPI::Token::Symbol');
+                        || $_[1]->isa('PPI::Token::Symbol')
+                        || $_[1]->isa('PPI::Token::Label');
                 }
                 )
                 || []
         }
     ) {
-        # If a module exports %foo and we find $foo{bar}, $word->canonical returns $foo and $word->symbol returns %foo
+        # If a module exports %foo and we find $foo{bar}, $word->canonical
+        # returns $foo and $word->symbol returns %foo
         if ( $word->isa('PPI::Token::Symbol')
             && exists $exports{ $word->symbol } ) {
             $found{ $word->symbol }++;
@@ -171,6 +173,18 @@ sub _build_imports {
             || ( is_function_call($word) && exists $exports{ '&' . "$word" } )
         ) {
             $found{"$word"}++;
+        }
+
+        # PPI can think that an imported function in a ternary is a label
+        # my $foo = $enabled ? GEOIP_MEMORY_CACHE : 0;
+        # The content of the $word will be "GEOIP_MEMORY_CACHE :"
+        elsif ( $word->isa('PPI::Token::Label') ) {
+            if ( $word->content =~ m{^(\w+)} ) {
+                my $label = $1;
+                if ( exists $exports{$label} ) {
+                    $found{$label}++;
+                }
+            }
         }
     }
 
