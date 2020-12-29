@@ -8,7 +8,7 @@ use Module::Util qw( find_installed );
 use Path::Tiny qw( path );
 use Perl::Critic::Utils qw( is_function_call );
 use PPI::Document ();
-use Types::Standard qw(ArrayRef Bool InstanceOf Maybe Str);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
 has exports => (
     is      => 'ro',
@@ -59,11 +59,28 @@ has module_name => (
     builder => '_build_module_name',
 );
 
+has _never_exports => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_never_exports',
+);
+
 has uses_sub_exporter => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
     builder => '_build_uses_sub_exporter',
+);
+
+has _will_never_export => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return exists $self->_never_exports->{ $self->module_name };
+    },
 );
 
 around BUILDARGS => sub {
@@ -88,6 +105,9 @@ sub _build_module_name {
 sub _build_exports {
     my $self   = shift;
     my $module = $self->module_name;
+
+    return [] if $self->_will_never_export;
+
     require_module($module);
     $module->import;
 
@@ -188,7 +208,10 @@ sub _build_imports {
 sub _build_is_noop {
     my $self = shift;
 
-    return 0 if @{ $self->imports };
+    if ( $self->_will_never_export
+        || @{ $self->imports } ) {
+        return 0;
+    }
 
     # We know what FindBin exports, but we need to be smarter about checking
     # for exported variables inside quotes in order for this to be correct.
@@ -222,14 +245,37 @@ sub _build_is_noop {
     return 0;
 }
 
+# Returns a HashRef of modules which will always be converted to avoid imports.
+# This is mostly for speed and a matter of convenience so that we don't have to
+# examine modules (like strictly Object Oriented modules) which we know will
+# not have anything to export.
+
+sub _build_never_exports {
+    my $self = shift;
+    return {
+        'LWP::UserAgent' => 1,
+        'WWW::Mechanize' => 1,
+    };
+}
+
 sub formatted_import_statement {
     my $self = shift;
 
-    if ( $self->is_noop || !@{ $self->exports } ) {
+    # Cases where we don't want to rewrite the include because we can't be
+    # confident that we're doing the right thing.
+    if (
+        $self->is_noop
+        || (   !@{ $self->exports }
+            && !$self->_will_never_export )
+    ) {
         return $self->_include;
     }
 
-    if ( !@{ $self->imports } ) {
+    # In this case we either have a module which can never export or a module
+    # which can export but doesn't appear to. In both cases we'll want to
+    # rewrite with an empty list of imports.
+    if ( $self->_will_never_export
+        || !@{ $self->imports } ) {
         return $self->_new_include(
             sprintf(
                 'use %s %s();', $self->module_name,
@@ -347,6 +393,5 @@ statement or used to replace an existing L<PPI::Statement::Include>.
 =head1 CAVEATS
 
 Does not work with modules using L<Sub::Exporter>.
-
 
 =cut
