@@ -1,6 +1,6 @@
-.build
 /App-perlimports*
+.build
 local/
 *.sw*
-tidyall.ERR
 .tidyall.d/
+tidyall.ERR

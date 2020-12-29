@@ -1,7 +1,5 @@
 package App::perlimports;
 
-# Does not work with modules using Sub::Exporter
-
 use Moo;
 
 use List::AllUtils qw( any uniq );    # comment here
@@ -329,3 +327,19 @@ sub _build_uses_sub_exporter {
 }
 
 1;
+
+# ABSTRACT: Make implicit imports explicit
+
+=pod
+
+=head2 formatted_import_statement
+
+Returns a L<PPI::Statement::Include>. This can be stringified into an import
+statement or used to replace an existing L<PPI::Statement::Include>.
+
+=head1 CAVEATS
+
+Does not work with modules using L<Sub::Exporter>.
+
+
+=cut
