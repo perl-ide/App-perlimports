@@ -2,7 +2,7 @@ package App::perlimports;
 
 use Moo;
 
-use List::AllUtils qw( any uniq );    # comment here
+use List::AllUtils qw( any uniq );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use Path::Tiny qw( path );
@@ -58,13 +58,6 @@ has module_name => (
     lazy    => 1,
     builder => '_build_module_name',
 );
-
-#has _source_text => (
-#is       => 'ro',
-#isa      => Str,
-#init_arg => 'source_text',
-#required => 1,
-#);
 
 has uses_sub_exporter => (
     is      => 'ro',
