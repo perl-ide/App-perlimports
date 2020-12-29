@@ -1,0 +1,6 @@
+.build
+/App-perlimports*
+local/
+*.sw*
+tidyall.ERR
+.tidyall.d/
