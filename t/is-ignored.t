@@ -15,7 +15,7 @@ subtest 'Types::Standard' => sub {
         $e->module_name, 'Types::Standard',
         'module_name'
     );
-    ok( $e->is_noop, 'noop' );
+    ok( $e->_is_ignored, 'noop' );
 };
 
 subtest 'Test::RequiresInternet' => sub {
@@ -32,7 +32,7 @@ subtest 'Test::RequiresInternet' => sub {
     # This is not currently treated as a noop, since we have imports. We just
     # don't know what can be exported. It will basically pass through without
     # changes, though.
-    ok( !$e->is_noop, 'noop' );
+    ok( !$e->_is_ignored, 'noop' );
     is(
         $e->formatted_import_statement,
         q{use Test::RequiresInternet ('www.example.com' => 80 );}

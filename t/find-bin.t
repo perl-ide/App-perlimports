@@ -16,7 +16,7 @@ is(
     'module_name'
 );
 
-ok( $e->is_noop, 'noop' );
+ok( $e->_is_ignored, 'noop' );
 is(
     $e->formatted_import_statement,
     q{use FindBin qw( $Bin );},

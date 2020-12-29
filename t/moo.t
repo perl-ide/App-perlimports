@@ -16,7 +16,7 @@ is(
 );
 
 is_deeply( $e->exports, [], 'exports' );
-ok( $e->is_noop, 'is_noop' );
+ok( $e->_is_ignored, '_is_ignored' );
 is_deeply( $e->imports, [], 'imports' );
 is(
     $e->formatted_import_statement,

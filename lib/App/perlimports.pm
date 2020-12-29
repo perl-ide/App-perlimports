@@ -38,11 +38,11 @@ has _include => (
     required => 1,
 );
 
-has is_noop => (
+has _is_ignored => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    builder => '_build_is_noop',
+    builder => '_build_is_ignored',
 );
 
 has _isa_test_builder_module => (
@@ -205,7 +205,7 @@ sub _build_imports {
     return \@found;
 }
 
-sub _build_is_noop {
+sub _build_is_ignored {
     my $self = shift;
 
     if ( $self->_will_never_export
@@ -264,7 +264,7 @@ sub formatted_import_statement {
     # Cases where we don't want to rewrite the include because we can't be
     # confident that we're doing the right thing.
     if (
-        $self->is_noop
+        $self->_is_ignored
         || (   !@{ $self->exports }
             && !$self->_will_never_export )
     ) {
