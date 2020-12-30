@@ -15,7 +15,7 @@ is(
     'module_name'
 );
 
-is_deeply( $e->exports, [], 'Found some exports' );
+is_deeply( $e->_exports, [], 'Found some _exports' );
 ok( $e->_is_ignored, '_is_ignored' );
 is_deeply( $e->imports, [], 'imports' );
 is(

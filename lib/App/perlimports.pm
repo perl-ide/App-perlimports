@@ -10,7 +10,7 @@ use Perl::Critic::Utils qw( is_function_call );
 use PPI::Document ();
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
-has exports => (
+has _exports => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
@@ -137,7 +137,7 @@ sub _build_exports {
 
 sub _build__isa_test_builder_module {
     my $self = shift;
-    $self->exports;    # ensure module has already been required
+    $self->_exports;    # ensure module has already been required
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
@@ -155,7 +155,7 @@ sub _build_imports {
     my $content = path( $self->_filename )->slurp;
     my $doc     = PPI::Document->new( \$content );
 
-    my %exports = map { $_ => 1 } @{ $self->exports };
+    my %exports = map { $_ => 1 } @{ $self->_exports };
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     my %found;
@@ -265,7 +265,7 @@ sub formatted_import_statement {
     # confident that we're doing the right thing.
     if (
         $self->_is_ignored
-        || (   !@{ $self->exports }
+        || (   !@{ $self->_exports }
             && !$self->_will_never_export )
     ) {
         return $self->_include;

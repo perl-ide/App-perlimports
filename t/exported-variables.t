@@ -14,14 +14,14 @@ my $e = App::perlimports->new(
 is( $e->module_name(), 'ViaExporter', 'module_name' );
 
 is_deeply(
-    $e->exports,
+    $e->_exports,
     [
         'foo',
         '$foo',
         '@foo',
         '%foo',
     ],
-    'some exports'
+    'some _exports'
 );
 ok( !$e->_is_ignored, '_is_ignored' );
 is_deeply( $e->imports, [ '%foo', '@foo' ], 'imports' );
