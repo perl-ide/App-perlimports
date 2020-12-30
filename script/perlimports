@@ -8,34 +8,39 @@ use warnings;
 use FindBin qw( $Bin );
 use lib "$Bin/../lib";
 
+use App::perlimports ();
 use Getopt::Long::Descriptive qw( describe_options );
 use Path::Tiny qw( path );
-use App::perlimports ();
+use Pod::Usage qw( pod2usage );
 
 my ( $opt, $usage ) = describe_options(
     'perlimports %o <some-arg>',
-    [ 'file|f=s', 'the file containing the imports', { required => 1 } ],
+    [ 'filename|f=s', 'the file containing the imports', { required => 1 } ],
+    [ 'inplace-edit|i', 'edit the file in place' ],
     [
-        'libs|l=s', 'comma-separated library paths to include',
-        { required => 0 }
-    ],
-    [ 'read!', 'read STDIN', ],
-    [],
+        'libs|=s',
+        'comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
 
-    #[ 'verbose|v', "print extra stuff" ],
+    ],
+    [ 'read-stdin', 'read statements to process from STDIN rather than the supplied file', ],
+    [],
     [ 'help', "print usage message and exit", { shortcircuit => 1 } ],
 );
 
-print( $usage->text ), exit if $opt->help;
+if ( $opt->help ) {
+    print $usage->text;
+    print pod2usage();
+    exit;
+}
 
 my $input;
 
-if ( $opt->read ) {
+if ( $opt->read_stdin ) {
     local $/;
     $input = <STDIN>;
 }
 else {
-    $input = path( $opt->file )->slurp;
+    $input = path( $opt->filename )->slurp;
 }
 
 my $doc = PPI::Document->new( \$input );
@@ -48,25 +53,59 @@ my $includes = $doc->find(
 
 foreach my $include ( @{$includes} ) {
     my $e = App::perlimports->new(
-        filename => $opt->file,
+        filename => $opt->filename,
         include  => $include,
         $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
     );
 
-    my $elem = $e->formatted_import_statement;
+    my $elem = $e->formatted_ppi_statement;
 
     # https://github.com/adamkennedy/PPI/issues/189
     $include->insert_before( $elem->clone );
     $include->remove;
 }
 
-if ( $opt->read ) {
+if ( $opt->read_stdin ) {
     print "$doc";
 }
+elsif ( $opt->inplace_edit ) {
+    path( $opt->filename )->spew($doc);
+}
 else {
-    path( $opt->file )->spew($doc);
+    print "$doc";
 }
 
 exit(0);
 
 # PODNAME: perlimports
+
+=pod
+
+=head1 DESCRIPTION
+
+A command line utility for cleaning up imports in your Perl code
+
+=head1 SYNOPSIS
+
+Update a file in place. (Make sure you can revert the file if you need to.)
+
+    perlimports --filename t/test-data/foo.pl --inplace-edit
+
+If some of your imported modules are in local directories, you can give some
+hints as to where to find them:
+
+    perlimports --filename t/test-data/foo.pl --inplace-edit --libs t/lib,/some/dir/lib
+
+Redirect output to a new file:
+
+    perlimports --filename t/test-data/foo.pl > foo.new.pl
+
+=head2 VIM
+
+If you're a C<vim> user, you can pipe your import statements to perlimports directly.
+
+    :vnoremap <silent> im :!perlimports --read-stdin --filename '%:p'<CR>
+
+The above statement will allow you to visually select one or more lines of code
+and have them updated in place by C<perlimports>. Once you have selected the
+code enter C<im> to have your imports (re)formatted.

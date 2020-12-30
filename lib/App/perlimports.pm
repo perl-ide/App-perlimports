@@ -405,8 +405,33 @@ sub _build_uses_sub_exporter {
 
 =head1 DESCRIPTION
 
-This distribution provides the C<perlimports> binary, which aims to automate
+This distribution provides the L<perlimports> binary, which aims to automate
 the cleanup and maintenance of Perl import statements.
+
+=head1 SYNOPSIS
+
+Update a file in place. (Make sure you can revert the file if you need to.)
+
+    perlimports --filename t/test-data/foo.pl --inplace-edit
+
+If some of your imported modules are in local directories, you can give some
+hints as to where to find them:
+
+    perlimports --filename t/test-data/foo.pl --inplace-edit --libs t/lib,/some/dir/lib
+
+Redirect output to a new file:
+
+    perlimports --filename t/test-data/foo.pl > foo.new.pl
+
+=head2 VIM
+
+If you're a C<vim> user, you can pipe your import statements to L<perlimports> directly.
+
+    :vnoremap <silent> im :!perlimports --read-stdin --filename '%:p'<CR>
+
+The above statement will allow you to visually select one or more lines of code
+and have them updated in place by L<perlimports>. Once you have selected the
+code enter C<im> to have your imports (re)formatted.
 
 =head2 MOTIVATION
 
@@ -484,7 +509,7 @@ to implicit imports, but it would be helpful to automate maintaining this list.
 
 =item Solution: remove unused airports
 
-C<perlimports> can, in many situations, clean up your import statements and
+L<perlimports> can, in many situations, clean up your import statements and
 automate this maintenance burden away. This makes it easier for you to write
 clean code, which is easier to understand.
 
