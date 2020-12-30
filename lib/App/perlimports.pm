@@ -232,8 +232,10 @@ sub _build_is_ignored {
     # for exported variables inside quotes in order for this to be correct.
 
     my %noop = (
-        'FindBin'         => 1,
-        'Types::Standard' => 1,
+        'FindBin'                => 1,
+        'Test::Needs'            => 1,
+        'Types::Standard'        => 1,
+        'Test::RequiresInternet' => 1,
     );
 
     return 1 if exists $noop{ $self->_module_name };

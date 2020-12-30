@@ -29,10 +29,7 @@ subtest 'Test::RequiresInternet' => sub {
         '_module_name'
     );
 
-    # This is not currently treated as a noop, since we have imports. We just
-    # don't know what can be exported. It will basically pass through without
-    # changes, though.
-    ok( !$e->_is_ignored, 'noop' );
+    ok( $e->_is_ignored, 'noop' );
     is(
         $e->formatted_ppi_statement,
         q{use Test::RequiresInternet ('www.example.com' => 80 );}
