@@ -385,6 +385,105 @@ sub _build_uses_sub_exporter {
 
 =pod
 
+=head1 DESCRIPTION
+
+This distribution provides the C<perlimports> binary, which aims to automate
+the cleanup and maintenance of Perl import statements.
+
+=head2 MOTIVATION
+
+Many Perl modules helpfully export functions and variables by default. These
+provide handy shortcuts when you're writing a quick or small script, but they
+can quickly become a maintenance burden as code grows organically.
+
+=over
+
+=item Problem: Where is this function defined?
+
+You may come across some code like this:
+
+    use strict;
+    use warnings;
+
+    use HTTP::Request::Common;
+    use LWP::UserAgent;
+
+    my $ua = LWP::UserAgent->new;
+    my $req = $ua->request( GET 'https://metacpan.org/' );
+    print $req->content;
+
+Where does C<GET> come from? If you're not familiar with
+L<HTTP::Request::Common>, you may not realize that the statement C<use
+HTTP::Request::Common> has imported the functions C<GET>, C<HEAD>, C<PUT>,
+C<PATCH>, C<POST> and C<OPTIONS> into to this block of code.
+
+=item Solution:
+
+Import all needed functions explicitly.
+
+    use strict;
+    use warnings;
+
+    use HTTP::Request::Common qw( GET );
+    use LWP::UserAgent ();
+
+    my $ua = LWP::UserAgent->new;
+    my $req = $ua->request( GET 'https://metacpan.org/' );
+    print $req->content;
+
+The code above makes it immediately obvious where C<GET> originates, which
+makes it easier for us to look up its documentation. It has the added bonus of
+also not importing C<HEAD>, C<PUT> or any of the other functions which
+L<HTTP::Request::Common> exports by default. So, those functions cannot
+unwittingly be used later in the code. This makes for more understandable code
+for present day you, future you and any others tasked with reading your code at
+some future point.
+
+Keep in mind that this simple act can save much time for developers who are not
+intimately familiar with Perl and the default exports of many CPAN modules.
+
+=item Problem: Are we using all of these imports?
+
+Imagine the following import statement
+
+    use HTTP::Status qw(
+        is_cacheable_by_default
+        is_client_error
+        is_error
+        is_info
+        is_redirect
+        is_server_error
+        is_success
+        status_message
+    );
+
+followed by 3,000 lines of code. How do you know if all of these functions are
+being used? You can grep all of these function names manually or you can remove
+them by trial and error to see what breaks. This is a doable solution, but it
+does not scale well to scripts and modules with many imports or to large code
+bases with many imports. Having an unmaintained list of imports is preferable
+to implicit imports, but it would be helpful to automate maintaining this list.
+
+=item Solution: remove unused airports
+
+C<perlimports> can, in many situations, clean up your import statements and
+automate this maintenance burden away. This makes it easier for you to write
+clean code, which is easier to understand.
+
+=item Problem: Are we using all of these modules?
+
+In cases where code is implicitly importing from modules or where explicit
+imports are not being curated, it can be hard to discover which modules are no
+longer being used in a script, module or even a code base. Removing unused
+modules from code can lead to gains in performance and decrease in consumption
+of resources. Removing entire modules from your code base can decrease the
+number of dependencies which you need to manage and decrease friction in your
+your deployment process.
+
+Actively cleaning up your imports can make this much easier to manage.
+
+=back
+
 =head2 formatted_import_statement
 
 Returns a L<PPI::Statement::Include>. This can be stringified into an import
@@ -393,5 +492,11 @@ statement or used to replace an existing L<PPI::Statement::Include>.
 =head1 CAVEATS
 
 Does not work with modules using L<Sub::Exporter>.
+
+=head1 SEE ALSO
+
+L<Perl::Critic::Policy::TooMuchCode::ProhibitUnusedImport>,
+L<Perl::Critic::Policy::TooMuchCode::ProhibitUnusedInclude> and
+L<Perl::Critic::Policy::TooMuchCode::ProhibitUnusedConstant>
 
 =cut
