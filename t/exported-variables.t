@@ -11,7 +11,7 @@ my $e = App::perlimports->new(
     source_text => 'use ViaExporter qw();',
 );
 
-is( $e->module_name(), 'ViaExporter', 'module_name' );
+is( $e->_module_name(), 'ViaExporter', '_module_name' );
 
 is_deeply(
     $e->_exports,

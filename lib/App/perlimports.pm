@@ -52,7 +52,7 @@ has _isa_test_builder_module => (
     builder => '_build_isa_test_builder_module',
 );
 
-has module_name => (
+has _module_name => (
     is      => 'ro',
     isa     => Maybe [Str],
     lazy    => 1,
@@ -79,7 +79,7 @@ has _will_never_export => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return exists $self->_never_exports->{ $self->module_name };
+        return exists $self->_never_exports->{ $self->_module_name };
     },
 );
 
@@ -104,7 +104,7 @@ sub _build_module_name {
 
 sub _build_exports {
     my $self   = shift;
-    my $module = $self->module_name;
+    my $module = $self->_module_name;
 
     return [] if $self->_will_never_export;
 
@@ -123,11 +123,11 @@ sub _build_exports {
         if (
             any { $_ eq 'MooseX::Types::Combine::_provided_types' }
             @{ Class::Inspector->methods(
-                    $self->module_name, 'full', 'private'
+                    $self->_module_name, 'full', 'private'
                 )
             }
         ) {
-            my %types = $self->module_name->_provided_types;
+            my %types = $self->_module_name->_provided_types;
             @exports = keys %types;
         }
     }
@@ -142,7 +142,7 @@ sub _build_isa_test_builder_module {
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
     my $_isa_test_builder = any { $_ eq 'Test::Builder::Module' }
-    @{ $self->module_name . '::ISA' };
+    @{ $self->_module_name . '::ISA' };
     use strict;
 ## use critic
 
@@ -221,7 +221,7 @@ sub _build_is_ignored {
         'Types::Standard' => 1,
     );
 
-    return 1 if exists $noop{ $self->module_name };
+    return 1 if exists $noop{ $self->_module_name };
 
     # Is it a pragma?
     return 1 if $self->_include->pragma;
@@ -230,7 +230,7 @@ sub _build_is_ignored {
 
     # This should catch Moose classes
     if (   require_module('Moose::Util')
-        && Moose::Util::find_meta( $self->module_name ) ) {
+        && Moose::Util::find_meta( $self->_module_name ) ) {
         return 1;
     }
 
@@ -238,7 +238,9 @@ sub _build_is_ignored {
     if ( require_module('Class::Inspector') ) {
         return 1
             if any { $_ eq 'Moo::is_class' }
-        @{ Class::Inspector->methods( $self->module_name, 'full', 'public' )
+        @{ Class::Inspector->methods(
+                $self->_module_name, 'full', 'public'
+            )
         };
     }
 
@@ -278,7 +280,7 @@ sub formatted_import_statement {
         || !@{ $self->_imports } ) {
         return $self->_new_include(
             sprintf(
-                'use %s %s();', $self->module_name,
+                'use %s %s();', $self->_module_name,
                 $self->_include->module_version
                 ? $self->_include->module_version . q{ }
                 : q{}
@@ -292,7 +294,7 @@ sub formatted_import_statement {
         : 'use %s%s qw( %s );';
 
     my $statement = sprintf(
-        $template, $self->module_name,
+        $template, $self->_module_name,
         $self->_include->module_version
         ? q{ } . $self->_include->module_version
         : q{}, join q{ },
@@ -301,7 +303,7 @@ sub formatted_import_statement {
 
     # Don't deal with Test::Builder classes here to keep is simple for now
     if ( length($statement) > 78 && !$self->_isa_test_builder_module ) {
-        $statement = sprintf( "use %s qw(\n", $self->module_name );
+        $statement = sprintf( "use %s qw(\n", $self->_module_name );
         for ( @{ $self->_imports } ) {
             $statement .= "    $_\n";
         }
@@ -323,7 +325,7 @@ sub _new_include {
 # Stolen from Open::This
 sub _maybe_find_local_module {
     my $self          = shift;
-    my $module        = $self->module_name;
+    my $module        = $self->_module_name;
     my $possible_name = module_notional_filename($module);
     my @dirs
         = exists $ENV{OPEN_THIS_LIBS}
@@ -345,12 +347,12 @@ sub _maybe_find_installed_module {
 
     # This is a loadable module.  Have this come after the local module checks
     # so that we don't default to installed modules.
-    return find_installed( $self->module_name );
+    return find_installed( $self->_module_name );
 }
 
 sub _build_uses_sub_exporter {
     my $self     = shift;
-    my $module   = $self->module_name;
+    my $module   = $self->_module_name;
     my $filename = $self->_maybe_find_local_module
         || $self->_maybe_find_installed_module;
 

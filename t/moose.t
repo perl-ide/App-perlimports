@@ -11,8 +11,8 @@ my $e = App::perlimports->new(
     source_text => 'use Moose;',
 );
 is(
-    $e->module_name(), 'Moose',
-    'module_name'
+    $e->_module_name(), 'Moose',
+    '_module_name'
 );
 
 is_deeply( $e->_exports, [], 'Found some _exports' );

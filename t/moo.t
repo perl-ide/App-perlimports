@@ -11,8 +11,8 @@ my $e = App::perlimports->new(
     source_text => 'use Moo;',
 );
 is(
-    $e->module_name(), 'Moo',
-    'module_name'
+    $e->_module_name(), 'Moo',
+    '_module_name'
 );
 
 is_deeply( $e->_exports, [], '_exports' );

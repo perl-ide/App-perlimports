@@ -11,12 +11,12 @@ my $e = App::perlimports->new(
     source_text => 'use Getopt::Long 2.40 qw();',
 );
 is(
-    $e->module_name(), 'Getopt::Long',
-    'module_name'
+    $e->_module_name(), 'Getopt::Long',
+    '_module_name'
 );
 
 ok( @{ $e->_exports }, 'some _exports' );
-ok( !$e->_is_ignored, '_is_ignored' );
+ok( !$e->_is_ignored,  '_is_ignored' );
 is_deeply( $e->_imports, ['GetOptions'], '_imports' );
 is(
     $e->formatted_import_statement,

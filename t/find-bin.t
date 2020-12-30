@@ -12,8 +12,8 @@ my $e = App::perlimports->new(
     source_text => 'use FindBin qw( $Bin );',
 );
 is(
-    $e->module_name(), 'FindBin',
-    'module_name'
+    $e->_module_name(), 'FindBin',
+    '_module_name'
 );
 
 ok( $e->_is_ignored, 'noop' );

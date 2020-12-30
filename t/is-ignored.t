@@ -12,8 +12,8 @@ subtest 'Types::Standard' => sub {
         source_text => 'use Types::Standard;',
     );
     is(
-        $e->module_name, 'Types::Standard',
-        'module_name'
+        $e->_module_name, 'Types::Standard',
+        '_module_name'
     );
     ok( $e->_is_ignored, 'noop' );
 };
@@ -25,8 +25,8 @@ subtest 'Test::RequiresInternet' => sub {
             q{use Test::RequiresInternet ('www.example.com' => 80 );},
     );
     is(
-        $e->module_name, 'Test::RequiresInternet',
-        'module_name'
+        $e->_module_name, 'Test::RequiresInternet',
+        '_module_name'
     );
 
     # This is not currently treated as a noop, since we have imports. We just
