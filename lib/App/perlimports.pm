@@ -328,6 +328,11 @@ sub _build_formatted_ppi_statement {
     return $self->_new_include($statement);
 }
 
+sub formatted_string {
+    my $self = shift;
+    return $self->formatted_ppi_statement . q{};
+}
+
 sub _new_include {
     my $self      = shift;
     my $statement = shift;
