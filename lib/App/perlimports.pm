@@ -24,6 +24,13 @@ has _filename => (
     required => 1,
 );
 
+has formatted_ppi_statement => (
+    is      => 'ro',
+    isa     => InstanceOf ['PPI::Statement::Include'],
+    lazy    => 1,
+    builder => '_build_formatted_ppi_statement',
+);
+
 has _imports => (
     is      => 'ro',
     isa     => ArrayRef,
@@ -268,7 +275,7 @@ sub _build_never_exports {
     };
 }
 
-sub formatted_import_statement {
+sub _build_formatted_ppi_statement {
     my $self = shift;
 
     # Cases where we don't want to rewrite the include because we can't be
@@ -490,7 +497,7 @@ Actively cleaning up your imports can make this much easier to manage.
 
 =back
 
-=head2 formatted_import_statement
+=head2 formatted_ppi_statement
 
 Returns a L<PPI::Statement::Include>. This can be stringified into an import
 statement or used to replace an existing L<PPI::Statement::Include>.

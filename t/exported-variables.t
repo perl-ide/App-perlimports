@@ -26,9 +26,9 @@ is_deeply(
 ok( !$e->_is_ignored, '_is_ignored' );
 is_deeply( $e->_imports, [ '%foo', '@foo' ], '_imports' );
 is(
-    $e->formatted_import_statement,
+    $e->formatted_ppi_statement,
     q{use ViaExporter qw( %foo @foo );},
-    'formatted_import_statement'
+    'formatted_ppi_statement'
 );
 
 done_testing();

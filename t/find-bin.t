@@ -18,9 +18,9 @@ is(
 
 ok( $e->_is_ignored, 'noop' );
 is(
-    $e->formatted_import_statement,
+    $e->formatted_ppi_statement,
     q{use FindBin qw( $Bin );},
-    'formatted_import_statement'
+    'formatted_ppi_statement'
 );
 
 done_testing();

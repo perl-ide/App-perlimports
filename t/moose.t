@@ -19,9 +19,9 @@ is_deeply( $e->_exports, [], 'Found some _exports' );
 ok( $e->_is_ignored, '_is_ignored' );
 is_deeply( $e->_imports, [], '_imports' );
 is(
-    $e->formatted_import_statement,
+    $e->formatted_ppi_statement,
     q{use Moose;},
-    'formatted_import_statement'
+    'formatted_ppi_statement'
 );
 
 done_testing();

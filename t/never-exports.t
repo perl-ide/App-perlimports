@@ -16,9 +16,9 @@ subtest 'with version' => sub {
     ok( !$e->_is_ignored, '_is_ignored' );
     is_deeply( $e->_imports, [], '_imports' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         q{use LWP::UserAgent 6.49 ();},
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 
@@ -32,9 +32,9 @@ subtest 'without version' => sub {
     ok( !$e->_is_ignored, '_is_ignored' );
     is_deeply( $e->_imports, [], '_imports' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         q{use LWP::UserAgent ();},
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 
@@ -48,9 +48,9 @@ subtest 'without incorrect import' => sub {
     ok( !$e->_is_ignored, '_is_ignored' );
     is_deeply( $e->_imports, [], '_imports' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         q{use LWP::UserAgent ();},
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 

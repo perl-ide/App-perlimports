@@ -18,9 +18,9 @@ is_deeply(
     '_imports'
 );
 is(
-    $e->formatted_import_statement,
+    $e->formatted_ppi_statement,
     q{use Geo::IP qw( GEOIP_MEMORY_CACHE GEOIP_STANDARD );},
-    'formatted_import_statement'
+    'formatted_ppi_statement'
 );
 
 done_testing();

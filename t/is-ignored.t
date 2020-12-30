@@ -34,7 +34,7 @@ subtest 'Test::RequiresInternet' => sub {
     # changes, though.
     ok( !$e->_is_ignored, 'noop' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         q{use Test::RequiresInternet ('www.example.com' => 80 );}
     );
 };

@@ -21,8 +21,8 @@ subtest 'Getopt::Long' => sub {
     is_deeply( $e->_imports, ['GetOptions'], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
-        $e->formatted_import_statement, 'use Getopt::Long qw( GetOptions );',
-        'formatted_import_statement'
+        $e->formatted_ppi_statement, 'use Getopt::Long qw( GetOptions );',
+        'formatted_ppi_statement'
     );
 };
 
@@ -41,9 +41,9 @@ subtest 'Test::More' => sub {
     is_deeply( $e->_imports, [ 'done_testing', 'ok' ], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         'use Test::More import => [ qw( done_testing ok ) ];',
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 
@@ -62,9 +62,9 @@ subtest 'pragma' => sub {
     is_deeply( $e->_imports, [], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         'use strict;',
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 
@@ -86,9 +86,9 @@ subtest 'ViaExporter' => sub {
     is_deeply( $e->_imports, [qw( $foo %foo @foo foo )], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
-        $e->formatted_import_statement,
+        $e->formatted_ppi_statement,
         'use ViaExporter qw( $foo %foo @foo foo );',
-        'formatted_import_statement'
+        'formatted_ppi_statement'
     );
 };
 done_testing();

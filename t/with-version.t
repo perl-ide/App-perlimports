@@ -19,9 +19,9 @@ ok( @{ $e->_exports }, 'some _exports' );
 ok( !$e->_is_ignored,  '_is_ignored' );
 is_deeply( $e->_imports, ['GetOptions'], '_imports' );
 is(
-    $e->formatted_import_statement,
+    $e->formatted_ppi_statement,
     q{use Getopt::Long 2.40 qw( GetOptions );},
-    'formatted_import_statement'
+    'formatted_ppi_statement'
 );
 
 done_testing();
