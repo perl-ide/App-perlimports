@@ -66,7 +66,7 @@ has _never_exports => (
     builder => '_build_never_exports',
 );
 
-has uses_sub_exporter => (
+has _uses_sub_exporter => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
@@ -226,7 +226,7 @@ sub _build_is_ignored {
     # Is it a pragma?
     return 1 if $self->_include->pragma;
 
-    return 1 if $self->uses_sub_exporter;
+    return 1 if $self->_uses_sub_exporter;
 
     # This should catch Moose classes
     if (   require_module('Moose::Util')
