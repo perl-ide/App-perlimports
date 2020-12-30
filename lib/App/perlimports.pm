@@ -52,6 +52,14 @@ has _isa_test_builder_module => (
     builder => '_build_isa_test_builder_module',
 );
 
+has _libs => (
+    is       => 'ro',
+    isa      => ArrayRef,
+    init_arg => 'libs',
+    lazy     => 1,
+    default  => sub { [ 'lib', 't/lib' ] },
+);
+
 has _module_name => (
     is      => 'ro',
     isa     => Maybe [Str],
@@ -327,12 +335,8 @@ sub _maybe_find_local_module {
     my $self          = shift;
     my $module        = $self->_module_name;
     my $possible_name = module_notional_filename($module);
-    my @dirs
-        = exists $ENV{OPEN_THIS_LIBS}
-        ? split m{,}, $ENV{OPEN_THIS_LIBS}
-        : ( 'lib', 't/lib' );
 
-    for my $dir (@dirs) {
+    for my $dir ( @{ $self->_libs } ) {
         my $path = path( $dir, $possible_name );
         if ( $path->is_file ) {
             return "$path";

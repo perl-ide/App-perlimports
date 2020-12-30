@@ -15,6 +15,10 @@ use App::perlimports ();
 my ( $opt, $usage ) = describe_options(
     'perlimports %o <some-arg>',
     [ 'file|f=s', 'the file containing the imports', { required => 1 } ],
+    [
+        'libs|l=s', 'comma-separated library paths to include',
+        { required => 0 }
+    ],
     [ 'read!', 'read STDIN', ],
     [],
 
@@ -46,6 +50,7 @@ foreach my $include ( @{$includes} ) {
     my $e = App::perlimports->new(
         filename => $opt->file,
         include  => $include,
+        $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
     );
 
     my $elem = $e->formatted_import_statement;
