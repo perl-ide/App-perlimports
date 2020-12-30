@@ -17,7 +17,7 @@ is(
 
 is_deeply( $e->_exports, [], '_exports' );
 ok( $e->_is_ignored, '_is_ignored' );
-is_deeply( $e->imports, [], 'imports' );
+is_deeply( $e->_imports, [], '_imports' );
 is(
     $e->formatted_import_statement,
     q{use Moo;},

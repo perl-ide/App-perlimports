@@ -14,8 +14,8 @@ my $e = App::perlimports->new(
 );
 
 is_deeply(
-    $e->imports, [ 'GEOIP_MEMORY_CACHE', 'GEOIP_STANDARD' ],
-    'imports'
+    $e->_imports, [ 'GEOIP_MEMORY_CACHE', 'GEOIP_STANDARD' ],
+    '_imports'
 );
 is(
     $e->formatted_import_statement,

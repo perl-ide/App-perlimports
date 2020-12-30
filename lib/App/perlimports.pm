@@ -24,7 +24,7 @@ has _filename => (
     required => 1,
 );
 
-has imports => (
+has _imports => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
@@ -209,7 +209,7 @@ sub _build_is_ignored {
     my $self = shift;
 
     if ( $self->_will_never_export
-        || @{ $self->imports } ) {
+        || @{ $self->_imports } ) {
         return 0;
     }
 
@@ -275,7 +275,7 @@ sub formatted_import_statement {
     # which can export but doesn't appear to. In both cases we'll want to
     # rewrite with an empty list of imports.
     if ( $self->_will_never_export
-        || !@{ $self->imports } ) {
+        || !@{ $self->_imports } ) {
         return $self->_new_include(
             sprintf(
                 'use %s %s();', $self->module_name,
@@ -296,13 +296,13 @@ sub formatted_import_statement {
         $self->_include->module_version
         ? q{ } . $self->_include->module_version
         : q{}, join q{ },
-        @{ $self->imports }
+        @{ $self->_imports }
     );
 
     # Don't deal with Test::Builder classes here to keep is simple for now
     if ( length($statement) > 78 && !$self->_isa_test_builder_module ) {
         $statement = sprintf( "use %s qw(\n", $self->module_name );
-        for ( @{ $self->imports } ) {
+        for ( @{ $self->_imports } ) {
             $statement .= "    $_\n";
         }
         $statement .= ");";

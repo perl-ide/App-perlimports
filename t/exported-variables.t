@@ -24,7 +24,7 @@ is_deeply(
     'some _exports'
 );
 ok( !$e->_is_ignored, '_is_ignored' );
-is_deeply( $e->imports, [ '%foo', '@foo' ], 'imports' );
+is_deeply( $e->_imports, [ '%foo', '@foo' ], '_imports' );
 is(
     $e->formatted_import_statement,
     q{use ViaExporter qw( %foo @foo );},
