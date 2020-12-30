@@ -49,7 +49,7 @@ has _isa_test_builder_module => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    builder => '_build__isa_test_builder_module',
+    builder => '_build_isa_test_builder_module',
 );
 
 has module_name => (
@@ -135,7 +135,7 @@ sub _build_exports {
     return \@exports;
 }
 
-sub _build__isa_test_builder_module {
+sub _build_isa_test_builder_module {
     my $self = shift;
     $self->_exports;    # ensure module has already been required
 
