@@ -65,14 +65,18 @@ foreach my $include ( @{$includes} ) {
     $include->remove;
 }
 
+# We need to do this in order to preserve HEREDOCs.
+# See https://metacpan.org/pod/PPI::Document#serialize
+my $serialized = $doc->serialize;
+
 if ( $opt->read_stdin ) {
-    print "$doc";
+    print $serialized;
 }
 elsif ( $opt->inplace_edit ) {
-    path( $opt->filename )->spew($doc);
+    path( $opt->filename )->spew($serialized);
 }
 else {
-    print "$doc";
+    print $serialized;
 }
 
 exit(0);
