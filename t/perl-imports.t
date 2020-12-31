@@ -25,11 +25,6 @@ subtest 'Getopt::Long' => sub {
         'use Getopt::Long qw( GetOptions );',
         'formatted_ppi_statement'
     );
-    is(
-        $e->formatted_string,
-        'use Getopt::Long qw( GetOptions );',
-        'formatted_string'
-    );
 };
 
 subtest 'Test::More' => sub {
@@ -50,11 +45,6 @@ subtest 'Test::More' => sub {
         $e->formatted_ppi_statement,
         q{use Test::More import => [ qw( done_testing ok ) ];},
         'formatted_ppi_statement'
-    );
-    is(
-        $e->formatted_string,
-        q{use Test::More import => [ qw( done_testing ok ) ];},
-        'formatted_string'
     );
 };
 
