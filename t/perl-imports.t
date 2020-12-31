@@ -28,7 +28,7 @@ subtest 'Getopt::Long' => sub {
     is(
         $e->formatted_string,
         'use Getopt::Long qw( GetOptions );',
-        'formatted_ppi_statement'
+        'formatted_string'
     );
 };
 
@@ -44,17 +44,17 @@ subtest 'Test::More' => sub {
 
     ok( @{ $e->_exports },            'Found some _exports' );
     ok( $e->_isa_test_builder_module, 'isa_test_builder_module' );
-    is_deeply( $e->_imports, [ 'done_testing', 'ok' ], '_imports' );
+    is_deeply( $e->_imports, [ qw( done_testing ok) ], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
-        'use Test::More import => [ qw( done_testing ok ) ];',
+        q{use Test::More import => [ qw( done_testing ok ) ];},
         'formatted_ppi_statement'
     );
     is(
         $e->formatted_string,
-        'use Test::More import => [ qw( done_testing ok ) ];',
-        'formatted_ppi_statement'
+        q{use Test::More import => [ qw( done_testing ok ) ];},
+        'formatted_string'
     );
 };
 

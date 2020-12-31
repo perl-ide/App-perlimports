@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
-use Test::More skip_all => 'Test is broken';
+use Test::More import => ['is','is_deeply','ok'],skip_all => 'Test is broken',tests => 28;
 
-done_testing();
+ok(1);
+is( 1, 1 );
+is_deeply( ['foo'], ['bar'] );

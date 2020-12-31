@@ -2,11 +2,13 @@ package App::perlimports;
 
 use Moo;
 
+use Data::Dumper qw( Dumper );
 use List::AllUtils qw( any uniq );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use Path::Tiny qw( path );
 use Perl::Critic::Utils qw( is_function_call );
+use Perl::Tidy qw( perltidy );
 use PPI::Document ();
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
@@ -300,18 +302,70 @@ sub _build_formatted_ppi_statement {
         );
     }
 
-    my $template
-        = $self->_isa_test_builder_module
-        ? 'use %s%s import => [ qw( %s ) ];'
-        : 'use %s%s qw( %s );';
+    my $statement;
 
-    my $statement = sprintf(
-        $template, $self->_module_name,
-        $self->_include->module_version
-        ? q{ } . $self->_include->module_version
-        : q{}, join q{ },
-        @{ $self->_imports }
-    );
+    # Do some contortions to turn PPI objects back into a data structure so
+    # that we can add or replace an import hash key and then end up with a new
+    # list which is sorted on hash keys. This makes the assumption that the
+    # same key won't get passed twice. This is pretty gross, but I was too lazy
+    # to try to figure out how to do this with PPI and I think it should
+    # *mostly* work. I don't like the formatting that Data::Dumper comes up
+    # with, so we'll run it through perltidy.
+
+    if ( $self->_isa_test_builder_module && $self->_include->arguments ) {
+        my @args = $self->_include->arguments;
+        my $all  = join q{ }, map { "$_" } @args;
+
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        my $args = eval( '{' . $all . '}' );
+        ## use critic
+
+        local $Data::Dumper::Terse         = 1;
+        local $Data::Dumper::Indent        = 0;
+        local $Data::Dumper::Sortkeys      = 1;
+        local $Data::Dumper::Quotekeys     = 0;
+        local $Data::Dumper::Useqq         = 0;
+        local $Data::Dumper::Trailingcomma = 1;
+        local $Data::Dumper::Deparse       = 1;
+
+        $args->{import} = $self->_imports;
+
+        my $dumped = Dumper($args);
+        my $formatted;
+        if ( $dumped =~ m/^{(.*)}$/ ) {
+            $formatted = $1;
+        }
+
+        $statement = sprintf(
+            'use %s%s( %s );',
+            $self->_module_name,
+            $self->_include->module_version
+            ? q{ } . $self->_include->module_version . q{ }
+            : q{ },
+            $formatted
+        );
+
+        perltidy(
+            argv        => '-npro',
+            source      => \$statement,
+            destination => \$statement
+        );
+    }
+
+    else {
+        my $template
+            = $self->_isa_test_builder_module
+            ? 'use %s%s import => [ qw( %s ) ];'
+            : 'use %s%s qw( %s );';
+
+        $statement = sprintf(
+            $template, $self->_module_name,
+            $self->_include->module_version
+            ? q{ } . $self->_include->module_version
+            : q{}, join q{ },
+            @{ $self->_imports }
+        );
+    }
 
     # Don't deal with Test::Builder classes here to keep is simple for now
     if ( length($statement) > 78 && !$self->_isa_test_builder_module ) {
