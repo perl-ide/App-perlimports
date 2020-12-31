@@ -79,6 +79,20 @@ subtest 'pragma' => sub {
     );
 };
 
+subtest 'require' => sub {
+    my $e = App::perlimports->new(
+        filename    => 't/test-data/foo.t',
+        source_text => 'require Test::More;',
+    );
+
+    ok( $e->_is_ignored, 'ignored' );
+    is(
+        $e->formatted_ppi_statement,
+        'require Test::More;',
+        'formatted_ppi_statement'
+    );
+};
+
 subtest 'ViaExporter' => sub {
     my $e = App::perlimports->new(
         filename    => 't/test-data/via-exporter.pl',

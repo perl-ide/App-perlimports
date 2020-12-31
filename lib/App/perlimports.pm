@@ -220,10 +220,13 @@ sub _build_imports {
 sub _build_is_ignored {
     my $self = shift;
 
-    if ( $self->_will_never_export
-        || @{ $self->_imports } ) {
-        return 0;
+    # Ignore undef, "require" and "no"
+    if ( !$self->_include->type || $self->_include->type ne 'use' ) {
+        return 1;
     }
+
+    # Is it a pragma?
+    return 1 if $self->_include->pragma;
 
     # We know what FindBin exports, but we need to be smarter about checking
     # for exported variables inside quotes in order for this to be correct.
@@ -237,8 +240,10 @@ sub _build_is_ignored {
 
     return 1 if exists $noop{ $self->_module_name };
 
-    # Is it a pragma?
-    return 1 if $self->_include->pragma;
+    if ( $self->_will_never_export
+        || @{ $self->_imports } ) {
+        return 0;
+    }
 
     return 1 if $self->_uses_sub_exporter;
 
