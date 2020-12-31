@@ -44,7 +44,7 @@ subtest 'Test::More' => sub {
 
     ok( @{ $e->_exports },            'Found some _exports' );
     ok( $e->_isa_test_builder_module, 'isa_test_builder_module' );
-    is_deeply( $e->_imports, [ qw( done_testing ok) ], '_imports' );
+    is_deeply( $e->_imports, [qw( done_testing ok)], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
