@@ -7,9 +7,9 @@ use List::AllUtils qw( any uniq );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use Path::Tiny qw( path );
-use Perl::Critic::Utils qw( is_function_call );
-use Perl::Tidy qw( perltidy );
-use PPI::Document ();
+use Perl::Critic::Utils 1.138 qw( is_function_call );
+use Perl::Tidy 20201207 qw( perltidy );
+use PPI::Document 1.270 ();
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
 has _exports => (
