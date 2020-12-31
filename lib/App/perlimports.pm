@@ -71,7 +71,7 @@ has _module_name => (
     is      => 'ro',
     isa     => Maybe [Str],
     lazy    => 1,
-    builder => '_build_module_name',
+    default => sub { shift->_include->module },
 );
 
 has _never_exports => (
@@ -111,11 +111,6 @@ around BUILDARGS => sub {
 
     return $class->$orig(%args);
 };
-
-sub _build_module_name {
-    my $self = shift;
-    return $self->_include->module;
-}
 
 sub _build_exports {
     my $self   = shift;
