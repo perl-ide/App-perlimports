@@ -54,6 +54,16 @@ has _is_ignored => (
     builder => '_build_is_ignored',
 );
 
+has _is_moose_type_library => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return $self->_has_moose_types && defined $self->_moose_types;
+    },
+);
+
 has _isa_test_builder_module => (
     is      => 'ro',
     isa     => Bool,
@@ -74,6 +84,16 @@ has _module_name => (
     isa     => Maybe [Str],
     lazy    => 1,
     default => sub { shift->_include->module },
+);
+
+# If this attribute is undef, it means we tried to look for Moose types but
+# this probably is not a Moose type library.
+has _moose_types => (
+    is        => 'ro',
+    isa       => Maybe [ArrayRef],
+    predicate => '_has_moose_types',
+    lazy      => 1,
+    builder   => '_build_moose_types',
 );
 
 has _never_exports => (
@@ -130,21 +150,32 @@ sub _build_exports {
     use strict;
 ## use critic
 
-    # Moose Type library? And yes, private method bad.
-    if ( !@exports && require_module('Class::Inspector') ) {
-        if (
-            any { $_ eq 'MooseX::Types::Combine::_provided_types' }
-            @{ Class::Inspector->methods(
-                    $self->_module_name, 'full', 'private'
-                )
-            }
-        ) {
-            my %types = $self->_module_name->_provided_types;
-            @exports = keys %types;
-        }
-    }
+    # If we have undef for Moose types, we don't want to return that in this
+    # builder, since this attribute cannot be undef.
+    return
+          @exports            ? \@exports
+        : $self->_moose_types ? $self->_moose_types
+        :                       [];
+}
 
-    return \@exports;
+sub _build_moose_types {
+    my $self = shift;
+
+    my @exports;
+
+    # Moose Type library? And yes, private method bad.
+    if (
+        require_module('Class::Inspector')
+        && any { $_ eq 'MooseX::Types::Combine::_provided_types' }
+        @{ Class::Inspector->methods(
+                $self->_module_name, 'full', 'private'
+            )
+        }
+    ) {
+        my %types = $self->_module_name->_provided_types;
+        @exports = map { $_, 'is_' . $_, 'to_' . $_ } keys %types;
+    }
+    return @exports ? \@exports : undef;
 }
 
 sub _build_isa_test_builder_module {
@@ -183,11 +214,13 @@ sub _build_imports {
                 || []
         }
     ) {
+        my $found_import;
+
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
         if ( $word->isa('PPI::Token::Symbol')
             && exists $exports{ $word->symbol } ) {
-            $found{ $word->symbol }++;
+            $found_import = $word->symbol;
         }
 
         elsif (
@@ -195,9 +228,10 @@ sub _build_imports {
 
             # Maybe a subroutine ref has been exported. For instance,
             # Getopt::Long exports &GetOptions
-            || ( is_function_call($word) && exists $exports{ '&' . "$word" } )
+            || ( is_function_call($word)
+                && exists $exports{ '&' . "$word" } )
         ) {
-            $found{"$word"}++;
+            $found_import = "$word";
         }
 
         # PPI can think that an imported function in a ternary is a label
@@ -207,10 +241,25 @@ sub _build_imports {
             if ( $word->content =~ m{^(\w+)} ) {
                 my $label = $1;
                 if ( exists $exports{$label} ) {
+                    $found_import = $label;
                     $found{$label}++;
                 }
             }
         }
+
+        # If a Moose type has been imported but an exported type check or
+        # coercion is found, make sure we still use the actual type as the
+        # import name. So, is_HashRef or to_HashRef should still show up as
+        # HashRef in the import list. There could be cases where the type is
+        # imported just to use a coercion or type check. In that case we won't
+        # find the actual type name in the code.
+        if (   $found_import
+            && $self->_is_moose_type_library
+            && $found_import =~ m{^(is_|to_)} ) {
+            $found_import = substr( $found_import, 3 );
+        }
+
+        $found{$found_import}++ if $found_import;
     }
 
     my @found = sort { "\L$a" cmp "\L$b" } keys %found;
@@ -574,14 +623,52 @@ of resources. Removing entire modules from your code base can decrease the
 number of dependencies which you need to manage and decrease friction in your
 your deployment process.
 
+=item Solution
+
 Actively cleaning up your imports can make this much easier to manage.
+
+=item Problem: Enforcing consistent style
+
+Having a messy list of module imports makes your code harder to read. Imagine
+this:
+
+    use Cpanel::JSON::XS;
+    use Database::Migrator::Types qw( HashRef ArrayRef Object Str Bool Maybe CodeRef FileHandle RegexpRef );
+    use List::AllUtils qw( uniq any );
+    use LWP::UserAgent    q{};
+    use Try::Tiny qw/ catch     try /;
+    use WWW::Mechanize  q<>;
+
+=item Solution:
+
+L<perlimports> turns the above list into:
+
+    use Cpanel::JSON::XS ();
+    use Database::Migrator::Types qw(
+        ArrayRef
+        Bool
+        CodeRef
+        FileHandle
+        HashRef
+        Maybe
+        Object
+        RegexpRef
+        Str
+    );
+    use List::AllUtils qw( any uniq );
+    use LWP::UserAgent ();
+    use Try::Tiny qw( catch try);
+    use WWW::Mechanize ();
+
+Where possible, L<perlimports> will enforce a consistent style of parentheses
+and will also sort your imports and break up long lines.
 
 =back
 
 =head2 formatted_ppi_statement
 
-Returns a L<PPI::Statement::Include>. This can be stringified into an import
-statement or used to replace an existing L<PPI::Statement::Include>.
+Returns an L<PPI::Statement::Include> object. This can be stringified into an
+import statement or used to replace an existing L<PPI::Statement::Include>.
 
 =head1 CAVEATS
 

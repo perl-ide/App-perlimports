@@ -15,9 +15,9 @@ is(
     '_module_name'
 );
 
-is_deeply( $e->_exports, [], 'Found some _exports' );
+is_deeply( $e->_exports, [], 'No _exports' );
 ok( $e->_is_ignored, '_is_ignored' );
-is_deeply( $e->_imports, [], '_imports' );
+is_deeply( $e->_imports, [], 'No _imports' );
 is(
     $e->formatted_ppi_statement,
     q{use Moose;},
