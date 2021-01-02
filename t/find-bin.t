@@ -8,7 +8,7 @@ use Test::More import => [qw( done_testing is is_deeply ok )];
 
 # This test demonstrates that we can't handle FindBin
 my $e = App::perlimports->new(
-    filename    => 't/test-data/find-bin.pl',
+    filename    => 'test-data/find-bin.pl',
     source_text => 'use FindBin qw( $Bin );',
 );
 is(

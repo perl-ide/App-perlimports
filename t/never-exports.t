@@ -8,7 +8,7 @@ use Test::More import => [qw( done_testing is is_deeply ok subtest )];
 
 subtest 'with version' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/with-version.pl',
+        filename    => 'test-data/with-version.pl',
         source_text => 'use LWP::UserAgent 6.49;',
     );
 
@@ -24,7 +24,7 @@ subtest 'with version' => sub {
 
 subtest 'without version' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/with-version.pl',
+        filename    => 'test-data/with-version.pl',
         source_text => 'use LWP::UserAgent;',
     );
 
@@ -40,7 +40,7 @@ subtest 'without version' => sub {
 
 subtest 'without incorrect import' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/with-version.pl',
+        filename    => 'test-data/with-version.pl',
         source_text => 'use LWP::UserAgent qw( new );',
     );
 

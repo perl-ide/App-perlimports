@@ -7,7 +7,7 @@ use App::perlimports ();
 use Test::More import => [qw( done_testing is is_deeply ok )];
 
 my $e = App::perlimports->new(
-    filename    => 't/test-data/messy-imports.pl',
+    filename    => 'test-data/messy-imports.pl',
     source_text => 'use Database::Migrator::Types;',
 );
 

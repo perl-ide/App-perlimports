@@ -512,16 +512,16 @@ the cleanup and maintenance of Perl import statements.
 
 Update a file in place. (Make sure you can revert the file if you need to.)
 
-    perlimports --filename t/test-data/foo.pl --inplace-edit
+    perlimports --filename test-data/foo.pl --inplace-edit
 
 If some of your imported modules are in local directories, you can give some
 hints as to where to find them:
 
-    perlimports --filename t/test-data/foo.pl --inplace-edit --libs t/lib,/some/dir/lib
+    perlimports --filename test-data/foo.pl --inplace-edit --libs t/lib,/some/dir/lib
 
 Redirect output to a new file:
 
-    perlimports --filename t/test-data/foo.pl > foo.new.pl
+    perlimports --filename test-data/foo.pl > foo.new.pl
 
 =head2 VIM
 

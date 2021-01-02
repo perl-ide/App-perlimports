@@ -20,7 +20,7 @@ subtest 'Types::Standard' => sub {
 
 subtest 'Test::RequiresInternet' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/noop.t',
+        filename    => 'test-data/noop.t',
         source_text =>
             q{use Test::RequiresInternet ('www.example.com' => 80 );},
     );

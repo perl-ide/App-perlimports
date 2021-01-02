@@ -9,7 +9,7 @@ use App::perlimports ();
 use Test::More import => [qw( done_testing is is_deeply ok )];
 
 my $e = App::perlimports->new(
-    filename    => 't/test-data/geo-ip.pl',
+    filename    => 'test-data/geo-ip.pl',
     source_text => 'use Geo::IP;',
 );
 

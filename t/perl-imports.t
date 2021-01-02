@@ -8,7 +8,7 @@ use Test::More import => [qw( diag done_testing is is_deeply ok subtest )];
 
 subtest 'Getopt::Long' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/foo.pl',
+        filename    => 'test-data/foo.pl',
         source_text => 'use Getopt::Long;',
     );
     is(
@@ -29,7 +29,7 @@ subtest 'Getopt::Long' => sub {
 
 subtest 'Test::More' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/foo.t',
+        filename    => 'test-data/foo.t',
         source_text => 'use Test::More;',
     );
     is(
@@ -50,7 +50,7 @@ subtest 'Test::More' => sub {
 
 subtest 'pragma' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/foo.t',
+        filename    => 'test-data/foo.t',
         source_text => 'use strict;',
     );
     is(
@@ -71,7 +71,7 @@ subtest 'pragma' => sub {
 
 subtest 'require' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/foo.t',
+        filename    => 'test-data/foo.t',
         source_text => 'require Test::More;',
     );
 
@@ -85,7 +85,7 @@ subtest 'require' => sub {
 
 subtest 'ViaExporter' => sub {
     my $e = App::perlimports->new(
-        filename    => 't/test-data/via-exporter.pl',
+        filename    => 'test-data/via-exporter.pl',
         source_text => 'use ViaExporter qw( foo $foo @foo %foo );',
     );
     is(

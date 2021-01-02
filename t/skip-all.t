@@ -7,7 +7,7 @@ use App::perlimports ();
 use Test::More       ( import => [ 'done_testing', 'is', 'ok' ] );
 
 my $e = App::perlimports->new(
-    filename    => 't/test-data/skip-all.t',
+    filename    => 'test-data/skip-all.t',
     source_text =>
         q{use Test::More 0.93 skip_all => 'Test is broken', tests => 3, foo => ['bar'] ;},
 );

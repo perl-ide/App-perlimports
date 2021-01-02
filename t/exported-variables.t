@@ -7,7 +7,7 @@ use App::perlimports ();
 use Test::More import => [qw( diag done_testing is is_deeply ok )];
 
 my $e = App::perlimports->new(
-    filename    => 't/test-data/exported-variables.pl',
+    filename    => 'test-data/exported-variables.pl',
     source_text => 'use ViaExporter qw();',
 );
 

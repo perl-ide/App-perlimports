@@ -7,7 +7,7 @@ use App::perlimports ();
 use Test::More import => [qw( diag done_testing is is_deeply ok )];
 
 my $e = App::perlimports->new(
-    filename    => 't/test-data/with-version.pl',
+    filename    => 'test-data/with-version.pl',
     source_text => 'use Getopt::Long 2.40 qw();',
 );
 is(
