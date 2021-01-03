@@ -10,7 +10,17 @@ use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call );
 use Perl::Tidy 20201207 qw( perltidy );
 use PPI::Document 1.270 ();
+use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
+
+has errors => (
+    is        => 'rw',
+    isa       => ArrayRef,
+    lazy      => 1,
+    init_arg  => undef,
+    predicate => 'has_errors',
+    default   => sub { [] },
+);
 
 has _exports => (
     is      => 'ro',
@@ -372,8 +382,20 @@ sub _build_formatted_ppi_statement {
         my $all  = join q{ }, map { "$_" } @args;
 
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        my $args = eval( '{' . $all . '}' );
+        my $args;
+        my $error;
+        try {
+            $args = eval( '{' . $all . '}' );
+        }
+        catch {
+            push @{ $self->errors }, $_;
+            $error = 1;
+        };
         ## use critic
+
+        # Ignore this line if we can't parse it. This will happen if the arg to
+        # test is a do block, for example.
+        return $self->_include if $error;
 
         local $Data::Dumper::Terse         = 1;
         local $Data::Dumper::Indent        = 0;
