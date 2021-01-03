@@ -282,9 +282,10 @@ sub _build_is_ignored {
 
     my %noop = (
         'FindBin'                => 1,
+        'namespace::autoclean'   => 1,
         'Test::Needs'            => 1,
-        'Types::Standard'        => 1,
         'Test::RequiresInternet' => 1,
+        'Types::Standard'        => 1,
     );
 
     return 1 if exists $noop{ $self->_module_name };
