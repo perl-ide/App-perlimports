@@ -141,7 +141,7 @@ sub _build_exports {
     return [] if $self->_will_never_export;
 
     require_module($module);
-    $module->import;
+    $module->import if $self->_module_name eq 'POSIX';
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
