@@ -55,18 +55,24 @@ my $includes = $doc->find(
     }
 );
 
-foreach my $include ( @{$includes} ) {
-    my $e = App::perlimports->new(
-        filename => $opt->filename,
-        include  => $include,
-        $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
-    );
+if ( $opt->libs ) {
+    unshift @INC, ( split m{,}, $opt->libs );
+}
 
-    my $elem = $e->formatted_ppi_statement;
+if ( is_plain_arrayref($includes) ) {
+    foreach my $include ( @{$includes} ) {
+        my $e = App::perlimports->new(
+            filename => $opt->filename,
+            include  => $include,
+            $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
+        );
 
-    # https://github.com/adamkennedy/PPI/issues/189
-    $include->insert_before( $elem->clone );
-    $include->remove;
+        my $elem = $e->formatted_ppi_statement;
+
+        # https://github.com/adamkennedy/PPI/issues/189
+        $include->insert_before( $elem->clone );
+        $include->remove;
+    }
 }
 
 # We need to do this in order to preserve HEREDOCs.
