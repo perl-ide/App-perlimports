@@ -17,10 +17,14 @@ use Ref::Util qw( is_plain_arrayref );
 my ( $opt, $usage ) = describe_options(
     'perlimports %o <some-arg>',
     [ 'filename|f=s', 'the file containing the imports', { required => 1 } ],
+    [
+        'ignored-modules=s',
+        'comma-seperated list of modules to ignore (eg --ignored-modules Test::More,Test::Most'
+    ],
     [ 'inplace-edit|i', 'edit the file in place' ],
     [
         'libs=s',
-        'comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
+        'comma-seperated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
 
     ],
     [
@@ -63,7 +67,10 @@ if ( is_plain_arrayref($includes) ) {
     foreach my $include ( @{$includes} ) {
         my $e = App::perlimports->new(
             filename => $opt->filename,
-            include  => $include,
+            $opt->ignored_modules
+            ? ( ignored_modules => [ split m{,}, $opt->ignored_modules ] )
+            : (),
+            include => $include,
             $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
         );
 

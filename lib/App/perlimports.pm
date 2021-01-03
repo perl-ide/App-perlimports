@@ -43,6 +43,13 @@ has formatted_ppi_statement => (
     builder => '_build_formatted_ppi_statement',
 );
 
+has _ignored_modules => (
+    is        => 'ro',
+    isa       => ArrayRef,
+    init_arg  => 'ignored_modules',
+    predicate => '_has_ignored_modules',
+);
+
 has _imports => (
     is      => 'ro',
     isa     => ArrayRef,
@@ -297,6 +304,12 @@ sub _build_is_ignored {
         'Test::RequiresInternet' => 1,
         'Types::Standard'        => 1,
     );
+
+    if ( $self->_has_ignored_modules ) {
+        for my $name ( @{ $self->_ignored_modules } ) {
+            $noop{$name} = 1;
+        }
+    }
 
     return 1 if exists $noop{ $self->_module_name };
 
