@@ -12,17 +12,21 @@ use App::perlimports ();
 use Getopt::Long::Descriptive qw( describe_options );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
+use Ref::Util qw( is_plain_arrayref );
 
 my ( $opt, $usage ) = describe_options(
     'perlimports %o <some-arg>',
     [ 'filename|f=s', 'the file containing the imports', { required => 1 } ],
     [ 'inplace-edit|i', 'edit the file in place' ],
     [
-        'libs|=s',
+        'libs=s',
         'comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
 
     ],
-    [ 'read-stdin', 'read statements to process from STDIN rather than the supplied file', ],
+    [
+        'read-stdin',
+        'read statements to process from STDIN rather than the supplied file',
+    ],
     [],
     [ 'help', "print usage message and exit", { shortcircuit => 1 } ],
 );
