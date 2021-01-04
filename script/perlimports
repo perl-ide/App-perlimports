@@ -9,6 +9,7 @@ use FindBin qw( $Bin );
 use lib "$Bin/../lib";
 
 use App::perlimports ();
+use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
@@ -32,6 +33,7 @@ my ( $opt, $usage ) = describe_options(
         'read statements to process from STDIN rather than the supplied file',
     ],
     [],
+    [ 'verbose|v',  'print errors to STDERR' ],
     [ 'help', "print usage message and exit", { shortcircuit => 1 } ],
 );
 
@@ -79,6 +81,10 @@ if ( is_plain_arrayref($includes) ) {
         # https://github.com/adamkennedy/PPI/issues/189
         $include->insert_before( $elem->clone );
         $include->remove;
+
+        if ( $opt->verbose && $e->has_errors ) {
+            print STDERR $e->_module_name . ' ' . np( $e->errors );
+        }
     }
 }
 
