@@ -10,7 +10,7 @@ my $e = App::perlimports->new(
         q{use Test::More 0.93 skip_all => 'Test is broken', tests => 3, foo => ['bar'] ;},
 );
 
-ok( !$e->_is_ignored, 'noop' );
+ok( !$e->_is_ignored, 'not an ignored module' );
 my $expected = <<'EOF';
 use Test::More 0.93 (
     foo      => ['bar'],
