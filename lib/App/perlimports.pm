@@ -13,6 +13,13 @@ use PPI::Document 1.270 ();
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
+has _combined_exports => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_combined_exports',
+);
+
 has errors => (
     is        => 'rw',
     isa       => ArrayRef,
@@ -22,11 +29,18 @@ has errors => (
     default   => sub { [] },
 );
 
-has _combined_exports => (
+has _export => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
-    builder => '_build_combined_exports',
+    builder => '_build_export',
+);
+
+has _export_ok => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_export_ok',
 );
 
 has _filename => (
@@ -120,6 +134,14 @@ has _never_exports => (
     builder => '_build_never_exports',
 );
 
+# Abuse attributes to ensure this only happens once
+has _maybe_require_and_import_module => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_maybe_require_and_import_module',
+);
+
 has _uses_sub_exporter => (
     is      => 'ro',
     isa     => Bool,
@@ -151,11 +173,10 @@ around BUILDARGS => sub {
     return $class->$orig(%args);
 };
 
-sub _build_combined_exports {
+sub _build_maybe_require_and_import_module {
     my $self   = shift;
     my $module = $self->_module_name;
-
-    return [] if $self->_will_never_export;
+    return 0 if $self->_will_never_export;
 
     require_module($module);
 
@@ -167,12 +188,16 @@ sub _build_combined_exports {
         push @{ $self->_errors }, $_;
     };
 
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my @exports
-        = uniq( @{ $module . '::EXPORT' }, @{ $module . '::EXPORT_OK' } );
-    use strict;
-## use critic
+    return 1;
+}
+
+sub _build_combined_exports {
+    my $self   = shift;
+    my $module = $self->_module_name;
+
+    return [] if $self->_will_never_export;
+
+    my @exports = uniq( @{ $self->_export }, @{ $self->_export_ok } );
 
     # If we have undef for Moose types, we don't want to return that in this
     # builder, since this attribute cannot be undef.
@@ -180,6 +205,38 @@ sub _build_combined_exports {
           @exports            ? \@exports
         : $self->_moose_types ? $self->_moose_types
         :                       [];
+}
+
+sub _build_export {
+    my $self = shift;
+
+    return [] if $self->_will_never_export;
+
+    $self->_maybe_require_and_import_module;
+
+## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    my @exports = @{ $self->_module_name . '::EXPORT' };
+    use strict;
+## use critic
+
+    return @exports ? \@exports : [];
+}
+
+sub _build_export_ok {
+    my $self = shift;
+
+    return [] if $self->_will_never_export;
+
+    $self->_maybe_require_and_import_module;
+
+## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    my @exports = @{ $self->_module_name . '::EXPORT_OK' };
+    use strict;
+## use critic
+
+    return @exports ? \@exports : [];
 }
 
 sub _build_moose_types {
