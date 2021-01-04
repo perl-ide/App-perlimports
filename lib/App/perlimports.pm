@@ -3,13 +3,16 @@ package App::perlimports;
 use Moo;
 
 use Data::Dumper qw( Dumper );
+use Data::Printer;
 use List::AllUtils qw( any uniq );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
+use MooX::HandlesVia;
 use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call );
 use Perl::Tidy 20201207 qw( perltidy );
 use PPI::Document 1.270 ();
+use Ref::Util qw( is_plain_hashref );
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
@@ -21,12 +24,15 @@ has _combined_exports => (
 );
 
 has errors => (
-    is        => 'rw',
-    isa       => ArrayRef,
-    lazy      => 1,
-    init_arg  => undef,
-    predicate => 'has_errors',
-    default   => sub { [] },
+    is          => 'rw',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        _add_error => 'push',
+        has_errors => 'count',
+    },
+    init_arg => undef,
+    default  => sub { [] },
 );
 
 has _export => (
@@ -178,14 +184,16 @@ sub _build_maybe_require_and_import_module {
     my $module = $self->_module_name;
     return 0 if $self->_will_never_export;
 
-    require_module($module);
+    my $error = 0;
+
+    return 0 unless $self->_maybe_require_module($module);
 
     # This is helpful for (at least) POSIX and Test::Most
     try {
         $module->import;
     }
     catch {
-        push @{ $self->_errors }, $_;
+        push @{ $self->errors }, $_;
     };
 
     return 1;
@@ -239,18 +247,22 @@ sub _build_export_ok {
     return @exports ? \@exports : [];
 }
 
+# Moose Type library? And yes, private method bad.
 sub _build_moose_types {
     my $self = shift;
 
     my @exports;
 
-    # Moose Type library? And yes, private method bad.
+    # Don't wrap this require as we really do want to die if this module cannot
+    # be found.
+    require_module('Class::Inspector');
+
     if (
-        require_module('Class::Inspector')
-        && any { $_ eq 'MooseX::Types::Combine::_provided_types' }
+        any { $_ eq 'MooseX::Types::Combine::_provided_types' }
         @{ Class::Inspector->methods(
                 $self->_module_name, 'full', 'private'
-            )
+                )
+                || []
         }
     ) {
         my %types = $self->_module_name->_provided_types;
@@ -385,18 +397,19 @@ sub _build_is_ignored {
     return 1 if $self->_uses_sub_exporter;
 
     # This should catch Moose classes
-    if (   require_module('Moose::Util')
+    if ( $self->_maybe_require_module('Moose::Util')
         && Moose::Util::find_meta( $self->_module_name ) ) {
         return 1;
     }
 
     # This should catch Moo classes
-    if ( require_module('Class::Inspector') ) {
+    if ( $self->_maybe_require_module('Class::Inspector') ) {
         return 1
             if any { $_ eq 'Moo::is_class' }
         @{ Class::Inspector->methods(
                 $self->_module_name, 'full', 'public'
-            )
+                )
+                || []
         };
     }
 
@@ -465,10 +478,15 @@ sub _build_formatted_ppi_statement {
             $args = eval( '{' . $all . '}' );
         }
         catch {
-            push @{ $self->errors }, $_;
+            $self->_add_error($_);
             $error = 1;
         };
         ## use critic
+
+        if ( !is_plain_hashref($args) ) {
+            $self->_add_error( 'Not a hashref: ' . np($args) );
+            $error = 1;
+        }
 
         # Ignore this line if we can't parse it. This will happen if the arg to
         # test is a do block, for example.
@@ -573,7 +591,8 @@ sub _build_uses_sub_exporter {
         || $self->_maybe_find_installed_module;
 
     if ( !$filename ) {
-        print "Cannot find $module\n";
+        $self->_add_error(
+            "Cannot find $module when testing for Sub::Exporter");
         return;
     }
 
@@ -595,6 +614,22 @@ sub _build_uses_sub_exporter {
         }
     }
     return 0;
+}
+
+sub _maybe_require_module {
+    my $self              = shift;
+    my $module_to_require = shift;
+
+    my $success;
+    try {
+        require_module($module_to_require);
+        $success = 1;
+    }
+    catch {
+        $self->_add_error("$module_to_require error. $_");
+    };
+
+    return $success;
 }
 
 1;
