@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use App::perlimports;
-use Test::More import => [qw( done_testing is ok )];
+use App::perlimports ();
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $source_text = 'use 5.008001;';
 

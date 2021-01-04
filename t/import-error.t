@@ -2,8 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Devel::Confess;
-use Test::More import => [qw( diag done_testing is is_deeply ok )];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $source_text = 'use Local::Module::Does::Not::Exist::At::All;';
 

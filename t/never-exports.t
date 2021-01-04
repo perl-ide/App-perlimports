@@ -2,7 +2,8 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More import => [qw( done_testing is is_deeply ok subtest )];
+use Test::More import =>
+    [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 subtest 'with version' => sub {
     my $e = App::perlimports->new(

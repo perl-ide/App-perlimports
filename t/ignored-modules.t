@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More       ( import => [ 'done_testing', 'is', 'is_deeply' ] );
+use Test::More import => [ 'done_testing', 'is' ];
 
 {
     my $e = App::perlimports->new(

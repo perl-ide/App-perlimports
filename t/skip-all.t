@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More       ( import => [ 'done_testing', 'is', 'ok' ] );
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $e = App::perlimports->new(
     filename    => 'test-data/skip-all.t',

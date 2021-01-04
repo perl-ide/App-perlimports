@@ -4,7 +4,7 @@ use warnings;
 # misses import in ternary
 
 use App::perlimports ();
-use Test::More import => [qw( done_testing is is_deeply ok )];
+use Test::More import => [ 'done_testing', 'is', 'is_deeply' ];
 
 my $e = App::perlimports->new(
     filename    => 'test-data/geo-ip.pl',

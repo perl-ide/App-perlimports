@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More import => [qw( diag done_testing is is_deeply ok )];
+use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
 my $e = App::perlimports->new(
     filename    => 'test-data/with-version.pl',

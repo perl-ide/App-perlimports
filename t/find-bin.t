@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More import => [qw( done_testing is is_deeply ok )];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 # This test demonstrates that we can't handle FindBin
 my $e = App::perlimports->new(

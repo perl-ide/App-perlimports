@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More import => [qw( diag done_testing is ok subtest )];
+use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 subtest 'Types::Standard' => sub {
     my $e = App::perlimports->new(

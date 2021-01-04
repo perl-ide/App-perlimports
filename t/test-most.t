@@ -2,9 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports ();
-use Test::More (
-    import => [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ]
-);
+use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 for my $module ( 'Test::More', 'Test::Most' ) {
     subtest $module => sub {
