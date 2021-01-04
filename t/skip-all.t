@@ -1,8 +1,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use App::perlimports ();
 use Test::More       ( import => [ 'done_testing', 'is', 'ok' ] );
 

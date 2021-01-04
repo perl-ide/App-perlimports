@@ -1,8 +1,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 # misses import in ternary
 
 use App::perlimports ();
