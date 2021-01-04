@@ -465,6 +465,13 @@ sub _build_formatted_ppi_statement {
 
     my $statement;
 
+    my @args = $self->_include->arguments;
+
+    # Don't touch a do { } block.
+    if ( $self->_isa_test_builder_module && @args && $args[0] eq 'do' ) {
+        return $self->_include;
+    }
+
     # Do some contortions to turn PPI objects back into a data structure so
     # that we can add or replace an import hash key and then end up with a new
     # list which is sorted on hash keys. This makes the assumption that the
@@ -473,9 +480,20 @@ sub _build_formatted_ppi_statement {
     # *mostly* work. I don't like the formatting that Data::Dumper comes up
     # with, so we'll run it through perltidy.
 
-    if ( $self->_isa_test_builder_module && $self->_include->arguments ) {
-        my @args = $self->_include->arguments;
-        my $all  = join q{ }, map { "$_" } @args;
+    if (   $self->_isa_test_builder_module
+        && @args ) {
+        my $all;
+
+        if ( $args[0]->isa('PPI::Token::Word') ) {
+            $all = join q{ }, map { "$_" } @args;
+        }
+
+        elsif ($args[0]->isa('PPI::Structure::List')
+            && $args[0]->braces eq '()' ) {
+            for my $child ( $args[0]->children ) {
+                $all .= "$child";
+            }
+        }
 
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
         my $args;
@@ -489,7 +507,7 @@ sub _build_formatted_ppi_statement {
         };
         ## use critic
 
-        if ( !is_plain_hashref($args) ) {
+        if ( !$error && !is_plain_hashref($args) ) {
             $self->_add_error( 'Not a hashref: ' . np($args) );
             $error = 1;
         }
@@ -515,7 +533,7 @@ sub _build_formatted_ppi_statement {
         }
 
         $statement = sprintf(
-            'use %s%s( %s );',
+            keys %$args > 1 ? 'use %s%s( %s );' : 'use %s%s %s;',
             $self->_module_name,
             $self->_include->module_version
             ? q{ } . $self->_include->module_version . q{ }
