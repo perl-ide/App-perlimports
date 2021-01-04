@@ -148,6 +148,13 @@ has _maybe_require_and_import_module => (
     builder => '_build_maybe_require_and_import_module',
 );
 
+has _original_imports => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_original_imports',
+);
+
 has _uses_sub_exporter => (
     is      => 'ro',
     isa     => Bool,
@@ -293,6 +300,10 @@ sub _build_imports {
 
     my %exports = map { $_ => 1 } @{ $self->_combined_exports };
 
+    # This is not a real symbol, so we should never be looking for it to appear
+    # in the code.
+    delete $exports{verbose} if $self->_module_name eq 'Carp';
+
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     my %found;
     for my $word (
@@ -355,8 +366,41 @@ sub _build_imports {
         $found{$found_import}++ if $found_import;
     }
 
+    # Carp exports verbose, which is a symbol which doesn't actually exist.
+    # It's basically a flag, so if it's in the import, we'll just preserve it.
+    if (
+        $self->_module_name eq 'Carp' && (
+            any { $_ eq 'verbose' }
+            @{ $self->_original_imports }
+        )
+    ) {
+        $found{verbose} = 1;
+    }
+
     my @found = sort { "\L$a" cmp "\L$b" } keys %found;
     return \@found;
+}
+
+sub _build_original_imports {
+    my $self = shift;
+
+    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnusedImport
+    my $expr_qw
+        = $self->_include->find(
+        sub { $_[1]->isa('PPI::Token::QuoteLike::Words'); } )
+        or next;
+
+    my @imports;
+    if ( @$expr_qw == 1 ) {
+        my $expr  = $expr_qw->[0];
+        my @words = $expr_qw->[0]->literal;
+        for my $w (@words) {
+            next if $w =~ /\A [:\-\+]/x;
+            push @imports, $w;
+        }
+    }
+
+    return \@imports;
 }
 
 sub _build_is_ignored {
