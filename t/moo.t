@@ -13,7 +13,7 @@ is(
     '_module_name'
 );
 
-is_deeply( $e->_exports, [], '_exports' );
+is_deeply( $e->_combined_exports, [], '_combined_exports' );
 ok( $e->_is_ignored, '_is_ignored' );
 is_deeply( $e->_imports, [], '_imports' );
 is(

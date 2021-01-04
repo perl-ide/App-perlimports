@@ -16,7 +16,7 @@ subtest 'Getopt::Long' => sub {
         '_module_name'
     );
 
-    ok( @{ $e->_exports },             'Found some _exports' );
+    ok( @{ $e->_combined_exports },    'Found some _combined_exports' );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, ['GetOptions'], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
@@ -37,7 +37,7 @@ subtest 'Test::More' => sub {
         '_module_name'
     );
 
-    ok( @{ $e->_exports },            'Found some _exports' );
+    ok( @{ $e->_combined_exports },   'Found some _combined_exports' );
     ok( $e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [qw( done_testing ok)], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
@@ -58,7 +58,7 @@ subtest 'pragma' => sub {
         '_module_name'
     );
 
-    ok( !@{ $e->_exports },            'Found some _exports' );
+    ok( !@{ $e->_combined_exports },   'Found some _combined_exports' );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [], '_imports' );
     ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
@@ -94,8 +94,8 @@ subtest 'ViaExporter' => sub {
     );
 
     is_deeply(
-        $e->_exports, [qw( foo $foo @foo %foo )],
-        'Found some _exports'
+        $e->_combined_exports, [qw( foo $foo @foo %foo )],
+        'Found some _combined_exports'
     );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [qw( $foo %foo @foo foo )], '_imports' );

@@ -22,11 +22,11 @@ has errors => (
     default   => sub { [] },
 );
 
-has _exports => (
+has _combined_exports => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
-    builder => '_build_exports',
+    builder => '_build_combined_exports',
 );
 
 has _filename => (
@@ -151,7 +151,7 @@ around BUILDARGS => sub {
     return $class->$orig(%args);
 };
 
-sub _build_exports {
+sub _build_combined_exports {
     my $self   = shift;
     my $module = $self->_module_name;
 
@@ -204,7 +204,7 @@ sub _build_moose_types {
 
 sub _build_isa_test_builder_module {
     my $self = shift;
-    $self->_exports;    # ensure module has already been required
+    $self->_combined_exports;    # ensure module has already been required
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
@@ -222,7 +222,7 @@ sub _build_imports {
     my $content = path( $self->_filename )->slurp;
     my $doc     = PPI::Document->new( \$content );
 
-    my %exports = map { $_ => 1 } @{ $self->_exports };
+    my %exports = map { $_ => 1 } @{ $self->_combined_exports };
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     my %found;
@@ -366,7 +366,7 @@ sub _build_formatted_ppi_statement {
     # confident that we're doing the right thing.
     if (
         $self->_is_ignored
-        || (   !@{ $self->_exports }
+        || (   !@{ $self->_combined_exports }
             && !$self->_will_never_export )
     ) {
         return $self->_include;
