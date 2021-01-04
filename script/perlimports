@@ -83,7 +83,8 @@ if ( is_plain_arrayref($includes) ) {
         $include->remove;
 
         if ( $opt->verbose && $e->has_errors ) {
-            print STDERR $e->_module_name . ' ' . np( $e->errors );
+            print STDERR 'Error: ' . $opt->filename . "\n";
+            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
         }
     }
 }
