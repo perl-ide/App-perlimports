@@ -429,8 +429,9 @@ sub _build_is_ignored {
 sub _build_never_exports {
     my $self = shift;
     return {
-        'LWP::UserAgent' => 1,
-        'WWW::Mechanize' => 1,
+        'App::perlimports' => 1,
+        'LWP::UserAgent'   => 1,
+        'WWW::Mechanize'   => 1,
     };
 }
 
