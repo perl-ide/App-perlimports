@@ -14,6 +14,7 @@ use Getopt::Long::Descriptive qw( describe_options );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
 use Ref::Util qw( is_plain_arrayref );
+use Try::Catch qw( catch try );
 
 my ( $opt, $usage ) = describe_options(
     'perlimports %o <some-arg>',
@@ -76,7 +77,17 @@ if ( is_plain_arrayref($includes) ) {
             $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
         );
 
-        my $elem = $e->formatted_ppi_statement;
+        my $elem;
+        try {
+            $elem = $e->formatted_ppi_statement;
+        }
+        catch {
+            print STDERR 'Error: ' . $opt->filename . "\n";
+            print STDERR $include;
+            print STDERR $_;
+        };
+
+        next unless $elem;
 
         # https://github.com/adamkennedy/PPI/issues/189
         $include->insert_before( $elem->clone );
