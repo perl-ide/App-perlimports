@@ -158,7 +158,14 @@ sub _build_exports {
     return [] if $self->_will_never_export;
 
     require_module($module);
-    $module->import if $self->_module_name eq 'POSIX';
+
+    # This is helpful for (at least) POSIX and Test::Most
+    try {
+        $module->import;
+    }
+    catch {
+        push @{ $self->_errors }, $_;
+    };
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
@@ -201,12 +208,12 @@ sub _build_isa_test_builder_module {
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
-    my $_isa_test_builder = any { $_ eq 'Test::Builder::Module' }
+    my $isa_test_builder = any { $_ eq 'Test::Builder::Module' }
     @{ $self->_module_name . '::ISA' };
     use strict;
 ## use critic
 
-    return $_isa_test_builder;
+    return $isa_test_builder ? 1 : 0;
 }
 
 sub _build_imports {
