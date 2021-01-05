@@ -320,6 +320,8 @@ sub _build_imports {
     ) {
         my $found_import;
 
+        next if exists $found{"$word"};
+
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
         if ( $word->isa('PPI::Token::Symbol')
