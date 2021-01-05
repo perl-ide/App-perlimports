@@ -390,7 +390,7 @@ sub _build_original_imports {
     my $expr_qw
         = $self->_include->find(
         sub { $_[1]->isa('PPI::Token::QuoteLike::Words'); } )
-        or next;
+        || [];
 
     my @imports;
     if ( @$expr_qw == 1 ) {

@@ -13,7 +13,6 @@ use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
-use Ref::Util qw( is_plain_arrayref );
 use Try::Catch qw( catch try );
 
 my ( $opt, $usage ) = describe_options(
@@ -34,7 +33,7 @@ my ( $opt, $usage ) = describe_options(
         'read statements to process from STDIN rather than the supplied file',
     ],
     [],
-    [ 'verbose|v',  'print errors to STDERR' ],
+    [ 'verbose|v', 'print errors to STDERR' ],
     [ 'help', "print usage message and exit", { shortcircuit => 1 } ],
 );
 
@@ -60,43 +59,41 @@ my $includes = $doc->find(
     sub {
         $_[1]->isa('PPI::Statement::Include');
     }
-);
+) || [];
 
 if ( $opt->libs ) {
     unshift @INC, ( split m{,}, $opt->libs );
 }
 
-if ( is_plain_arrayref($includes) ) {
-    foreach my $include ( @{$includes} ) {
-        my $e = App::perlimports->new(
-            filename => $opt->filename,
-            $opt->ignored_modules
-            ? ( ignored_modules => [ split m{,}, $opt->ignored_modules ] )
-            : (),
-            include => $include,
-            $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
-        );
+foreach my $include ( @{$includes} ) {
+    my $e = App::perlimports->new(
+        filename => $opt->filename,
+        $opt->ignored_modules
+        ? ( ignored_modules => [ split m{,}, $opt->ignored_modules ] )
+        : (),
+        include => $include,
+        $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
+    );
 
-        my $elem;
-        try {
-            $elem = $e->formatted_ppi_statement;
-        }
-        catch {
-            print STDERR 'Error: ' . $opt->filename . "\n";
-            print STDERR $include;
-            print STDERR $_;
-        };
+    my $elem;
+    try {
+        $elem = $e->formatted_ppi_statement;
+    }
+    catch {
+        print STDERR 'Error: ' . $opt->filename . "\n";
+        print STDERR $include;
+        print STDERR $_;
+    };
 
-        next unless $elem;
+    next unless $elem;
 
-        # https://github.com/adamkennedy/PPI/issues/189
-        $include->insert_before( $elem->clone );
-        $include->remove;
+    # https://github.com/adamkennedy/PPI/issues/189
+    $include->insert_before( $elem->clone );
+    $include->remove;
 
-        if ( $opt->verbose && $e->has_errors ) {
-            print STDERR 'Error: ' . $opt->filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
-        }
+    if ( $opt->verbose && $e->has_errors ) {
+        print STDERR 'Error: ' . $opt->filename . "\n";
+        print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
     }
 }
 

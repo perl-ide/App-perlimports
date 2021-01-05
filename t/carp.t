@@ -27,7 +27,7 @@ subtest 'verbose' => sub {
     );
 };
 
-subtest 'verbose' => sub {
+subtest 'no verbose' => sub {
     my $source_text = 'use Carp qw( croak );';
 
     my $e = App::perlimports->new(
@@ -44,6 +44,27 @@ subtest 'verbose' => sub {
     is_deeply(
         $e->_original_imports,
         ['croak'],
+        'original imports'
+    );
+};
+
+subtest 'no imports' => sub {
+    my $source_text = 'use Carp ();';
+
+    my $e = App::perlimports->new(
+        filename    => 'test-data/carp.pl',
+        source_text => $source_text,
+    );
+
+    is(
+        $e->formatted_ppi_statement,
+        'use Carp qw( croak );',
+        'verbose is not inserted'
+    );
+
+    is_deeply(
+        $e->_original_imports,
+        [],
         'original imports'
     );
 };
