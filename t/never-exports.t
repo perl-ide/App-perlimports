@@ -11,14 +11,16 @@ subtest 'with version' => sub {
         source_text => 'use LWP::UserAgent 6.49;',
     );
 
-    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
     ok( !$e->_is_ignored, '_is_ignored' );
-    is_deeply( $e->_imports, [], '_imports' );
     is(
         $e->formatted_ppi_statement,
         q{use LWP::UserAgent 6.49 ();},
         'formatted_ppi_statement'
     );
+
+    ok( !$e->_has_export_inspector, 'export inspection bypassed' );
+    is_deeply( $e->_imports,          [], '_imports' );
+    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
 };
 
 subtest 'without version' => sub {
@@ -27,14 +29,16 @@ subtest 'without version' => sub {
         source_text => 'use LWP::UserAgent;',
     );
 
-    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
     ok( !$e->_is_ignored, '_is_ignored' );
-    is_deeply( $e->_imports, [], '_imports' );
     is(
         $e->formatted_ppi_statement,
         q{use LWP::UserAgent ();},
         'formatted_ppi_statement'
     );
+
+    ok( !$e->_has_export_inspector, 'export inspection bypassed' );
+    is_deeply( $e->_imports,          [], '_imports' );
+    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
 };
 
 subtest 'without incorrect import' => sub {
@@ -43,14 +47,16 @@ subtest 'without incorrect import' => sub {
         source_text => 'use LWP::UserAgent qw( new );',
     );
 
-    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
     ok( !$e->_is_ignored, '_is_ignored' );
-    is_deeply( $e->_imports, [], '_imports' );
     is(
         $e->formatted_ppi_statement,
         q{use LWP::UserAgent ();},
         'formatted_ppi_statement'
     );
+
+    ok( !$e->_has_export_inspector, 'export inspection bypassed' );
+    is_deeply( $e->_imports,          [], '_imports' );
+    is_deeply( $e->_combined_exports, [], 'no _combined_exports' );
 };
 
 done_testing();

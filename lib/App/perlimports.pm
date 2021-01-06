@@ -2,6 +2,7 @@ package App::perlimports;
 
 use Moo;
 
+use App::perlimports::ExportInspector ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
 use List::AllUtils qw( any uniq );
@@ -20,7 +21,7 @@ has _combined_exports => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
-    builder => '_build_combined_exports',
+    default => sub { $_[0]->_export_inspector->combined_exports },
 );
 
 has errors => (
@@ -35,18 +36,12 @@ has errors => (
     default  => sub { [] },
 );
 
-has _export => (
-    is      => 'ro',
-    isa     => ArrayRef,
-    lazy    => 1,
-    builder => '_build_export',
-);
-
-has _export_ok => (
-    is      => 'ro',
-    isa     => ArrayRef,
-    lazy    => 1,
-    builder => '_build_export_ok',
+has _export_inspector => (
+    is        => 'ro',
+    isa       => InstanceOf ['App::perlimports::ExportInspector'],
+    predicate => '_has_export_inspector',
+    lazy      => 1,
+    builder   => '_build_export_inspector',
 );
 
 has _filename => (
@@ -95,10 +90,7 @@ has _is_moose_type_library => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    default => sub {
-        my $self = shift;
-        return $self->_has_moose_types && defined $self->_moose_types;
-    },
+    default => sub { $_[0]->_export_inspector->is_moose_type_library },
 );
 
 has _isa_test_builder_module => (
@@ -123,29 +115,11 @@ has _module_name => (
     default => sub { shift->_include->module },
 );
 
-# If this attribute is undef, it means we tried to look for Moose types but
-# this probably is not a Moose type library.
-has _moose_types => (
-    is        => 'ro',
-    isa       => Maybe [ArrayRef],
-    predicate => '_has_moose_types',
-    lazy      => 1,
-    builder   => '_build_moose_types',
-);
-
 has _never_exports => (
     is      => 'ro',
     isa     => HashRef,
     lazy    => 1,
     builder => '_build_never_exports',
-);
-
-# Abuse attributes to ensure this only happens once
-has _maybe_require_and_import_module => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_maybe_require_and_import_module',
 );
 
 has _original_imports => (
@@ -186,101 +160,16 @@ around BUILDARGS => sub {
     return $class->$orig(%args);
 };
 
-sub _build_maybe_require_and_import_module {
-    my $self   = shift;
-    my $module = $self->_module_name;
-    return 0 if $self->_will_never_export;
-
-    my $error = 0;
-
-    return 0 unless $self->_maybe_require_module($module);
-
-    # This is helpful for (at least) POSIX and Test::Most
-    try {
-        $module->import;
-    }
-    catch {
-        push @{ $self->errors }, $_;
-    };
-
-    return 1;
-}
-
-sub _build_combined_exports {
-    my $self   = shift;
-    my $module = $self->_module_name;
-
-    return [] if $self->_will_never_export;
-
-    my @exports = uniq( @{ $self->_export }, @{ $self->_export_ok } );
-
-    # If we have undef for Moose types, we don't want to return that in this
-    # builder, since this attribute cannot be undef.
-    return
-          @exports            ? \@exports
-        : $self->_moose_types ? $self->_moose_types
-        :                       [];
-}
-
-sub _build_export {
+sub _build_export_inspector {
     my $self = shift;
-
-    return [] if $self->_will_never_export;
-
-    $self->_maybe_require_and_import_module;
-
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my @exports = @{ $self->_module_name . '::EXPORT' };
-    use strict;
-## use critic
-
-    return @exports ? \@exports : [];
-}
-
-sub _build_export_ok {
-    my $self = shift;
-
-    return [] if $self->_will_never_export;
-
-    $self->_maybe_require_and_import_module;
-
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my @exports = @{ $self->_module_name . '::EXPORT_OK' };
-    use strict;
-## use critic
-
-    return @exports ? \@exports : [];
-}
-
-# Moose Type library? And yes, private method bad.
-sub _build_moose_types {
-    my $self = shift;
-
-    my @exports;
-
-    # Don't wrap this require as we really do want to die if this module cannot
-    # be found.
-    require_module('Class::Inspector');
-
-    if (
-        any { $_ eq 'MooseX::Types::Combine::_provided_types' }
-        @{ Class::Inspector->methods(
-                $self->_module_name, 'full', 'private'
-                )
-                || []
-        }
-    ) {
-        my %types = $self->_module_name->_provided_types;
-        @exports = map { $_, 'is_' . $_, 'to_' . $_ } keys %types;
-    }
-    return @exports ? \@exports : undef;
+    return App::perlimports::ExportInspector->new(
+        module_name => $self->_module_name,
+    );
 }
 
 sub _build_isa_test_builder_module {
     my $self = shift;
-    $self->_combined_exports;    # ensure module has already been required
+    $self->_maybe_require_module( $self->_module_name );
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
@@ -477,6 +366,7 @@ sub _build_never_exports {
     return {
         'App::perlimports' => 1,
         'LWP::UserAgent'   => 1,
+        'URI'              => 1,
         'WWW::Mechanize'   => 1,
     };
 }
@@ -484,21 +374,19 @@ sub _build_never_exports {
 sub _build_formatted_ppi_statement {
     my $self = shift;
 
-    # Cases where we don't want to rewrite the include because we can't be
-    # confident that we're doing the right thing.
-    if (
-        $self->_is_ignored
-        || (   !@{ $self->_combined_exports }
-            && !$self->_will_never_export )
-    ) {
-        return $self->_include;
-    }
+    # The following steps may seem a bit out of order, but we're trying to
+    # short circuit if at all possible. That means not building an
+    # ExportInspector object unless we really need to.
 
-    # In this case we either have a module which can never export or a module
-    # which can export but doesn't appear to. In both cases we'll want to
-    # rewrite with an empty list of imports.
+    # Nothing to do here. Preserve the original statement.
+    return $self->_include if $self->_is_ignored;
+
+    # In this case we either have a module which we know will never export
+    # symbols or a module which can export but for which we haven't found any
+    # imported symbols. In both cases we'll want to rewrite with an empty list
+    # of imports.
     if ( $self->_will_never_export
-        || !@{ $self->_imports } ) {
+        || ( @{ $self->_combined_exports } && !@{ $self->_imports } ) ) {
         return $self->_new_include(
             sprintf(
                 'use %s %s();', $self->_module_name,
@@ -508,6 +396,12 @@ sub _build_formatted_ppi_statement {
             )
         );
     }
+
+    # We don't know if the module exports anything (because it may not be using
+    # Exporter) but we also haven't explicitly flagged this as a module which
+    # never exports. So basically we can't be correct with confidence, so we'll
+    # return the original statement.
+    return $self->_include if !@{ $self->_combined_exports };
 
     my $statement;
 
