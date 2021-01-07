@@ -17,29 +17,45 @@ use Pod::Usage qw( pod2usage );
 use Try::Catch qw( catch try );
 
 my ( $opt, $usage ) = describe_options(
-    'perlimports %o <some-arg>',
-    [ 'filename|f=s', 'the file containing the imports', { required => 1 } ],
+    'perlimports %o',
+    [ 'filename|f=s', 'The file containing the imports', { required => 1 } ],
+    [],
     [
         'ignored-modules=s',
-        'comma-seperated list of modules to ignore (eg --ignored-modules Test::More,Test::Most'
-    ],
-    [
-        'ignored-modules-filename=s',
-        'file containing list of modules to ignore. One module per line.'
-    ],
-    [ 'inplace-edit|i', 'edit the file in place' ],
-    [
-        'libs=s',
-        'comma-seperated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
-
-    ],
-    [
-        'read-stdin',
-        'read statements to process from STDIN rather than the supplied file',
+        'Comma-separated list of modules to ignore.'
     ],
     [],
-    [ 'verbose|v', 'print errors to STDERR' ],
-    [ 'help', "print usage message and exit", { shortcircuit => 1 } ],
+    [
+        'ignored-modules-filename=s',
+        'Path to file listing modules to ignore. One per line.'
+    ],
+    [],
+    [
+        'never-export-modules=s',
+        'Comma-separated list of modules which do not export symbols.'
+    ],
+    [],
+    [
+        'never-export-modules-filename=s',
+        q{Path to file listing modules which don't export symbols. One per line.}
+    ],
+    [],
+    [ 'inplace-edit|i', 'edit the file in place' ],
+    [],
+    [
+        'libs=s',
+        'Comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
+
+    ],
+    [],
+    [
+        'read-stdin',
+        'Read statements to process from STDIN rather than the supplied file',
+    ],
+    [],
+    [],
+    [ 'verbose|v', 'Print errors to STDERR' ],
+    [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
 );
 
 if ( $opt->help ) {
@@ -81,10 +97,25 @@ if ( $opt->ignored_modules_filename ) {
     @ignored_modules = uniq( @ignored_modules, @from_file );
 }
 
+my @never_exports
+    = $opt->never_export_modules
+    ? split m{,}, $opt->never_export_modules
+    : ();
+
+if ( $opt->never_export_modules_filename ) {
+    my @from_file
+        = path( $opt->never_export_modules_filename )
+        ->lines( { chomp => 1 } );
+    @never_exports = uniq( @never_exports, @from_file );
+}
+
 my %base_args = (
     filename => $opt->filename,
     @ignored_modules
     ? ( ignored_modules => \@ignored_modules )
+    : (),
+    @never_exports
+    ? ( never_export_modules => \@never_exports )
     : (),
     $opt->libs
     ? ( libs => [ split m{,}, $opt->libs ] )

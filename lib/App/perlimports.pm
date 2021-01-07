@@ -116,10 +116,18 @@ has _module_name => (
 );
 
 has _never_exports => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-    builder => '_build_never_exports',
+    is       => 'ro',
+    isa      => HashRef,
+    init_arg => 'never_exports',
+    lazy     => 1,
+    builder  => '_build_never_exports',
+);
+
+has _never_export_modules => (
+    is        => 'ro',
+    isa       => ArrayRef [Str],
+    init_arg  => 'never_export_modules',
+    predicate => '_has_never_export_modules',
 );
 
 has _original_imports => (
@@ -363,12 +371,21 @@ sub _build_is_ignored {
 
 sub _build_never_exports {
     my $self = shift;
-    return {
+
+    my %modules = (
         'App::perlimports' => 1,
         'LWP::UserAgent'   => 1,
         'URI'              => 1,
         'WWW::Mechanize'   => 1,
-    };
+    );
+
+    if ( $self->_has_never_export_modules ) {
+        for my $module ( @{ $self->_never_export_modules } ) {
+            $modules{$module} = 1;
+        }
+    }
+
+    return \%modules;
 }
 
 sub _build_formatted_ppi_statement {
