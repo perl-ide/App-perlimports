@@ -11,6 +11,7 @@ use lib "$Bin/../lib";
 use App::perlimports ();
 use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
+use List::Util qw( uniq );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
 use Try::Catch qw( catch try );
@@ -21,6 +22,10 @@ my ( $opt, $usage ) = describe_options(
     [
         'ignored-modules=s',
         'comma-seperated list of modules to ignore (eg --ignored-modules Test::More,Test::Most'
+    ],
+    [
+        'ignored-modules-filename=s',
+        'file containing list of modules to ignore. One module per line.'
     ],
     [ 'inplace-edit|i', 'edit the file in place' ],
     [
@@ -65,14 +70,31 @@ if ( $opt->libs ) {
     unshift @INC, ( split m{,}, $opt->libs );
 }
 
+my @ignored_modules
+    = $opt->ignored_modules
+    ? split m{,}, $opt->ignored_modules
+    : ();
+
+if ( $opt->ignored_modules_filename ) {
+    my @from_file
+        = path( $opt->ignored_modules_filename )->lines( { chomp => 1 } );
+    @ignored_modules = uniq( @ignored_modules, @from_file );
+}
+
+my %base_args = (
+    filename => $opt->filename,
+    @ignored_modules
+    ? ( ignored_modules => \@ignored_modules )
+    : (),
+    $opt->libs
+    ? ( libs => [ split m{,}, $opt->libs ] )
+    : (),
+);
+
 foreach my $include ( @{$includes} ) {
     my $e = App::perlimports->new(
-        filename => $opt->filename,
-        $opt->ignored_modules
-        ? ( ignored_modules => [ split m{,}, $opt->ignored_modules ] )
-        : (),
+        %base_args,
         include => $include,
-        $opt->libs ? ( libs => [ split m{,}, $opt->libs ] ) : (),
     );
 
     my $elem;
