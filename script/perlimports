@@ -21,12 +21,12 @@ my ( $opt, $usage ) = describe_options(
     [ 'filename|f=s', 'The file containing the imports', { required => 1 } ],
     [],
     [
-        'ignored-modules=s',
+        'ignore-modules=s',
         'Comma-separated list of modules to ignore.'
     ],
     [],
     [
-        'ignored-modules-filename=s',
+        'ignore-modules-filename=s',
         'Path to file listing modules to ignore. One per line.'
     ],
     [],
@@ -92,15 +92,15 @@ if ( $opt->libs ) {
     unshift @INC, ( split m{,}, $opt->libs );
 }
 
-my @ignored_modules
-    = $opt->ignored_modules
-    ? split m{,}, $opt->ignored_modules
+my @ignore_modules
+    = $opt->ignore_modules
+    ? split m{,}, $opt->ignore_modules
     : ();
 
-if ( $opt->ignored_modules_filename ) {
+if ( $opt->ignore_modules_filename ) {
     my @from_file
-        = path( $opt->ignored_modules_filename )->lines( { chomp => 1 } );
-    @ignored_modules = uniq( @ignored_modules, @from_file );
+        = path( $opt->ignore_modules_filename )->lines( { chomp => 1 } );
+    @ignore_modules = uniq( @ignore_modules, @from_file );
 }
 
 my @never_exports
@@ -117,8 +117,8 @@ if ( $opt->never_export_modules_filename ) {
 
 my %base_args = (
     filename => $opt->filename,
-    @ignored_modules
-    ? ( ignored_modules => \@ignored_modules )
+    @ignore_modules
+    ? ( ignored_modules => \@ignore_modules )
     : (),
     @never_exports
     ? ( never_export_modules => \@never_exports )
