@@ -5,7 +5,7 @@ use Moo;
 use App::perlimports::ExportInspector ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
-use List::AllUtils qw( any uniq );
+use List::AllUtils qw( any );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use MooX::HandlesVia;
@@ -305,9 +305,39 @@ sub _build_original_imports {
 sub _build_is_ignored {
     my $self = shift;
 
-    # Ignore undef, "require" and "no"
-    if ( !$self->_include->type || $self->_include->type ne 'use' ) {
+    # Ignore undef and "no".
+    if (
+        !$self->_include->type
+        || (   $self->_include->type ne 'use'
+            && $self->_include->type ne 'require' )
+    ) {
         return 1;
+    }
+
+    # We can deal with a top level require.
+    # require Foo; can be changed to use Foo ();
+    # We don't want to touch requires which are inside any kind of a condition.
+    if ( $self->_include->type eq 'require' ) {
+
+        # If there is no parent, then it's likely just a single snippet
+        # provided by a text editor. We can process the snippet. If it's part
+        # of a larger document and the parent is not a PPI::Document, this
+        # would appear not to be a top level require.
+        if ( $self->_include->parent
+            && !$self->_include->parent->isa('PPI::Document') ) {
+            return 1;
+        }
+
+        # Postfix conditions are a bit harder to find. If the significant
+        # children amount to more than "require Module;", we'll just move on.
+        if ( $self->_module_name eq 'Carp' ) {
+            my @children = $self->_include->schildren;
+
+            my $statement = join q{ }, @children[ 0 .. 2 ];
+            if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
+                return 1;
+            }
+        }
     }
 
     # Is it a pragma?
