@@ -2,12 +2,13 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
+use App::perlimports::Importer ();
 use Data::Printer;
 use List::Util      ();
 use Module::Runtime ();
 use MooX::HandlesVia;
 use Try::Tiny qw( catch try );
-use Types::Standard qw(ArrayRef Bool Maybe Str);
+use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
 
 has combined_exports => (
     is      => 'ro',
@@ -28,18 +29,25 @@ has errors => (
     default  => sub { [] },
 );
 
+has _export_lists => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_export_lists',
+);
+
 has export => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
-    builder => '_build_export',
+    default => sub { $_[0]->_export_lists->{export} || [] },
 );
 
 has export_ok => (
     is      => 'ro',
     isa     => ArrayRef,
     lazy    => 1,
-    builder => '_build_export_ok',
+    default => sub { $_[0]->_export_lists->{export_ok} || [] },
 );
 
 has is_moose_type_library => (
@@ -50,14 +58,6 @@ has is_moose_type_library => (
         my $self = shift;
         return $self->_has_moose_types && defined $self->_moose_types;
     },
-);
-
-# Abuse attributes to ensure this only happens once
-has _maybe_require_and_import_module => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_maybe_require_and_import_module',
 );
 
 has _module_name => (
@@ -77,25 +77,6 @@ has _moose_types => (
     builder   => '_build_moose_types',
 );
 
-sub _build_maybe_require_and_import_module {
-    my $self   = shift;
-    my $module = $self->_module_name;
-
-    my $error = 0;
-
-    return 0 unless $self->_maybe_require_module($module);
-
-    # This is helpful for (at least) POSIX and Test::Most
-    try {
-        $module->import;
-    }
-    catch {
-        push @{ $self->errors }, $_;
-    };
-
-    return 1;
-}
-
 sub _build_combined_exports {
     my $self   = shift;
     my $module = $self->_module_name;
@@ -111,32 +92,17 @@ sub _build_combined_exports {
         :                       [];
 }
 
-sub _build_export {
+sub _build_export_lists {
     my $self = shift;
+    my ( $export, $export_ok, $error )
+        = App::perlimports::Importer::maybe_require_and_import_module(
+        $self->_module_name );
+    $self->_add_error($error) if $error;
 
-    $self->_maybe_require_and_import_module;
-
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my @exports = @{ $self->_module_name . '::EXPORT' };
-    use strict;
-## use critic
-
-    return @exports ? \@exports : [];
-}
-
-sub _build_export_ok {
-    my $self = shift;
-
-    $self->_maybe_require_and_import_module;
-
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my @exports = @{ $self->_module_name . '::EXPORT_OK' };
-    use strict;
-## use critic
-
-    return @exports ? \@exports : [];
+    return {
+        export    => $export,
+        export_ok => $export_ok,
+    };
 }
 
 # Moose Type library? And yes, private method bad.
