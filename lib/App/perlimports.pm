@@ -404,6 +404,8 @@ sub _build_never_exports {
 
     my %modules = (
         'App::perlimports' => 1,
+        'HTTP::Headers'    => 1,
+        'HTTP::Response'   => 1,
         'LWP::UserAgent'   => 1,
         'URI'              => 1,
         'WWW::Mechanize'   => 1,
