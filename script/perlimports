@@ -56,9 +56,15 @@ my ( $opt, $usage ) = describe_options(
     [],
     [ 'verbose|v', 'Print errors to STDERR' ],
     [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+    [ 'verbose-help', "Print usage message and documentation ", { shortcircuit => 1 } ],
 );
 
 if ( $opt->help ) {
+    print $usage->text;
+    exit;
+}
+
+if ( $opt->verbose_help ) {
     print $usage->text;
     print pod2usage();
     exit;
