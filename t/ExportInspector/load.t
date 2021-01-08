@@ -2,8 +2,8 @@ use strict;
 use warnings;
 
 use App::perlimports::ExportInspector ();
-use Test::More import => [ 'diag', 'done_testing', 'ok', 'subtest' ];
-use Test::Warnings;
+use Test::More import => [ 'done_testing', 'ok', 'subtest' ];
+use Test::Warnings ();
 
 # Test::Most imports a lot of functions. any() in particular will clash with an
 # import of List::Util qw( any ). So, Test::Warnings will fail if we try to
