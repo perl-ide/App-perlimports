@@ -30,8 +30,6 @@ my $includes = $doc->find(
     }
 ) || [];
 
-is( scalar @{$includes}, 6, 'found 6 includes' );
-
 subtest 'replace top level require from document' => sub {
     my $e = App::perlimports->new(
         filename => $filename,
@@ -60,7 +58,7 @@ subtest 'preserve require inside if block' => sub {
     );
 };
 
-subtest 'preserve require inside postfix if' => sub {
+subtest 'preserve require inside postfix if defined' => sub {
     my $e = App::perlimports->new(
         filename => $filename,
         include  => $includes->[4],
@@ -83,6 +81,20 @@ subtest 'do not import fully qualified function calls' => sub {
     is(
         $e->formatted_ppi_statement,
         q{use List::Util ();},
+        'formatted_ppi_statement'
+    );
+};
+
+subtest 'preserve require inside postfix if eq' => sub {
+    my $e = App::perlimports->new(
+        filename => $filename,
+        include  => $includes->[6],
+    );
+
+    ok( $e->_is_ignored, 'is ignored' );
+    is(
+        $e->formatted_ppi_statement,
+        q{require Time::Local if $^O eq 'MacOS';},
         'formatted_ppi_statement'
     );
 };

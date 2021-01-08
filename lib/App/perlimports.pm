@@ -361,13 +361,11 @@ sub _build_is_ignored {
 
         # Postfix conditions are a bit harder to find. If the significant
         # children amount to more than "require Module;", we'll just move on.
-        if ( $self->_module_name eq 'Carp' ) {
-            my @children = $self->_include->schildren;
+        my @children = $self->_include->schildren;
 
-            my $statement = join q{ }, @children[ 0 .. 2 ];
-            if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
-                return 1;
-            }
+        my $statement = join q{ }, @children[ 0 .. 2 ];
+        if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
+            return 1;
         }
     }
 
