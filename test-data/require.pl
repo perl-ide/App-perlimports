@@ -14,3 +14,7 @@ require Carp if $ENV{BAR};
 require List::Util;
 
 my @foo = List::Util::any { $_ > 3 } ( 0..4 );
+my $bar = any ();
+sub any {
+    return 1;
+}

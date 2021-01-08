@@ -201,6 +201,16 @@ sub _build_imports {
     # in the code.
     delete $exports{verbose} if $self->_module_name eq 'Carp';
 
+    my %sub_names;
+    for my $sub (
+        @{ $doc->find( sub { $_[1]->isa('PPI::Statement::Sub') } ) || [] } ) {
+        my @children = $sub->schildren;
+        if ( $children[0] eq 'sub' && $children[1]->isa('PPI::Token::Word') )
+        {
+            $sub_names{"$children[1]"} = 1;
+        }
+    }
+
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     my %found;
     for my $word (
@@ -216,6 +226,16 @@ sub _build_imports {
         }
     ) {
         my $found_import;
+
+        # Without the sub name check, we turn
+        # use List::Util ();
+        # sub any { }
+        #
+        # into
+        #
+        # use List::Util qw( any );
+        # sub any {}
+        next if exists $sub_names{"$word"};
 
         next if exists $found{"$word"};
 
