@@ -192,6 +192,108 @@ Redirect output to a new file:
 
     perlimports --filename test-data/foo.pl > foo.new.pl
 
+Process all test files:
+
+    find t -type f | grep .t$ | xargs -L 1 perlimports --libs lib,t/lib -i -v --ignore-modules Test::More -f
+
+The above command finds all test files in C<./t> and pipes them to
+C<perlimports>. C<lib> and C<t/lib> have been added to C<@INC>. The files are
+edited in place (C<-i>). Verbose errors will be displayed and the L<Test::More>
+module is ignored.
+
+Process all lib files:
+
+    find lib -type f | grep .pm$ | xargs -n 1 perlimports -i -v --libs lib -f
+
+The above command finds all C<.pm> files in C<./t> and pipes them to
+C<perlimports>. C<lib> has been added to C<@INC>. The files are edited in place
+(C<-i>). Verbose errors will be displayed.
+
+=head1 COMMAND LINE PARAMETERS
+
+=head2 --filename|-f
+
+The absolute or relative path to a file to process.
+
+    --filename path/to/file
+
+    -f path/to/file
+
+=head2 --ignore-modules
+
+A comma-separated list of module names which should be ignored by this script.
+Any modules in this list should remain unchanged after processing.
+
+    --ignore-modules Foo,Foo::Bar
+
+=head2 --ignore-modules-filename
+
+The absolute or relative path to a file which contains a lost of module names
+to ignore. (See above for behaviour). The pattern is one module name per line.
+
+    Foo
+    Foo::Bar
+
+=head2 --never-export-modules
+
+A comma-separated list of module names which should never export symbols. If
+these modules are found, we will ensure that they have an empty import list.
+So, C<use Foo;> becomes C<use Foo ();>.
+
+    --never-export-modules Foo,Foo::Bar
+
+=head2 --never-export-modules-filename
+
+The absolute or relative path to a file which contains a lost of module names
+which should never export symbols. (See above for behaviour). The pattern is
+one module name per line.
+
+    Foo
+    Foo::Bar
+
+=head2 --inplace-edit|-i
+
+Edit the file in place rather than printing the result to STDOUT. Make sure you
+have a backup copy first.
+
+    --inplace--edit
+    -i
+
+=head2 --libs
+
+A comma separated list of module directories which are not in your C<@INC>
+
+    --libs lib,t/lib
+
+=head2 --read-stdin
+
+Read statements to process from STDIN rather than processing the entire file.
+This is intended for use by editors, like C<vim>. See the C<vim> heading below
+for more information on how to set up an integration with your editor.
+
+If this option is enabled, then C<--inplace-edit|-i> is not available.
+
+    --read-stdin
+
+=head2 --verbose|-v
+
+Get verbose output. This will generally be the errors which were swallowed as
+text was being processed.
+
+    --verbose
+    -v
+
+=head2 --help
+
+Output a concise help menu, with a summary of available parameters.
+
+    --help
+
+=head2 --verbose-help
+
+Include the SYNOPSIS section from this page after printing the C<--help> menu
+listed above.
+
 =head2 VIM
 
 If you're a C<vim> user, you can pipe your import statements to perlimports directly.
