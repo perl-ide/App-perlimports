@@ -237,6 +237,17 @@ sub _build_imports {
         # sub any {}
         next if exists $sub_names{"$word"};
 
+        # We don't want (for instance) pragma names to be confused with
+        # functions.
+        #
+        # ie:
+        # use warnings;
+        # use Test::Warnings; # exports warnings()
+        if ( $word->parent && $word->parent->isa('PPI::Statement::Include') )
+        {
+            next;
+        }
+
         next if exists $found{"$word"};
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
