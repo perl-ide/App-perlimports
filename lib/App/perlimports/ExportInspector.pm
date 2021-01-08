@@ -4,8 +4,8 @@ use Moo;
 
 use App::perlimports::Importer ();
 use Data::Printer;
-use List::Util      ();
-use Module::Runtime ();
+use List::Util qw( any uniq );
+use Module::Runtime qw( require_module );
 use MooX::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
@@ -82,7 +82,7 @@ sub _build_combined_exports {
     my $module = $self->_module_name;
 
     my @exports
-        = List::Util::uniq( @{ $self->export }, @{ $self->export_ok } );
+        = uniq( @{ $self->export }, @{ $self->export_ok } );
 
     # If we have undef for Moose types, we don't want to return that in this
     # builder, since this attribute cannot be undef.
@@ -113,10 +113,10 @@ sub _build_moose_types {
 
     # Don't wrap this require as we really do want to die if Class::Inspector
     # cannot be found.
-    Module::Runtime::require_module('Class::Inspector');
+    require_module('Class::Inspector');
 
     if (
-        List::Util::any { $_ eq 'MooseX::Types::Combine::_provided_types' }
+        any { $_ eq 'MooseX::Types::Combine::_provided_types' }
         @{ Class::Inspector->methods(
                 $self->_module_name, 'full', 'private'
                 )
