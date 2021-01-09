@@ -49,6 +49,13 @@ my ( $opt, $usage ) = describe_options(
     ],
     [],
     [
+        'padding!',
+        'pad imports: qw( foo bar ) vs qw(foo bar). Defaults to true',
+        { default => 1 },
+
+    ],
+    [],
+    [
         'read-stdin',
         'Read statements to process from STDIN rather than the supplied file',
     ],
@@ -56,7 +63,10 @@ my ( $opt, $usage ) = describe_options(
     [],
     [ 'verbose|v', 'Print errors to STDERR' ],
     [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
-    [ 'verbose-help', "Print usage message and documentation ", { shortcircuit => 1 } ],
+    [
+        'verbose-help', "Print usage message and documentation ",
+        { shortcircuit => 1 }
+    ],
 );
 
 if ( $opt->help ) {
@@ -126,6 +136,7 @@ my %base_args = (
     $opt->libs
     ? ( libs => [ split m{,}, $opt->libs ] )
     : (),
+    pad_imports => $opt->padding,
 );
 
 foreach my $include ( @{$includes} ) {
@@ -258,6 +269,23 @@ have a backup copy first.
 
     --inplace--edit
     -i
+
+Edit the file in place rather than printing the result to STDOUT. Make sure you
+have a backup copy first.
+
+=head2 --[no-]padding
+
+C<--padding> is enabled by default, so you only need to pass this arg if you
+want to be explicit. This setting adds whitespace inside the parentheses.
+
+    # --padding
+    use Foo qw( bar baz );
+
+The C<--no-padding> arg allows you to disable the additional padding inside
+parentheses.
+
+    # --no-padding
+    use Foo qw(bar baz);
 
 =head2 --libs
 

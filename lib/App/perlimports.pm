@@ -9,6 +9,7 @@ use List::AllUtils qw( any );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use MooX::HandlesVia;
+use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call );
 use Perl::Tidy 20201207 qw( perltidy );
@@ -135,6 +136,13 @@ has _original_imports => (
     isa     => ArrayRef,
     lazy    => 1,
     builder => '_build_original_imports',
+);
+
+has _pad_imports => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'pad_imports',
+    default  => sub { 1 },
 );
 
 has _uses_sub_exporter => (
@@ -567,17 +575,25 @@ sub _build_formatted_ppi_statement {
     }
 
     else {
+        my $padding = $self->_pad_imports ? q{ } : q{};
         my $template
             = $self->_isa_test_builder_module
-            ? 'use %s%s import => [ qw( %s ) ];'
-            : 'use %s%s qw( %s );';
+            ? 'use %s%s import => [ qw(%s%s%s) ];'
+            : 'use %s%s qw(%s%s%s);';
 
         $statement = sprintf(
             $template, $self->_module_name,
-            $self->_include->module_version
-            ? q{ } . $self->_include->module_version
-            : q{}, join q{ },
-            @{ $self->_imports }
+            (
+                $self->_include->module_version
+                ? q{ } . $self->_include->module_version
+                : q{},
+            ),
+            $padding,
+            join(
+                q{ },
+                @{ $self->_imports }
+            ),
+            $padding,
         );
     }
 
