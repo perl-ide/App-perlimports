@@ -15,6 +15,7 @@ use Perl::Critic::Utils 1.138 qw( is_function_call );
 use Perl::Tidy 20201207 qw( perltidy );
 use PPI::Document 1.270 ();
 use Ref::Util qw( is_plain_hashref );
+use String::InterpolatedVariables ();
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
@@ -219,8 +220,33 @@ sub _build_imports {
         }
     }
 
-    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
+    #  A used import might be a variable interpolated into quotes.
+    my %vars;
+    for my $quote (
+        @{
+            $doc->find(
+                sub {
+                    $_[1]->isa('PPI::Token::Quote')
+                        && !$_[1]->isa('PPI::Token::Quote::Single');
+                }
+                )
+                || []
+        }
+    ) {
+        my $vars = String::InterpolatedVariables::extract($quote);
+        for my $var ( @{$vars} ) {
+            $vars{$var} = 1;
+        }
+    }
+
     my %found;
+    for my $var ( keys %vars ) {
+        if ( exists $exports{$var} ) {
+            $found{$var} = 1;
+        }
+    }
+
+    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word (
         @{
             $doc->find(
