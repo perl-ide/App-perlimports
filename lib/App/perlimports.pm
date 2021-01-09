@@ -411,11 +411,7 @@ sub _build_is_ignored {
     # require 5.006;
     return 1 if $self->_include->version;
 
-    # We know what FindBin exports, but we need to be smarter about checking
-    # for exported variables inside quotes in order for this to be correct.
-
     my %noop = (
-        'FindBin'                => 1,
         'namespace::autoclean'   => 1,
         'Test::Needs'            => 1,
         'Test::RequiresInternet' => 1,
