@@ -714,11 +714,23 @@ code enter C<im> to have your imports (re)formatted.
 
 Many Perl modules helpfully export functions and variables by default. These
 provide handy shortcuts when you're writing a quick or small script, but they
-can quickly become a maintenance burden as code grows organically.
+can quickly become a maintenance burden as code grows organically. When code
+increases in complexity, it leads to greater costs in terms of development time.
+Conversely, reducing code complexity can speed up development. This tool aims
+to reduce complexity to further this goal.
+
+While importing symbols by default or using export tags provides a convenient
+shorthand for getting work done, this shorthand requires the developer to
+retain knowledge of these defaults and tags in order to understand the code.
+C<perlimports> aims to allow you to develop your code as you see fit, while
+still giving you a viable option of tidying your imports automatically. In much
+the same way as you might use L<perltidy> to format your code, you can now
+automate the process of making your imports easier to understand. Let's look at
+some examples.
 
 =over
 
-=item Problem: Where is this function defined?
+=item Where is this function defined?
 
 You may come across some code like this:
 
@@ -734,12 +746,11 @@ You may come across some code like this:
 
 Where does C<GET> come from? If you're not familiar with
 L<HTTP::Request::Common>, you may not realize that the statement C<use
-HTTP::Request::Common> has imported the functions C<GET>, C<HEAD>, C<PUT>,
-C<PATCH>, C<POST> and C<OPTIONS> into to this block of code.
+HTTP::Request::Common> has implicitly imported the functions C<GET>, C<HEAD>,
+C<PUT>, C<PATCH>, C<POST> and C<OPTIONS> into to this block of code.
 
-=item Solution:
-
-Import all needed functions explicitly.
+What would happen if we used C<perlimports> to import all needed functions
+explicitly? It might look something like this:
 
     use strict;
     use warnings;
@@ -751,9 +762,9 @@ Import all needed functions explicitly.
     my $req = $ua->request( GET 'https://metacpan.org/' );
     print $req->content;
 
-The code above makes it immediately obvious where C<GET> originates, which
-makes it easier for us to look up its documentation. It has the added bonus of
-also not importing C<HEAD>, C<PUT> or any of the other functions which
+The code above makes it immediately obvious where C<GET> originates, which in
+turn makes it easier for us to look up its documentation. It has the added
+bonus of also not importing C<HEAD>, C<PUT> or any of the other functions which
 L<HTTP::Request::Common> exports by default. So, those functions cannot
 unwittingly be used later in the code. This makes for more understandable code
 for present day you, future you and any others tasked with reading your code at
@@ -762,7 +773,7 @@ some future point.
 Keep in mind that this simple act can save much time for developers who are not
 intimately familiar with Perl and the default exports of many CPAN modules.
 
-=item Problem: Are we using all of these imports?
+=item Are we even using all of these imports?
 
 Imagine the following import statement
 
@@ -778,19 +789,18 @@ Imagine the following import statement
     );
 
 followed by 3,000 lines of code. How do you know if all of these functions are
-being used? You can grep all of these function names manually or you can remove
-them by trial and error to see what breaks. This is a doable solution, but it
-does not scale well to scripts and modules with many imports or to large code
-bases with many imports. Having an unmaintained list of imports is preferable
-to implicit imports, but it would be helpful to automate maintaining this list.
-
-=item Solution: remove unused airports
+actually being used? Were they ever used? You can grep all of these function
+names manually or you can remove them by trial and error to see what breaks.
+This is a doable solution, but it does not scale well to scripts and modules
+with many imports or to large code bases with many imports. Having an
+unmaintained list of imports is preferable to implicit imports, but it would be
+helpful to automate maintaining this list.
 
 L<perlimports> can, in many situations, clean up your import statements and
 automate this maintenance burden away. This makes it easier for you to write
 clean code, which is easier to understand.
 
-=item Problem: Are we using all of these modules?
+=item Are we even using all of these modules?
 
 In cases where code is implicitly importing from modules or where explicit
 imports are not being curated, it can be hard to discover which modules are no
@@ -800,11 +810,10 @@ of resources. Removing entire modules from your code base can decrease the
 number of dependencies which you need to manage and decrease friction in your
 your deployment process.
 
-=item Solution
+C<perlimports> does not remove unused modules for you, but using it to actively
+tidy your imports can make this manual process much easier to manage.
 
-Actively cleaning up your imports can make this much easier to manage.
-
-=item Problem: Enforcing consistent style
+=item Enforcing a consistent style
 
 Having a messy list of module imports makes your code harder to read. Imagine
 this:
@@ -815,8 +824,6 @@ this:
     use LWP::UserAgent    q{};
     use Try::Tiny qw/ catch     try /;
     use WWW::Mechanize  q<>;
-
-=item Solution:
 
 L<perlimports> turns the above list into:
 
@@ -838,9 +845,61 @@ L<perlimports> turns the above list into:
     use WWW::Mechanize ();
 
 Where possible, L<perlimports> will enforce a consistent style of parentheses
-and will also sort your imports and break up long lines.
+and will also sort your imports and break up long lines. As mentioned above, if
+some imports are no longer in use, C<perlimports> will helpfully remove these
+for you.
+
+=item Import tags
+
+Import tags may obscure where symbols are coming from. While import tags
+provide a useful shorthand, they can contribute to code complexity by obscuring
+the origin of imported symbols. Consider:
+
+    use HTTP::Status qw(:constants :is status_message);
+
+The above line imports the C<status_message()> function as well *some other
+things* via C<:constants> and C<:is>. What exactly are these things? We'll need
+to read the documentation to know for sure.
+
+C<perlimports> can audit your code and expand the line above to list the
+symbols which you are actually importing. So, the line above might now look
+something like:
+
+    use HTTP::Status qw(
+        HTTP_ACCEPTED
+        HTTP_BAD_REQUEST
+        HTTP_CONTINUE
+        HTTP_I_AM_A_TEAPOT
+        HTTP_MOVED_PERMANENTLY
+        HTTP_NO_CODE
+        HTTP_NOT_FOUND
+        HTTP_OK
+        HTTP_PAYLOAD_TOO_LARGE
+        HTTP_PERMANENT_REDIRECT
+        HTTP_RANGE_NOT_SATISFIABLE
+        HTTP_REQUEST_ENTITY_TOO_LARGE
+        HTTP_REQUEST_RANGE_NOT_SATISFIABLE
+        HTTP_REQUEST_URI_TOO_LARGE
+        HTTP_TOO_EARLY
+        HTTP_UNORDERED_COLLECTION
+        HTTP_URI_TOO_LONG
+        is_cacheable_by_default
+        is_client_error
+        is_error
+        is_info
+        is_redirect
+        is_server_error
+        is_success
+        status_message
+    );
+
+This is more verbose, but grepping your code will now reveal to you where
+something like C<is_cacheable_by_default> gets defined. You have increased the
+lines of code, but you have also reduced complexity.
 
 =back
+
+=head1 METHODS
 
 =head2 formatted_ppi_statement
 
