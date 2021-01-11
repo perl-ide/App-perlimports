@@ -10,7 +10,7 @@ use FindBin qw( $Bin );
 use lib 't/lib';
 
 subtest 'Moose Type Library' => sub {
-    my $module = 'Database::Migrator::Types';
+    my $module = 'MooseTypeLibrary';
 
     my ( $exports, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(

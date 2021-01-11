@@ -4,13 +4,15 @@ use warnings;
 use App::perlimports ();
 use Test::More import => [ 'done_testing', 'is' ];
 
+use lib 't/lib';
+
 my $e = App::perlimports->new(
     filename    => 'test-data/messy-imports.pl',
-    source_text => 'use Database::Migrator::Types;',
+    source_text => 'use MooseTypeLibrary;',
 );
 
 my $expected = <<'EOF';
-use Database::Migrator::Types qw(
+use MooseTypeLibrary qw(
     ArrayRef
     Bool
     CodeRef
