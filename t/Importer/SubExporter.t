@@ -3,7 +3,11 @@ use warnings;
 
 use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
-    [ 'done_testing', 'is', 'is_deeply', 'like', 'ok', 'subtest' ];
+    [qw( diag done_testing is is_deeply like ok subtest )];
+
+use FindBin qw( $Bin );
+
+use lib 't/lib';
 
 subtest 'Moose Type Library' => sub {
     my $module = 'Database::Migrator::Types';
@@ -59,8 +63,8 @@ subtest 'Does not exist' => sub {
     like( $error, qr{you may need to install}, 'error' );
 };
 
-subtest 'Git::Helpers' => sub {
-    my $module = 'Git::Helpers';
+subtest 'ViaSubExporter' => sub {
+    my $module = 'ViaSubExporter';
 
     my ( $exports, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
@@ -69,16 +73,13 @@ subtest 'Git::Helpers' => sub {
     is_deeply(
         $exports,
         {
-            checkout_root       => 'checkout_root',
-            current_branch_name => 'current_branch_name',
-            https_remote_url    => 'https_remote_url',
-            ignored_files       => 'ignored_files',
-            is_inside_work_tree => 'is_inside_work_tree',
-            remote_url          => 'remote_url',
-            travis_url          => 'travis_url',
+            bar => 'bar',
+            foo => 'foo',
         },
         'exports'
     );
     ok( !$error, 'no error' );
+    diag $error;
 };
+
 done_testing();
