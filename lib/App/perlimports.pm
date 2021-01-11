@@ -5,7 +5,7 @@ use Moo;
 use App::perlimports::ExportInspector ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
-use List::AllUtils qw( any );
+use List::Util qw( any );
 use Module::Runtime qw( module_notional_filename require_module );
 use Module::Util qw( find_installed );
 use MooX::HandlesVia;

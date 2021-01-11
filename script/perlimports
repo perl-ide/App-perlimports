@@ -14,7 +14,7 @@ use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
-use Try::Catch qw( catch try );
+use Try::Tiny qw( catch try );
 
 my ( $opt, $usage ) = describe_options(
     'perlimports %o',
