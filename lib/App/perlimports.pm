@@ -12,7 +12,7 @@ use MooX::HandlesVia;
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call );
-use Perl::Tidy 20201207 qw( perltidy );
+use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
 use Ref::Util qw( is_plain_hashref );
 use String::InterpolatedVariables ();
