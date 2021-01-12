@@ -107,6 +107,14 @@ has _isa_test_builder_module => (
     builder => '_build_isa_test_builder_module',
 );
 
+has _is_translatable => (
+    is            => 'ro',
+    isa           => Bool,
+    lazy          => 1,
+    builder       => '_build_is_translatable',
+    documentation => 'Is this a require which can be converted to a use?',
+);
+
 has _libs => (
     is       => 'ro',
     isa      => ArrayRef,
@@ -375,32 +383,11 @@ sub _build_is_ignored {
         return 1;
     }
 
-    # We can deal with a top level require.
-    # require Foo; can be changed to use Foo ();
-    # We don't want to touch requires which are inside any kind of a condition.
-    if ( $self->_include->type eq 'require' ) {
-
-        # If there is no parent, then it's likely just a single snippet
-        # provided by a text editor. We can process the snippet. If it's part
-        # of a larger document and the parent is not a PPI::Document, this
-        # would appear not to be a top level require.
-        if ( $self->_include->parent
-            && !$self->_include->parent->isa('PPI::Document') ) {
-            return 1;
-        }
-
-        # Postfix conditions are a bit harder to find. If the significant
-        # children amount to more than "require Module;", we'll just move on.
-        my @children = $self->_include->schildren;
-
-        my $statement = join q{ }, @children[ 0 .. 2 ];
-        if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
-            return 1;
-        }
-    }
-
-    # Is it a pragma?
     return 1 if $self->_include->pragma;
+
+    if ( $self->_include->type eq 'require' ) {
+        return 1 if !$self->_is_translatable;
+    }
 
     # Is this a dependency on a version of Perl?
     # use 5.006;
@@ -445,6 +432,40 @@ sub _build_is_ignored {
     }
 
     return 0;
+}
+
+sub _build_is_translatable {
+    my $self = shift;
+
+    return 0 if !$self->_include->type;
+    return 0 if $self->_include->type ne 'require';
+    return 0 if $self->_module_name eq 'Exporter';
+
+    # We can deal with a top level require.
+    # require Foo; can be changed to use Foo ();
+    # We don't want to touch requires which are inside any kind of a condition.
+
+    # If there is no parent, then it's likely just a single snippet
+    # provided by a text editor. We can process the snippet. If it's part
+    # of a larger document and the parent is not a PPI::Document, this
+    # would appear not to be a top level require.
+    if ( $self->_include->parent
+        && !$self->_include->parent->isa('PPI::Document') ) {
+        return 0;
+    }
+
+    # Postfix conditions are a bit harder to find. If the significant
+    # children amount to more than "require Module;", we'll just move on.
+    my @children = $self->_include->schildren;
+
+    my $statement = join q{ }, @children[ 0 .. 2 ];
+    if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
+        return 0;
+    }
+
+    # Any other case of "require Foo;" should be translate to "use Foo ();"
+    # as those are functionally equivalent."
+    return 1;
 }
 
 # Returns a HashRef of modules which will always be converted to avoid imports.
@@ -495,7 +516,8 @@ sub _build_formatted_ppi_statement {
     # symbols or a module which can export but for which we haven't found any
     # imported symbols. In both cases we'll want to rewrite with an empty list
     # of imports.
-    if ( $self->_will_never_export
+    if (   $self->_will_never_export
+        || $self->_is_translatable
         || ( $self->_has_combined_exports && !@{ $self->_imports } ) ) {
         return $self->_new_include(
             sprintf(
@@ -511,7 +533,10 @@ sub _build_formatted_ppi_statement {
     # Exporter) but we also haven't explicitly flagged this as a module which
     # never exports. So basically we can't be correct with confidence, so we'll
     # return the original statement.
-    return $self->_include if !$self->_has_combined_exports;
+    if ( !$self->_has_combined_exports && $self->_include->type ne 'require' )
+    {
+        return $self->_include;
+    }
 
     my $statement;
 

@@ -99,4 +99,32 @@ subtest 'preserve require inside postfix if eq' => sub {
     );
 };
 
+subtest 'require rewritten as use' => sub {
+    my $e = App::perlimports->new(
+        filename => $filename,
+        include  => $includes->[7],
+    );
+
+    ok( !$e->_is_ignored, 'is not ignored' );
+    is(
+        $e->formatted_ppi_statement,
+        q{use Cwd ();},
+        'formatted_ppi_statement'
+    );
+};
+
+subtest 'require Exporter not rewritten' => sub {
+    my $e = App::perlimports->new(
+        filename    => 't/lib/RequireExporter.pm',
+        source_text => 'require Exporter;',
+    );
+
+    ok( $e->_is_ignored, 'is not ignored' );
+    is(
+        $e->formatted_ppi_statement,
+        q{require Exporter;},
+        'statement is unchanged'
+    );
+};
+
 done_testing();
