@@ -8,7 +8,6 @@ requires "FindBin" => "0";
 requires "Getopt::Long::Descriptive" => "0";
 requires "List::Util" => "0";
 requires "Module::Runtime" => "0";
-requires "Module::Util" => "0";
 requires "Moo" => "0";
 requires "MooX::HandlesVia" => "0";
 requires "MooX::StrictConstructor" => "0";
@@ -37,11 +36,16 @@ on 'test' => sub {
   requires "Getopt::Long" => "2.40";
   requires "LWP::UserAgent" => "6.49";
   requires "Moose" => "0";
+  requires "MooseX::Types::Combine" => "0";
+  requires "MooseX::Types::Moose" => "0";
+  requires "MooseX::Types::Path::Class" => "0";
+  requires "Path::Class" => "0";
   requires "Sub::Exporter" => "0";
   requires "Test::More" => "0";
   requires "Test::Most" => "0";
   requires "Test::RequiresInternet" => "0";
   requires "Test::Warnings" => "0";
+  requires "parent" => "0";
   requires "perl" => "5.006";
 };
 
