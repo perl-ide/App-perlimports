@@ -17,10 +17,9 @@ subtest 'Getopt::Long' => sub {
         '_module_name'
     );
 
-    ok( @{ $e->_combined_exports },    'Found some _combined_exports' );
+    ok( $e->_has_combined_exports,     'Found some _combined_exports' );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, ['GetOptions'], '_imports' );
-    ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
         'use Getopt::Long qw( GetOptions );',
@@ -38,10 +37,9 @@ subtest 'Test::More' => sub {
         '_module_name'
     );
 
-    ok( @{ $e->_combined_exports },   'Found some _combined_exports' );
+    ok( $e->_has_combined_exports,    'Found some _combined_exports' );
     ok( $e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [qw( done_testing ok)], '_imports' );
-    ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
         q{use Test::More import => [ qw( done_testing ok ) ];},
@@ -59,10 +57,8 @@ subtest 'pragma' => sub {
         '_module_name'
     );
 
-    ok( !@{ $e->_combined_exports },   'Found some _combined_exports' );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [], '_imports' );
-    ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
         'use strict;',
@@ -81,12 +77,17 @@ subtest 'ViaExporter' => sub {
     );
 
     is_deeply(
-        $e->_combined_exports, [qw( foo $foo @foo %foo )],
+        $e->_combined_exports,
+        {
+            '$foo' => '$foo',
+            '%foo' => '%foo',
+            '@foo' => '@foo',
+            'foo'  => 'foo',
+        },
         'Found some _combined_exports'
     );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
     is_deeply( $e->_imports, [qw( $foo %foo @foo foo )], '_imports' );
-    ok( !$e->_uses_sub_exporter, '_uses_sub_exporter' );
     is(
         $e->formatted_ppi_statement,
         'use ViaExporter qw( $foo %foo @foo foo );',

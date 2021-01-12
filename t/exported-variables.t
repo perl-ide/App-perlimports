@@ -15,12 +15,12 @@ is( $e->_module_name(), 'ViaExporter', '_module_name' );
 
 is_deeply(
     $e->_combined_exports,
-    [
-        'foo',
-        '$foo',
-        '@foo',
-        '%foo',
-    ],
+    {
+        'foo'  => 'foo',
+        '$foo' => '$foo',
+        '@foo' => '@foo',
+        '%foo' => '%foo',
+    },
     'some _combined_exports'
 );
 ok( !$e->_is_ignored, '_is_ignored' );

@@ -1,7 +1,5 @@
 #!perl
 
-# Does not work with modules using Sub::Exporter
-
 use strict;
 use warnings;
 

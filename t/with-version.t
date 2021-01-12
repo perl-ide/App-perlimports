@@ -13,8 +13,7 @@ is(
     '_module_name'
 );
 
-ok( @{ $e->_combined_exports }, 'some _combined_exports' );
-ok( !$e->_is_ignored,           '_is_ignored' );
+ok( !$e->_is_ignored, '_is_ignored' );
 is_deeply( $e->_imports, ['GetOptions'], '_imports' );
 is(
     $e->formatted_ppi_statement,

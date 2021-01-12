@@ -6,8 +6,7 @@ use App::perlimports::ExportInspector ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
 use List::Util qw( any );
-use Module::Runtime qw( module_notional_filename require_module );
-use Module::Util qw( find_installed );
+use Module::Runtime qw( require_module );
 use MooX::HandlesVia;
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
@@ -20,8 +19,14 @@ use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
 has _combined_exports => (
-    is      => 'ro',
-    isa     => ArrayRef,
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        _delete_export        => 'delete',
+        _has_combined_exports => 'count',
+        _is_exportable        => 'exists',
+    },
     lazy    => 1,
     default => sub { $_[0]->_export_inspector->combined_exports },
 );
@@ -41,7 +46,7 @@ has errors => (
 has _export_inspector => (
     is        => 'ro',
     isa       => InstanceOf ['App::perlimports::ExportInspector'],
-    predicate => '_has_export_inspector',
+    predicate => '_has_export_inspector',     # used in test
     lazy      => 1,
     builder   => '_build_export_inspector',
 );
@@ -146,13 +151,6 @@ has _pad_imports => (
     default  => sub { 1 },
 );
 
-has _uses_sub_exporter => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_uses_sub_exporter',
-);
-
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
@@ -204,11 +202,9 @@ sub _build_imports {
     my $content = path( $self->_filename )->slurp;
     my $doc     = PPI::Document->new( \$content );
 
-    my %exports = map { $_ => 1 } @{ $self->_combined_exports };
-
     # This is not a real symbol, so we should never be looking for it to appear
     # in the code.
-    delete $exports{verbose} if $self->_module_name eq 'Carp';
+    $self->_delete_export('verbose') if $self->_module_name eq 'Carp';
 
     my %sub_names;
     for my $sub (
@@ -241,7 +237,7 @@ sub _build_imports {
 
     my %found;
     for my $var ( keys %vars ) {
-        if ( exists $exports{$var} ) {
+        if ( $self->_is_exportable($var) ) {
             $found{$var} = 1;
         }
     }
@@ -286,18 +282,18 @@ sub _build_imports {
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
-        if ( $word->isa('PPI::Token::Symbol')
-            && exists $exports{ $word->symbol } ) {
+        if (   $word->isa('PPI::Token::Symbol')
+            && $self->_is_exportable( $word->symbol ) ) {
             $found_import = $word->symbol;
         }
 
         elsif (
-            exists $exports{"$word"}
+            $self->_is_exportable("$word")
 
             # Maybe a subroutine ref has been exported. For instance,
             # Getopt::Long exports &GetOptions
             || ( is_function_call($word)
-                && exists $exports{ '&' . "$word" } )
+                && $self->_is_exportable( '&' . $word ) )
         ) {
             $found_import = "$word";
         }
@@ -308,7 +304,7 @@ sub _build_imports {
         elsif ( $word->isa('PPI::Token::Label') ) {
             if ( $word->content =~ m{^(\w+)} ) {
                 my $label = $1;
-                if ( exists $exports{$label} ) {
+                if ( $self->_is_exportable($label) ) {
                     $found_import = $label;
                     $found{$label}++;
                 }
@@ -431,8 +427,6 @@ sub _build_is_ignored {
         return 0;
     }
 
-    return 1 if $self->_uses_sub_exporter;
-
     # This should catch Moose classes
     if ( $self->_maybe_require_module('Moose::Util')
         && Moose::Util::find_meta( $self->_module_name ) ) {
@@ -489,12 +483,20 @@ sub _build_formatted_ppi_statement {
     # Nothing to do here. Preserve the original statement.
     return $self->_include if $self->_is_ignored;
 
+    # Create this attribute so that we know if there are errors
+    if ( !$self->_will_never_export ) {
+        $self->_combined_exports;
+        if ( $self->_export_inspector->has_errors ) {
+            $self->_add_error($_) for @{ $self->_export_inspector->errors };
+        }
+    }
+
     # In this case we either have a module which we know will never export
     # symbols or a module which can export but for which we haven't found any
     # imported symbols. In both cases we'll want to rewrite with an empty list
     # of imports.
     if ( $self->_will_never_export
-        || ( @{ $self->_combined_exports } && !@{ $self->_imports } ) ) {
+        || ( $self->_has_combined_exports && !@{ $self->_imports } ) ) {
         return $self->_new_include(
             sprintf(
                 'use %s %s();', $self->_module_name,
@@ -509,7 +511,7 @@ sub _build_formatted_ppi_statement {
     # Exporter) but we also haven't explicitly flagged this as a module which
     # never exports. So basically we can't be correct with confidence, so we'll
     # return the original statement.
-    return $self->_include if !@{ $self->_combined_exports };
+    return $self->_include if !$self->_has_combined_exports;
 
     my $statement;
 
@@ -638,62 +640,6 @@ sub _new_include {
     my $includes
         = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
     return $includes->[0]->clone;
-}
-
-# Stolen from Open::This
-sub _maybe_find_local_module {
-    my $self          = shift;
-    my $module        = $self->_module_name;
-    my $possible_name = module_notional_filename($module);
-
-    for my $dir ( @{ $self->_libs } ) {
-        my $path = path( $dir, $possible_name );
-        if ( $path->is_file ) {
-            return "$path";
-        }
-    }
-    return undef;
-}
-
-# Stolen from Open::This
-sub _maybe_find_installed_module {
-    my $self = shift;
-
-    # This is a loadable module.  Have this come after the local module checks
-    # so that we don't default to installed modules.
-    return find_installed( $self->_module_name );
-}
-
-sub _build_uses_sub_exporter {
-    my $self     = shift;
-    my $module   = $self->_module_name;
-    my $filename = $self->_maybe_find_local_module
-        || $self->_maybe_find_installed_module;
-
-    if ( !$filename ) {
-        $self->_add_error(
-            "Cannot find $module when testing for Sub::Exporter");
-        return;
-    }
-
-    my $content = path($filename)->slurp;
-    my $doc     = PPI::Document->new( \$content );
-
-    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
-    my $include_statements = $doc->find(
-        sub {
-            $_[1]->isa('PPI::Statement::Include') && !$_[1]->pragma;
-        }
-    ) || [];
-    for my $st (@$include_statements) {
-        next if $st->schild(0) eq 'no';
-
-        my $included_module = $st->schild(1);
-        if ( $included_module eq 'Sub::Exporter' ) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 sub _maybe_require_module {
@@ -946,7 +892,10 @@ import statement or used to replace an existing L<PPI::Statement::Include>.
 
 =head1 CAVEATS
 
-Does not work with modules using L<Sub::Exporter>.
+There are lots of shenanigans that Perl modules can get up to. This code will
+not find exports for all of those cases, but it should only attempt to rewrite
+imports which it knows how to handle. Please file a bug report in all other
+cases.
 
 =head1 SEE ALSO
 

@@ -2,17 +2,19 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
-use App::perlimports::Importer ();
+use App::perlimports::Importer              ();
+use App::perlimports::Importer::SubExporter ();
 use Data::Printer;
-use List::Util qw( any uniq );
-use Module::Runtime qw( require_module );
+use List::Util qw( any );
+use Module::Runtime qw( module_notional_filename require_module );
 use MooX::HandlesVia;
+use Path::Tiny qw( path );
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
 
 has combined_exports => (
     is      => 'ro',
-    isa     => ArrayRef,
+    isa     => HashRef,
     lazy    => 1,
     builder => '_build_combined_exports',
 );
@@ -77,19 +79,34 @@ has _moose_types => (
     builder   => '_build_moose_types',
 );
 
-sub _build_combined_exports {
-    my $self   = shift;
-    my $module = $self->_module_name;
+has _uses_sub_exporter => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_uses_sub_exporter',
+);
 
-    my @exports
-        = uniq( @{ $self->export }, @{ $self->export_ok } );
+sub _build_combined_exports {
+    my $self = shift;
+
+    my %exports
+        = map { $_ => $_ } ( @{ $self->export }, @{ $self->export_ok } );
+
+    if ( !keys %exports && $self->_uses_sub_exporter ) {
+        my ( $export, $error )
+            = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
+            $self->_module_name );
+        $self->_add_error($error) if $error;
+        %exports = %{$export};
+    }
+
+    if ( !keys %exports && $self->_moose_types ) {
+        %exports = map { $_ => $_ } @{ $self->_moose_types };
+    }
 
     # If we have undef for Moose types, we don't want to return that in this
     # builder, since this attribute cannot be undef.
-    return
-          @exports            ? \@exports
-        : $self->_moose_types ? $self->_moose_types
-        :                       [];
+    return keys %exports ? \%exports : {};
 }
 
 sub _build_export_lists {
@@ -143,6 +160,40 @@ sub _maybe_require_module {
     };
 
     return $success;
+}
+
+sub _build_uses_sub_exporter {
+    my $self = shift;
+
+    my $filename = module_notional_filename( $self->_module_name );
+    if ( !exists $INC{$filename} ) {
+        $self->_add_error(
+            sprintf(
+                'Cannot find %s when testing for Sub::Exporter',
+                $self->_module_name
+            )
+        );
+        return;
+    }
+
+    my $content = path( $INC{$filename} )->slurp;
+    my $doc     = PPI::Document->new( \$content );
+
+    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
+    my $include_statements = $doc->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include') && !$_[1]->pragma;
+        }
+    ) || [];
+    for my $st (@$include_statements) {
+        next if $st->schild(0) eq 'no';
+
+        my $included_module = $st->schild(1);
+        if ( $included_module eq 'Sub::Exporter' ) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 1;

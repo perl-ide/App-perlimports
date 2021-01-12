@@ -12,11 +12,11 @@ subtest 'Test::Most' => sub {
     my $ei
         = App::perlimports::ExportInspector->new(
         module_name => 'Test::Most' );
-    ok( scalar @{ $ei->export },           'found export' );
-    ok( !scalar @{ $ei->export_ok },       'no export_ok' );
-    ok( scalar @{ $ei->combined_exports }, 'found combined_exports' );
-    ok( !$ei->has_errors,                  'no errors' );
-    ok( !$ei->is_moose_type_library,       'not a Moose type library' );
+    ok( scalar @{ $ei->export },         'found export' );
+    ok( !scalar @{ $ei->export_ok },     'no export_ok' );
+    ok( keys %{ $ei->combined_exports }, 'found combined_exports' );
+    ok( !$ei->has_errors,                'no errors' );
+    ok( !$ei->is_moose_type_library,     'not a Moose type library' );
 };
 
 subtest 'List::Util' => sub {
@@ -24,11 +24,11 @@ subtest 'List::Util' => sub {
         = App::perlimports::ExportInspector->new(
         module_name => 'List::Util' );
 
-    ok( !scalar @{ $ei->export },          'found no export' );
-    ok( scalar @{ $ei->export_ok },        'found export_ok' );
-    ok( scalar @{ $ei->combined_exports }, 'found combined_exports' );
-    ok( !$ei->has_errors,                  'no errors' );
-    ok( !$ei->is_moose_type_library,       'not a Moose type library' );
+    ok( !scalar @{ $ei->export },        'found no export' );
+    ok( scalar @{ $ei->export_ok },      'found export_ok' );
+    ok( keys %{ $ei->combined_exports }, 'found combined_exports' );
+    ok( !$ei->has_errors,                'no errors' );
+    ok( !$ei->is_moose_type_library,     'not a Moose type library' );
 };
 
 done_testing();
