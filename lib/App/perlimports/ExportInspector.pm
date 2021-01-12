@@ -2,7 +2,7 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
-use App::perlimports::Importer              ();
+use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
 use Data::Printer;
 use List::Util qw( any );
@@ -112,7 +112,7 @@ sub _build_combined_exports {
 sub _build_export_lists {
     my $self = shift;
     my ( $export, $export_ok, $error )
-        = App::perlimports::Importer::maybe_require_and_import_module(
+        = App::perlimports::Importer::Exporter::maybe_require_and_import_module(
         $self->_module_name );
     $self->_add_error($error) if $error;
 

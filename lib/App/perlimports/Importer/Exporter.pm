@@ -1,4 +1,4 @@
-package App::perlimports::Importer;
+package App::perlimports::Importer::Exporter;
 
 use strict;
 use warnings;
@@ -56,6 +56,8 @@ sub maybe_require_and_import_module {
 
 Importing dozens or hundreds of modules (and their symbols) into a namespace
 can lead to methods being redefined etc, so let's really try to sandbox this.
+
+This module tries to detect symbols which are exported via L<Exporter>.
 
 =head2 maybe_require_and_import_module
 
