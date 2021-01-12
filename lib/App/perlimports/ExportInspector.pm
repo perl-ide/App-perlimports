@@ -146,22 +146,6 @@ sub _build_moose_types {
     return @exports ? \@exports : undef;
 }
 
-sub _maybe_require_module {
-    my $self              = shift;
-    my $module_to_require = shift;
-
-    my $success;
-    try {
-        Module::Runtime::require_module($module_to_require);
-        $success = 1;
-    }
-    catch {
-        $self->_add_error("$module_to_require error. $_");
-    };
-
-    return $success;
-}
-
 sub _build_uses_sub_exporter {
     my $self = shift;
 
