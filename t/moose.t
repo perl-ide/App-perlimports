@@ -3,7 +3,7 @@ use warnings;
 
 use App::perlimports ();
 use Test::More import =>
-    [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
+    [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 use lib 't/lib';
 
@@ -55,6 +55,8 @@ subtest 'Uses MyOwnMoose' => sub {
     );
 
     ok( !$e->has_errors, 'has no errors' );
+    use DDP;
+    diag np $e->errors;
 };
 
 done_testing();
