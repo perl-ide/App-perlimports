@@ -50,22 +50,31 @@
             "Test::Pod::Coverage" : "1.08",
             "Test::Portability::Files" : "0",
             "Test::Spelling" : "0.12",
-            "Test::Synopsis" : "0",
             "Test::Vars" : "0.014",
             "Test::Version" : "1"
          }
       },
       "runtime" : {
          "requires" : {
+            "Class::Inspector" : "1.36",
+            "Data::Dumper" : "0",
+            "Data::Printer" : "0",
             "FindBin" : "0",
             "Getopt::Long::Descriptive" : "0",
-            "List::AllUtils" : "0",
+            "List::Util" : "0",
             "Module::Runtime" : "0",
-            "Module::Util" : "0",
             "Moo" : "0",
-            "PPI::Document" : "0",
+            "MooX::HandlesVia" : "0",
+            "MooX::StrictConstructor" : "0",
+            "PPI::Document" : "1.270",
             "Path::Tiny" : "0",
-            "Perl::Critic::Utils" : "0",
+            "Perl::Critic::Utils" : "1.138",
+            "Perl::Tidy" : "20210111",
+            "Pod::Usage" : "0",
+            "Ref::Util" : "0",
+            "String::InterpolatedVariables" : "0",
+            "Symbol::Get" : "0",
+            "Try::Tiny" : "0",
             "Types::Standard" : "0",
             "lib" : "0",
             "perl" : "5.006",
@@ -78,16 +87,25 @@
             "CPAN::Meta" : "2.120900"
          },
          "requires" : {
-            "Cpanel::JSON::XS" : "4.19",
-            "DDP" : "0",
+            "Cpanel::JSON::XS" : "0",
+            "Data::Printer" : "0",
             "Exporter" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Spec" : "0",
+            "Geo::IP" : "0",
             "Getopt::Long" : "2.40",
             "LWP::UserAgent" : "6.49",
             "Moose" : "0",
+            "MooseX::Types::Combine" : "0",
+            "MooseX::Types::Moose" : "0",
+            "MooseX::Types::Path::Class" : "0",
+            "Path::Class" : "0",
+            "Sub::Exporter" : "0",
             "Test::More" : "0",
+            "Test::Most" : "0",
             "Test::RequiresInternet" : "0",
+            "Test::Warnings" : "0",
+            "parent" : "0",
             "perl" : "5.006"
          }
       }
@@ -250,7 +268,8 @@
                   "spell_cmd" : "",
                   "stopwords" : [
                      "Alders",
-                     "Alders'"
+                     "Alders'",
+                     "sandboxed"
                   ],
                   "wordlist" : "Pod::Wordlist"
                }
@@ -318,11 +337,6 @@
             "class" : "Dist::Zilla::Plugin::Test::ReportPrereqs",
             "name" : "@Author::OALDERS/Test::ReportPrereqs",
             "version" : "0.028"
-         },
-         {
-            "class" : "Dist::Zilla::Plugin::Test::Synopsis",
-            "name" : "@Author::OALDERS/Test::Synopsis",
-            "version" : "2.000007"
          },
          {
             "class" : "Dist::Zilla::Plugin::Test::TidyAll",
@@ -538,7 +552,7 @@
                }
             },
             "name" : "@Author::OALDERS/Git::Contributors",
-            "version" : "0.035"
+            "version" : "0.036"
          },
          {
             "class" : "Dist::Zilla::Plugin::ReadmeAnyFromPod",
@@ -554,8 +568,8 @@
             "class" : "Dist::Zilla::Plugin::StaticInstall",
             "config" : {
                "Dist::Zilla::Plugin::StaticInstall" : {
-                  "dry_run" : 1,
-                  "mode" : "auto"
+                  "dry_run" : 0,
+                  "mode" : "on"
                }
             },
             "name" : "@Author::OALDERS/StaticInstall",
@@ -770,6 +784,28 @@
             "version" : "0.32"
          },
          {
+            "class" : "Dist::Zilla::Plugin::Prereqs",
+            "config" : {
+               "Dist::Zilla::Plugin::Prereqs" : {
+                  "phase" : "runtime",
+                  "type" : "requires"
+               }
+            },
+            "name" : "RuntimeRequires",
+            "version" : "6.017"
+         },
+         {
+            "class" : "Dist::Zilla::Plugin::Prereqs",
+            "config" : {
+               "Dist::Zilla::Plugin::Prereqs" : {
+                  "phase" : "test",
+                  "type" : "requires"
+               }
+            },
+            "name" : "TestRequires",
+            "version" : "6.017"
+         },
+         {
             "class" : "Dist::Zilla::Plugin::FinderCode",
             "name" : ":InstallModules",
             "version" : "6.017"
@@ -833,6 +869,7 @@
    ],
    "x_generated_by_perl" : "v5.30.2",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.19",
-   "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later"
+   "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
+   "x_static_install" : 1
 }
 
