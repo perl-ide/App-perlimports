@@ -6,8 +6,7 @@ use warnings;
 use Import::Into;
 
 sub import {
-    $_->import::into( scalar caller )
-        for qw( Moose MooseX::StrictConstructor namespace::autoclean );
+    $_->import::into( scalar caller ) for qw( Moose );
 }
 
 1;
