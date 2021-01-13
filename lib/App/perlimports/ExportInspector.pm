@@ -9,6 +9,7 @@ use List::Util qw( any );
 use Module::Runtime qw( module_notional_filename require_module );
 use MooX::HandlesVia;
 use Path::Tiny qw( path );
+use PPI::Document ();
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
 
@@ -150,34 +151,37 @@ sub _build_uses_sub_exporter {
     my $self = shift;
 
     my $filename = module_notional_filename( $self->_module_name );
-    if ( !exists $INC{$filename} ) {
+
+    my $error;
+
+    # We may not have already required the module
+    try {
+        require_module( $self->_module_name );
+    }
+    catch {
         $self->_add_error(
             sprintf(
-                'Cannot find %s when testing for Sub::Exporter',
+                'Cannot find %s in Sub::Exporter require',
                 $self->_module_name
             )
         );
-        return;
-    }
+        $error = 1;
+    };
+
+    return if $error;
 
     my $content = path( $INC{$filename} )->slurp;
     my $doc     = PPI::Document->new( \$content );
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
-    my $include_statements = $doc->find(
+    my $found = $doc->find(
         sub {
-            $_[1]->isa('PPI::Statement::Include') && !$_[1]->pragma;
+            $_[1]->isa('PPI::Statement::Include')
+                && $_[1]->module eq 'Sub::Exporter';
         }
     ) || [];
-    for my $st (@$include_statements) {
-        next if $st->schild(0) eq 'no';
 
-        my $included_module = $st->schild(1);
-        if ( $included_module eq 'Sub::Exporter' ) {
-            return 1;
-        }
-    }
-    return 0;
+    return scalar @{$found} ? 1 : 0;
 }
 
 1;
