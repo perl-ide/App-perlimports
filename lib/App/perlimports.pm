@@ -402,7 +402,8 @@ sub _build_is_ignored {
         return 0;
     }
 
-    if ( $self->_export_inspector->is_moose_class ) {
+    if (  !$self->_export_inspector->module_is_exporter
+        && $self->_export_inspector->is_moose_class ) {
         return 1;
     }
 

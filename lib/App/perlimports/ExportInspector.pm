@@ -39,17 +39,32 @@ has _exporter_lists => (
 );
 
 has export => (
-    is      => 'ro',
-    isa     => HashRef,
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        _has_export => 'keys',
+    },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export} || [] },
+    default => sub { $_[0]->_exporter_lists->{export} },
 );
 
 has export_ok => (
-    is      => 'ro',
-    isa     => HashRef,
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        _has_export_ok => 'keys',
+    },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export_ok} || [] },
+    default => sub { $_[0]->_exporter_lists->{export_ok} },
+);
+
+has module_is_exporter => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_module_is_exporter',
 );
 
 has is_moose_class => (
@@ -85,8 +100,20 @@ sub _build_combined_exports {
     return \%exports;
 }
 
+sub _build_module_is_exporter {
+    my $self = shift;
+    return ( $self->_has_export || $self->_has_export_ok ) ? 1 : 0;
+}
+
 sub _build_sub_exporter_inspection {
     my $self = shift;
+
+    # This is basically be a no-op if the module uses Exporter, but because we
+    # try to import a tag which probably doesn't exist, this throws errors as
+    # well, so let's make sure we bypass it entirely.
+    if ( $self->module_is_exporter ) {
+        return { export => {}, attr => {} };
+    }
 
     my ( $export, $attr, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
