@@ -2,6 +2,8 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
+our $VERSION = '0.000001';
+
 use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
 use Data::Printer;

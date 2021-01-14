@@ -3,6 +3,8 @@ package App::perlimports::Importer::Exporter;
 use strict;
 use warnings;
 
+our $VERSION = '0.000001';
+
 use Try::Tiny ();
 
 sub maybe_require_and_import_module {

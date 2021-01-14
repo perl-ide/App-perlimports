@@ -3,6 +3,8 @@ package App::perlimports::Importer::SubExporter;
 use strict;
 use warnings;
 
+our $VERSION = '0.000001';
+
 use Class::Inspector ();
 use List::Util qw( any );
 use Symbol::Get ();
