@@ -59,6 +59,7 @@ my ( $opt, $usage ) = describe_options(
     ],
     [],
     [],
+    [ 'version', 'Print installed version', { shortcircuit => 1 } ],
     [ 'verbose|v', 'Print errors to STDERR' ],
     [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
     [
@@ -75,6 +76,11 @@ if ( $opt->help ) {
 if ( $opt->verbose_help ) {
     print $usage->text;
     print pod2usage();
+    exit;
+}
+
+if ( $opt->version ) {
+    print $App::perlimports::VERSION;
     exit;
 }
 
