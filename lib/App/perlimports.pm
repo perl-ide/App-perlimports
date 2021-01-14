@@ -7,7 +7,7 @@ our $VERSION = '0.000001';
 use App::perlimports::ExportInspector ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
-use List::Util qw( any );
+use List::Util qw( any uniq );
 use Module::Runtime qw( require_module );
 use MooX::HandlesVia;
 use MooX::StrictConstructor;
@@ -331,7 +331,7 @@ sub _build_imports {
         push @found, 'verbose';
     }
 
-    @found = sort { "\L$a" cmp "\L$b" } @found;
+    @found = uniq sort { "\L$a" cmp "\L$b" } @found;
     return \@found;
 }
 

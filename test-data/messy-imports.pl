@@ -15,3 +15,4 @@ Maybe();
 CodeRef();
 FileHandle();
 RegexpRef();
+is_RegexpRef();
