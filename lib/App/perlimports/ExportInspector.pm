@@ -6,11 +6,8 @@ use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
 use Data::Printer;
 use List::Util qw( any );
-use Module::Runtime qw( module_notional_filename require_module );
 use MooX::HandlesVia;
-use Path::Tiny qw( path );
 use PPI::Document ();
-use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
 
 has combined_exports => (
@@ -32,35 +29,32 @@ has errors => (
     default  => sub { [] },
 );
 
-has _export_lists => (
+has _exporter_lists => (
     is      => 'ro',
     isa     => HashRef,
     lazy    => 1,
-    builder => '_build_export_lists',
+    builder => '_build_exporter_lists',
 );
 
 has export => (
     is      => 'ro',
-    isa     => ArrayRef,
+    isa     => HashRef,
     lazy    => 1,
-    default => sub { $_[0]->_export_lists->{export} || [] },
+    default => sub { $_[0]->_exporter_lists->{export} || [] },
 );
 
 has export_ok => (
     is      => 'ro',
-    isa     => ArrayRef,
+    isa     => HashRef,
     lazy    => 1,
-    default => sub { $_[0]->_export_lists->{export_ok} || [] },
+    default => sub { $_[0]->_exporter_lists->{export_ok} || [] },
 );
 
-has is_moose_type_library => (
+has is_moose_class => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    default => sub {
-        my $self = shift;
-        return $self->_has_moose_types && defined $self->_moose_types;
-    },
+    builder => '_build_is_moose_class',
 );
 
 has _module_name => (
@@ -70,118 +64,68 @@ has _module_name => (
     required => 1,
 );
 
-# If this attribute is undef, it means we tried to look for Moose types but
-# this probably is not a Moose type library.
-has _moose_types => (
-    is        => 'ro',
-    isa       => Maybe [ArrayRef],
-    predicate => '_has_moose_types',
-    lazy      => 1,
-    builder   => '_build_moose_types',
-);
-
-has _uses_sub_exporter => (
+has _sub_exporter_inspection => (
     is      => 'ro',
-    isa     => Bool,
+    isa     => HashRef,
     lazy    => 1,
-    builder => '_build_uses_sub_exporter',
+    builder => '_build_sub_exporter_inspection',
 );
 
 sub _build_combined_exports {
     my $self = shift;
 
-    my %exports
-        = map { $_ => $_ } ( @{ $self->export }, @{ $self->export_ok } );
+    my %exports = ( %{ $self->export }, %{ $self->export_ok } );
 
-    if ( !keys %exports && $self->_uses_sub_exporter ) {
-        my ( $export, $error )
-            = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-            $self->_module_name );
-        $self->_add_error($error) if $error;
-        %exports = %{$export};
+    if ( !keys %exports ) {
+        %exports = %{ $self->_sub_exporter_inspection->{export} };
     }
 
-    if ( !keys %exports && $self->_moose_types ) {
-        %exports = map { $_ => $_ } @{ $self->_moose_types };
-    }
-
-    # If we have undef for Moose types, we don't want to return that in this
-    # builder, since this attribute cannot be undef.
-    return keys %exports ? \%exports : {};
+    return \%exports;
 }
 
-sub _build_export_lists {
+sub _build_sub_exporter_inspection {
     my $self = shift;
-    my ( $export, $export_ok, $error )
-        = App::perlimports::Importer::Exporter::maybe_require_and_import_module(
+
+    my ( $export, $attr, $error )
+        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
         $self->_module_name );
     $self->_add_error($error) if $error;
-
-    return {
-        export    => $export,
-        export_ok => $export_ok,
-    };
+    return { export => $export, attr => $attr };
 }
 
-# Moose Type library? And yes, private method bad.
-sub _build_moose_types {
+sub _build_exporter_lists {
+    my $self = shift;
+    my $lists
+        = App::perlimports::Importer::Exporter::maybe_require_and_import_module(
+        $self->_module_name );
+
+    if ( my $error = delete $lists->{error} ) {
+        $self->_add_error($error);
+    }
+
+    return $lists;
+}
+
+sub _build_is_moose_class {
     my $self = shift;
 
-    my @exports;
+    $self->combined_exports;    # Ensure setup has been done
+    my $class = $self->_module_name;
 
-    # Don't wrap this require as we really do want to die if Class::Inspector
-    # cannot be found.
-    require_module('Class::Inspector');
+    if (   $class->can('meta')
+        && $class->meta->can('superclasses')
+        && any { $_ eq 'Moose::Object' } $class->meta->superclasses ) {
+        return 1;
+    }
 
     if (
-        any { $_ eq 'MooseX::Types::Combine::_provided_types' }
-        @{ Class::Inspector->methods(
-                $self->_module_name, 'full', 'private'
-                )
-                || []
-        }
+        any { $_ eq 'Moose::Object' }
+        @{ $self->_sub_exporter_inspection->{attr}->{isa} }
     ) {
-        my %types = $self->_module_name->_provided_types;
-        @exports = map { $_, 'is_' . $_, 'to_' . $_ } keys %types;
+        return 1;
     }
-    return @exports ? \@exports : undef;
-}
 
-sub _build_uses_sub_exporter {
-    my $self = shift;
-
-    my $filename = module_notional_filename( $self->_module_name );
-
-    my $error;
-
-    # We may not have already required the module
-    try {
-        require_module( $self->_module_name );
-    }
-    catch {
-        $self->_add_error(
-            sprintf(
-                'Cannot find %s in Sub::Exporter require',
-                $self->_module_name
-            )
-        );
-        $error = 1;
-    };
-
-    return if $error;
-
-    my $content = path( $INC{$filename} )->slurp;
-    my $doc     = PPI::Document->new( \$content );
-
-    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
-    my $found = $doc->find(
-        sub {
-            $_[1]->isa('PPI::Statement::Include')
-                && $_[1]->module eq 'Sub::Exporter';
-        }
-    ) || [];
-
-    return scalar @{$found} ? 1 : 0;
+    return 0;
 }
 
 1;
@@ -238,14 +182,9 @@ ArrayRef which combines the unique contents of C<export> and C<export_ok>. If
 this is a Moose type library, the exported types will exist in this list, but
 not in C<export> or C<export_ok>.
 
-=head2 is_moose_type_library
-
-Returns a Boolean to indicate whether we know this to be a L<Moose> type
-library.
-
 =head1 CAVEATS
 
-This will not work with modules using L<Sub::Exporter> or code which uses some
-other creative way of managing symbol exports.
+This may not work with modules using some creative way of managing symbol
+exports.
 
 =cut

@@ -21,7 +21,7 @@ sub maybe_require_and_import_module {
     };
 
     if ($error) {
-        return undef, undef, $error;
+        return { export => {}, export_ok => {}, error => $error, };
     }
 
     # If this fails, that's ok. No need to return early.
@@ -43,7 +43,22 @@ sub maybe_require_and_import_module {
     use strict;
 ## use critic
 
-    return ( \@export, \@export_ok, $error );
+    return {
+        export    => _list_to_hash(@export),
+        export_ok => _list_to_hash(@export_ok),
+        error     => $error
+    };
+}
+
+sub _list_to_hash {
+    my @list = @_;
+    my %hash;
+    for my $item (@list) {
+        my $value = $item;
+        $value =~ s{^&}{};
+        $hash{$item} = $value;
+    }
+    return \%hash;
 }
 
 1;

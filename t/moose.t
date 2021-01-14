@@ -17,9 +17,7 @@ subtest 'Moose' => sub {
         '_module_name'
     );
 
-    is_deeply( $e->_combined_exports, {}, 'No _combined_exports' );
     ok( $e->_is_ignored, '_is_ignored' );
-    is_deeply( $e->_imports, [], 'No _imports' );
     is(
         $e->formatted_ppi_statement,
         q{use Moose;},
@@ -55,8 +53,6 @@ subtest 'Uses MyOwnMoose' => sub {
     );
 
     ok( !$e->has_errors, 'has no errors' );
-    use DDP;
-    diag np $e->errors;
 };
 
 done_testing();

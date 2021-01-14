@@ -9,8 +9,7 @@ use Test::More;
 my $ei = App::perlimports::ExportInspector->new(
     module_name => 'ViaSubExporter' );
 
-ok( $ei->_uses_sub_exporter, 'uses Sub::Exporter' );
-ok( !$ei->has_errors,        'no errors' );
+ok( !$ei->has_errors, 'no errors' );
 is_deeply(
     $ei->combined_exports,
     { bar => 'bar', foo => 'foo', },

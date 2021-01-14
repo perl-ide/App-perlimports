@@ -20,24 +20,33 @@ sub maybe_get_all_exports {
     ## use critic
 
     my %export = map { $_ => $_ }
-        grep { $_ ne 'BEGIN' } Symbol::Get::get_names($pkg);
+        grep { $_ ne 'BEGIN' && $_ ne '__ANON__' && $_ ne 'ISA' }
+        Symbol::Get::get_names($pkg);
+
+    my %attr = ( is_moose_type_class => 0, isa => [] );
 
     # Treat Moose type libraries a bit differently. Importing ArrayRef, for
     # instance, also imports is_ArrayRef and to_ArrayRef (if a coercion)
     # exists. So, let's deal with that here.
-    if (
-        any { $_ eq 'MooseX::Types::Combine::_provided_types' }
-        @{ Class::Inspector->methods( $module_name, 'full', 'private' ) || []
-        }
-    ) {
+    my $private
+        = Class::Inspector->methods( $module_name, 'full', 'private' );
+
+    if ( any { $_ eq 'MooseX::Types::Combine::_provided_types' } @{$private} )
+    {
         for my $key ( keys %export ) {
-            if ( $key =~ m{(is_|to_)} ) {
+            if ( $key =~ m{^(is_|to_)} ) {
                 $export{$key} = substr( $key, 3 );
             }
         }
     }
 
-    return ( \%export, $error );
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    $attr{isa} = [ @{ $pkg . '::ISA' } ];
+    use strict;
+    ## use critic
+
+    return ( \%export, \%attr, $error );
 }
 
 1;

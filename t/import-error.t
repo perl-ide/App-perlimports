@@ -18,6 +18,9 @@ is(
 );
 
 ok( $e->has_errors, 'has_errors' );
-like( $e->errors->[1], qr{Cannot find}, 'error message' );
+like(
+    $e->errors->[1], qr{Can't locate Local/Module/Does/Not},
+    'error message'
+);
 
 done_testing();

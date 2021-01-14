@@ -37,8 +37,7 @@ subtest 'without version' => sub {
     );
 
     ok( !$e->_has_export_inspector, 'export inspection bypassed' );
-    is_deeply( $e->_imports,          [], '_imports' );
-    is_deeply( $e->_combined_exports, {}, 'no _combined_exports' );
+    is_deeply( $e->_imports, [], '_imports' );
 };
 
 subtest 'without incorrect import' => sub {

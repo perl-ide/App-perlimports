@@ -25,7 +25,8 @@ has _combined_exports => (
     handles     => {
         _delete_export        => 'delete',
         _has_combined_exports => 'count',
-        _is_exportable        => 'exists',
+        _is_importable        => 'exists',
+        _import_name          => 'get',
     },
     lazy    => 1,
     default => sub { $_[0]->_export_inspector->combined_exports },
@@ -91,13 +92,6 @@ has _is_ignored => (
     isa     => Bool,
     lazy    => 1,
     builder => '_build_is_ignored',
-);
-
-has _is_moose_type_library => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    default => sub { $_[0]->_export_inspector->is_moose_type_library },
 );
 
 has _isa_test_builder_module => (
@@ -245,7 +239,7 @@ sub _build_imports {
 
     my %found;
     for my $var ( keys %vars ) {
-        if ( $self->_is_exportable($var) ) {
+        if ( $self->_is_importable($var) ) {
             $found{$var} = 1;
         }
     }
@@ -291,19 +285,19 @@ sub _build_imports {
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
         if (   $word->isa('PPI::Token::Symbol')
-            && $self->_is_exportable( $word->symbol ) ) {
+            && $self->_is_importable( $word->symbol ) ) {
             $found_import = $word->symbol;
         }
 
-        elsif (
-            $self->_is_exportable("$word")
-
-            # Maybe a subroutine ref has been exported. For instance,
-            # Getopt::Long exports &GetOptions
-            || ( is_function_call($word)
-                && $self->_is_exportable( '&' . $word ) )
-        ) {
+        elsif ( $self->_is_importable("$word") ) {
             $found_import = "$word";
+        }
+
+        # Maybe a subroutine ref has been exported. For instance,
+        # Getopt::Long exports &GetOptions
+        elsif ( is_function_call($word)
+            && $self->_is_importable( '&' . $word ) ) {
+            $found_import = '&' . "$word";
         }
 
         # PPI can think that an imported function in a ternary is a label
@@ -312,27 +306,17 @@ sub _build_imports {
         elsif ( $word->isa('PPI::Token::Label') ) {
             if ( $word->content =~ m{^(\w+)} ) {
                 my $label = $1;
-                if ( $self->_is_exportable($label) ) {
+                if ( $self->_is_importable($label) ) {
                     $found_import = $label;
                     $found{$label}++;
                 }
             }
         }
 
-        # If a Moose type has been imported but an exported type check or
-        # coercion is found, make sure we still use the actual type as the
-        # import name. So, is_HashRef or to_HashRef should still show up as
-        # HashRef in the import list. There could be cases where the type is
-        # imported just to use a coercion or type check. In that case we won't
-        # find the actual type name in the code.
-        if (   $found_import
-            && $self->_is_moose_type_library
-            && $found_import =~ m{^(is_|to_)} ) {
-            $found_import = substr( $found_import, 3 );
-        }
-
         $found{$found_import}++ if $found_import;
     }
+
+    my @found = map { $self->_import_name($_) } keys %found;
 
     # Carp exports verbose, which is a symbol which doesn't actually exist.
     # It's basically a flag, so if it's in the import, we'll just preserve it.
@@ -342,10 +326,10 @@ sub _build_imports {
             @{ $self->_original_imports }
         )
     ) {
-        $found{verbose} = 1;
+        push @found, 'verbose';
     }
 
-    my @found = sort { "\L$a" cmp "\L$b" } keys %found;
+    @found = sort { "\L$a" cmp "\L$b" } @found;
     return \@found;
 }
 
@@ -394,7 +378,9 @@ sub _build_is_ignored {
     # require 5.006;
     return 1 if $self->_include->version;
 
-    my %noop = (
+    my %ignore = (
+        'Moo'                    => 1,
+        'Moose'                  => 1,
         'namespace::autoclean'   => 1,
         'Test::Needs'            => 1,
         'Test::RequiresInternet' => 1,
@@ -403,15 +389,19 @@ sub _build_is_ignored {
 
     if ( $self->_has_ignored_modules ) {
         for my $name ( @{ $self->_ignored_modules } ) {
-            $noop{$name} = 1;
+            $ignore{$name} = 1;
         }
     }
 
-    return 1 if exists $noop{ $self->_module_name };
+    return 1 if exists $ignore{ $self->_module_name };
 
     if ( $self->_will_never_export
         || @{ $self->_imports } ) {
         return 0;
+    }
+
+    if ( $self->_export_inspector->is_moose_class ) {
+        return 1;
     }
 
     # This should catch Moose classes

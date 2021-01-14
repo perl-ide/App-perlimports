@@ -5,27 +5,26 @@ use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
     [qw( diag done_testing is is_deeply like ok subtest )];
 
-use FindBin qw( $Bin );
-
 use lib 't/lib';
 
 subtest 'Moose Type Library' => sub {
     my $module = 'MooseTypeLibrary';
 
-    my ( $exports, $error )
+    my ( $exports, $attr, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
         $module);
 
     ok( $exports, 'exports' );
     is( $exports->{is_Bool}, 'Bool', 'is_ aliased' );
     is( $exports->{to_File}, 'File', 'to_ aliased' );
-    ok( !$error, 'no error' );
+    ok( !exists $exports->{to_Str}, 'Coercion does not exist' );
+    ok( !$error,                    'no error' );
 };
 
 subtest 'Moo' => sub {
     my $module = 'Moo';
 
-    my ( $exports, $error )
+    my ( $exports, $attr, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
         $module);
 
@@ -37,7 +36,6 @@ subtest 'Moo' => sub {
             before  => 'before',
             extends => 'extends',
             has     => 'has',
-            ISA     => 'ISA',
             with    => 'with',
         },
         'exports'
@@ -50,7 +48,7 @@ subtest 'Moo' => sub {
 subtest 'Does not exist' => sub {
     my $module = 'Local::Does::Not::Exist';
 
-    my ( $exports, $error )
+    my ( $exports, $attr, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
         $module);
 
@@ -66,7 +64,7 @@ subtest 'Does not exist' => sub {
 subtest 'ViaSubExporter' => sub {
     my $module = 'ViaSubExporter';
 
-    my ( $exports, $error )
+    my ( $exports, $attr, $error )
         = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
         $module);
 
@@ -79,7 +77,36 @@ subtest 'ViaSubExporter' => sub {
         'exports'
     );
     ok( !$error, 'no error' );
-    diag $error;
+};
+
+subtest 'MyOwnMoose' => sub {
+    my $module = 'MyOwnMoose';
+
+    my ( $exports, $attr, $error )
+        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
+        $module);
+
+    is_deeply(
+        $exports,
+        {
+            after    => 'after',
+            around   => 'around',
+            augment  => 'augment',
+            before   => 'before',
+            blessed  => 'blessed',
+            confess  => 'confess',
+            extends  => 'extends',
+            has      => 'has',
+            inner    => 'inner',
+            isa      => 'isa',
+            meta     => 'meta',
+            override => 'override',
+            super    => 'super',
+            with     => 'with',
+        },
+        'exports'
+    );
+    ok( !$error, 'no error' );
 };
 
 done_testing();
