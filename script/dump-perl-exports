@@ -1,0 +1,78 @@
+#!perl
+
+use strict;
+use warnings;
+
+use App::perlimports::ExportInspector ();
+use Data::Printer;
+use Pod::Usage qw( pod2usage );
+use Text::SimpleTable::AutoWidth ();
+
+my $module_name = shift @ARGV;
+
+if (!$module_name || $module_name eq '--help' ) {
+    print pod2usage();
+    exit;
+}
+
+my $ei
+    = App::perlimports::ExportInspector->new( module_name => $module_name );
+
+my $exports = $ei->combined_exports;
+
+if ( $ei->has_errors ) {
+    print 'The following errors occurred:' . "\n";
+}
+
+if ( $ei->is_oo_class ) {
+    print 'Appears to be an Object Oriented class.' . "\n";
+}
+
+if ( !keys %{$exports} ) {
+    print 'No exported symbols found' . "\n";
+    exit(0);
+}
+
+if ( $ei->class_isa ) {
+    my $t = Text::SimpleTable::AutoWidth->new();
+    $t->captions( ['ISA'] );
+    for my $class ( $ei->class_isa ) {
+        $t->row($class);
+    }
+    print $t->draw;
+}
+
+{
+    my $t = Text::SimpleTable::AutoWidth->new();
+    $t->captions( [ 'Export Symbol', 'Import Name' ] );
+    for my $key ( sort keys %$exports ) {
+        $t->row( $key, $exports->{$key} );
+    }
+    print $t->draw;
+}
+
+# PODNAME: dump-perl-exports
+# ABSTRACT: A command line utility for describing what a class exports
+
+=pod
+
+=head1 SYNOPSIS
+
+Here are a few interesting modules to help you understand the output of
+C<dump-perl-exports>.
+
+    dump-perl-exports POSIX
+
+    dump-perl-exports Getopt::Long
+
+    dump-perl-exports Getopt::Long::Descriptive
+
+    dump-perl-exports Test::More
+
+    dump-perl-exports Test::Most
+
+    dump-perl-exports Moose
+
+    dump-perl-exports Moo
+
+=cut
