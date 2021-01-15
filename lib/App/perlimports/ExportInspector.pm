@@ -215,31 +215,13 @@ sub _build_is_oo_class {
     my $self = shift;
     return 0 unless $self->can_require_module;
 
-    my $class = $self->_module_name;
-
-    # This would a class with a "use Moose;" include.
-    if (
-           $class->can('meta')
-        && $class->meta->can('superclasses')
-        && any { $_ eq 'Moose::Object' || $_ eq 'Moo::Object' }
-        $class->meta->superclasses
-    ) {
-        return 1;
-    }
-
     my $methods
         = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
 
-    if (
-        any {
-            $_ eq 'Moose::Object::BUILDALL' || $_ eq 'Moo::Object::BUILDALL'
-        }
-        @{$methods}
-    ) {
-        return 1;
+    return any {
+        $_ eq 'Moose::Object::BUILDALL' || $_ eq 'Moo::Object::BUILDALL'
     }
-
-    return 0;
+    @{$methods};
 }
 
 sub _build_is_moose_class {
