@@ -19,6 +19,12 @@ jobs:
       image: perldocker/perl-tester:5.32
     steps:
       - uses: actions/checkout@v2
+      - name: install deps using cpm
+        uses: perl-actions/install-with-cpm@v1
+        with:
+          cpanfile: "test-needs-cpanfile"
+          sudo: false
+          args: "--with-suggests --with-recommends --with-test"
       - name: Run Tests
         env:
           AUTHOR_TESTING: 1
