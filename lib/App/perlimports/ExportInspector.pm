@@ -8,9 +8,29 @@ use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
 use Data::Printer;
 use List::Util qw( any );
+use Module::Runtime qw( require_module );
 use MooX::HandlesVia;
 use PPI::Document ();
+use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
+
+has can_require_module => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_can_require_module',
+);
+
+has _class_isa => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        class_isa => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_class_isa',
+);
 
 has combined_exports => (
     is      => 'ro',
@@ -88,6 +108,37 @@ has _sub_exporter_inspection => (
     builder => '_build_sub_exporter_inspection',
 );
 
+sub _build_can_require_module {
+    my $self = shift;
+
+    my $error;
+    try {
+        require_module( $self->_module_name );
+    }
+    catch {
+        $error = $_;
+    };
+
+    return 1 if !$error;
+
+    $self->_add_error($error) if $error;
+    return 0;
+}
+
+sub _build_class_isa {
+    my $self = shift;
+
+    return [] unless $self->can_require_module;
+
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    my @isa = @{ $self->_module_name . '::ISA' };
+    use strict;
+    ## use critic
+
+    return \@isa;
+}
+
 sub _build_combined_exports {
     my $self = shift;
 
@@ -102,7 +153,10 @@ sub _build_combined_exports {
 
 sub _build_module_is_exporter {
     my $self = shift;
-    return ( $self->_has_export || $self->_has_export_ok ) ? 1 : 0;
+    return (
+        $self->can_require_module && ( $self->_has_export
+            || $self->_has_export_ok )
+    ) ? 1 : 0;
 }
 
 sub _build_sub_exporter_inspection {
@@ -111,12 +165,12 @@ sub _build_sub_exporter_inspection {
     # This is basically be a no-op if the module uses Exporter, but because we
     # try to import a tag which probably doesn't exist, this throws errors as
     # well, so let's make sure we bypass it entirely.
-    if ( $self->module_is_exporter ) {
+    if ( !$self->can_require_module || $self->module_is_exporter ) {
         return { export => {}, attr => {} };
     }
 
     my ( $export, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
         $self->_module_name );
     $self->_add_error($error) if $error;
     return { export => $export, attr => $attr };
@@ -124,8 +178,13 @@ sub _build_sub_exporter_inspection {
 
 sub _build_exporter_lists {
     my $self = shift;
+
+    if ( !$self->can_require_module ) {
+        return { export => {}, export_ok => {}, };
+    }
+
     my $lists
-        = App::perlimports::Importer::Exporter::maybe_require_and_import_module(
+        = App::perlimports::Importer::Exporter::maybe_get_exports(
         $self->_module_name );
 
     if ( my $error = delete $lists->{error} ) {

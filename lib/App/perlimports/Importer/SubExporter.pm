@@ -9,7 +9,7 @@ use Class::Inspector ();
 use List::Util qw( any );
 use Symbol::Get ();
 
-sub maybe_get_all_exports {
+sub maybe_get_exports {
     my $module_name = shift;
 
     my $pkg = 'Local::App::perlimports::imported::' . $module_name;

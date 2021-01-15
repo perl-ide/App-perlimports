@@ -11,8 +11,7 @@ subtest 'Moose Type Library' => sub {
     my $module = 'MooseTypeLibrary';
 
     my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-        $module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     ok( $exports, 'exports' );
     is( $exports->{is_Bool}, 'Bool', 'is_ aliased' );
@@ -25,8 +24,7 @@ subtest 'Moo' => sub {
     my $module = 'Moo';
 
     my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-        $module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
         $exports,
@@ -49,8 +47,7 @@ subtest 'Does not exist' => sub {
     my $module = 'Local::Does::Not::Exist';
 
     my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-        $module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
         $exports,
@@ -65,8 +62,7 @@ subtest 'ViaSubExporter' => sub {
     my $module = 'ViaSubExporter';
 
     my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-        $module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
         $exports,
@@ -83,8 +79,7 @@ subtest 'MyOwnMoose' => sub {
     my $module = 'MyOwnMoose';
 
     my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
-        $module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
         $exports,

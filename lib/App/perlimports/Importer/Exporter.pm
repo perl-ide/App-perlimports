@@ -7,24 +7,11 @@ our $VERSION = '0.000001';
 
 use Try::Tiny ();
 
-sub maybe_require_and_import_module {
+sub maybe_get_exports {
     my $module_name    = shift;
     my $attempt_import = shift || 1;
 
-    my $success;
     my $error;
-
-    Try::Tiny::try {
-        Module::Runtime::require_module($module_name);
-        $success = 1;
-    }
-    Try::Tiny::catch {
-        $error = $_;
-    };
-
-    if ($error) {
-        return { export => {}, export_ok => {}, error => $error, };
-    }
 
     # If this fails, that's ok. No need to return early.
     if ($attempt_import) {
