@@ -161,7 +161,8 @@ has _will_never_export => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return exists $self->_never_exports->{ $self->_module_name };
+        return exists $self->_never_exports->{ $self->_module_name }
+            || $self->_export_inspector->is_oo_class;
     },
 );
 

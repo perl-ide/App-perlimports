@@ -230,7 +230,12 @@ sub _build_is_oo_class {
     my $methods
         = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
 
-    if ( any { $_ eq 'Moose::Object::BUILDALL' } @{$methods} ) {
+    if (
+        any {
+            $_ eq 'Moose::Object::BUILDALL' || $_ eq 'Moo::Object::BUILDALL'
+        }
+        @{$methods}
+    ) {
         return 1;
     }
 
