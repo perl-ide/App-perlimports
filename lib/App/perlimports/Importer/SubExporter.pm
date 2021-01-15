@@ -64,12 +64,12 @@ import tag of C<:all>, if the user doesn't define it. We try to use this import
 tag to find all of the functions which a module that uses Sub::Exporter might
 export.
 
-=head2 maybe_get_all_exports
+=head2 maybe_get_exports
 
     use App::perlimports::Importer::SubExporter ();
 
-    my ( $exports, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_all_exports(
+    my ( $exports, $attr, $error )
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
         $module_name );
 
 =cut

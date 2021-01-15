@@ -63,13 +63,13 @@ can lead to methods being redefined etc, so let's really try to sandbox this.
 
 This module tries to detect symbols which are exported via L<Exporter>.
 
-=head2 maybe_require_and_import_module
+=head2 maybe_get_exports
 
     use App::perlimports::Importer ();
 
     my $attempt_import = 1;
-    my ( $export, $export_ok, $error )
-        = App::perlimports::Importer::maybe_require_and_import_module(
+    my $export_data
+        = App::perlimports::Importer::maybe_get_exports(
         $module_name, $attempt_import );
 
 =cut
