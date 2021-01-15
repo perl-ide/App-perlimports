@@ -22,6 +22,7 @@ my $exports = $ei->combined_exports;
 
 if ( $ei->has_errors ) {
     print 'The following errors occurred:' . "\n";
+    p $ei;
 }
 
 if ( $ei->is_oo_class ) {
