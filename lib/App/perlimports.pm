@@ -398,10 +398,8 @@ sub _build_is_ignored {
 
     return 1 if exists $ignore{ $self->_module_name };
 
-    if ( $self->_will_never_export
-        || @{ $self->_imports } ) {
-        return 0;
-    }
+    # This will be rewritten as "use Foo ();"
+    return 0 if $self->_will_never_export;
 
     return 0 if $self->_export_inspector->is_oo_class;
 
