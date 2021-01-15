@@ -31,12 +31,25 @@ subtest 'List::Util' => sub {
     ok( !$ei->has_errors,                'no errors' );
 };
 
+# UsesMoose.pm literally just includes a "use Moose;"
 subtest 'UsesMoose' => sub {
     my $ei
         = App::perlimports::ExportInspector->new(
         module_name => 'UsesMoose' );
-    ok( !$ei->has_errors,    'no errors' );
-    ok( $ei->is_moose_class, 'is Moose class' );
+    ok( !$ei->has_errors,     'no errors' );
+    ok( $ei->is_oo_class,     'is oo class' );
+    ok( !$ei->is_moose_class, 'Not a Moose class' );
+    is_deeply( [ $ei->class_isa ], ['Moose::Object'], 'ISA Moose::Object' );
+};
+
+# UsesMoo.pm literally just includes a "use Moo;"
+subtest 'UsesMoo' => sub {
+    my $ei
+        = App::perlimports::ExportInspector->new( module_name => 'UsesMoo' );
+    ok( !$ei->has_errors,     'no errors' );
+    ok( $ei->is_oo_class,     'is oo class' );
+    ok( !$ei->is_moose_class, 'Not a Moose class' );
+    is_deeply( [ $ei->class_isa ], ['Moo::Object'], 'ISA Moo::Object' );
 };
 
 # Check ISA here
@@ -65,7 +78,9 @@ subtest 'MyOwnMoose' => sub {
         },
         'combined exports'
     );
-    ok( $ei->is_moose_class, 'is Moose class' );
+    ok( !$ei->is_oo_class,   'is OO class' );
+    ok( $ei->is_moose_class, 'class with imported Moose' );
+    is_deeply( [ $ei->class_isa ], ['Moose::Object'], 'class_isa' );
 };
 
 done_testing();

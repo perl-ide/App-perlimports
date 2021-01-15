@@ -6,6 +6,7 @@ our $VERSION = '0.000001';
 
 use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
+use Class::Inspector                        ();
 use Data::Printer;
 use List::Util qw( any );
 use Module::Runtime qw( require_module );
@@ -33,8 +34,12 @@ has _class_isa => (
 );
 
 has combined_exports => (
-    is      => 'ro',
-    isa     => HashRef,
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        has_combined_exports => 'count',
+    },
     lazy    => 1,
     builder => '_build_combined_exports',
 );
@@ -80,18 +85,25 @@ has export_ok => (
     default => sub { $_[0]->_exporter_lists->{export_ok} },
 );
 
-has module_is_exporter => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_module_is_exporter',
-);
-
 has is_moose_class => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
     builder => '_build_is_moose_class',
+);
+
+has is_oo_class => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_is_oo_class',
+);
+
+has module_is_exporter => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_module_is_exporter',
 );
 
 has _module_name => (
@@ -132,11 +144,16 @@ sub _build_class_isa {
 
     ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
-    my @isa = @{ $self->_module_name . '::ISA' };
+    my $module = $self->_module_name;
+    my @isa    = @{ $self->_module_name . '::ISA' };
     use strict;
     ## use critic
 
-    return \@isa;
+    return \@isa if @isa || $self->module_is_exporter;
+
+    # For Moose, for example, we don't see anything in @ISA until the
+    # Sub::Exporter inspection.
+    return $self->_sub_exporter_inspection->{attr}->{isa} || [];
 }
 
 sub _build_combined_exports {
@@ -194,21 +211,44 @@ sub _build_exporter_lists {
     return $lists;
 }
 
-sub _build_is_moose_class {
+sub _build_is_oo_class {
     my $self = shift;
+    return 0 unless $self->can_require_module;
 
-    $self->combined_exports;    # Ensure setup has been done
     my $class = $self->_module_name;
 
-    if (   $class->can('meta')
+    # This would a class with a "use Moose;" include.
+    if (
+           $class->can('meta')
         && $class->meta->can('superclasses')
-        && any { $_ eq 'Moose::Object' } $class->meta->superclasses ) {
+        && any { $_ eq 'Moose::Object' || $_ eq 'Moo::Object' }
+        $class->meta->superclasses
+    ) {
         return 1;
     }
 
+    my $methods
+        = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
+
+    if ( any { $_ eq 'Moose::Object::BUILDALL' } @{$methods} ) {
+        return 1;
+    }
+
+    return 0;
+}
+
+sub _build_is_moose_class {
+    my $self = shift;
+    return 0 unless $self->can_require_module;
+
+    my $class = $self->_module_name;
+
     if (
-        any { $_ eq 'Moose::Object' }
-        @{ $self->_sub_exporter_inspection->{attr}->{isa} }
+        (
+            any { $_ eq 'Moose::Object' }
+            $self->class_isa
+        )
+        && $self->has_combined_exports
     ) {
         return 1;
     }
