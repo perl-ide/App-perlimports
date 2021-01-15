@@ -232,7 +232,7 @@ sub _build_is_moose_class {
 
     if (
         (
-            any { $_ eq 'Moose::Object' }
+            any { $_ eq 'Moose::Object' || $_ eq 'Test::Class::Moose' }
             $self->class_isa
         )
         && $self->has_combined_exports
