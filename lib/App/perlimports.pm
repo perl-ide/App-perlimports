@@ -15,10 +15,11 @@ use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
+use PPIx::Utils::Classification qw( is_hash_key );
 use Ref::Util qw( is_plain_hashref );
 use String::InterpolatedVariables ();
 use Try::Tiny qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
 has _combined_exports => (
     is          => 'ro',
@@ -32,6 +33,13 @@ has _combined_exports => (
     },
     lazy    => 1,
     default => sub { $_[0]->_export_inspector->combined_exports },
+);
+
+has _document => (
+    is      => 'ro',
+    isa     => Object,
+    lazy    => 1,
+    builder => '_build_document',
 );
 
 has errors => (
@@ -155,6 +163,13 @@ has _pad_imports => (
     default  => sub { 1 },
 );
 
+has _vars => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_vars',
+);
+
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
@@ -180,6 +195,12 @@ around BUILDARGS => sub {
     return $class->$orig(%args);
 };
 
+sub _build_document {
+    my $self    = shift;
+    my $content = path( $self->_filename )->slurp;
+    return PPI::Document->new( \$content );
+}
+
 sub _build_export_inspector {
     my $self = shift;
     return App::perlimports::ExportInspector->new(
@@ -204,16 +225,19 @@ sub _build_isa_test_builder_module {
 sub _build_imports {
     my $self = shift;
 
-    my $content = path( $self->_filename )->slurp;
-    my $doc     = PPI::Document->new( \$content );
-
     # This is not a real symbol, so we should never be looking for it to appear
     # in the code.
     $self->_delete_export('verbose') if $self->_module_name eq 'Carp';
 
     my %sub_names;
     for my $sub (
-        @{ $doc->find( sub { $_[1]->isa('PPI::Statement::Sub') } ) || [] } ) {
+        @{
+            $self->_document->find(
+                sub { $_[1]->isa('PPI::Statement::Sub') }
+                )
+                || []
+        }
+    ) {
         my @children = $sub->schildren;
         if ( $children[0] eq 'sub' && $children[1]->isa('PPI::Token::Word') )
         {
@@ -222,26 +246,8 @@ sub _build_imports {
     }
 
     #  A used import might be a variable interpolated into quotes.
-    my %vars;
-    for my $quote (
-        @{
-            $doc->find(
-                sub {
-                    $_[1]->isa('PPI::Token::Quote')
-                        && !$_[1]->isa('PPI::Token::Quote::Single');
-                }
-                )
-                || []
-        }
-    ) {
-        my $vars = String::InterpolatedVariables::extract($quote);
-        for my $var ( @{$vars} ) {
-            $vars{$var} = 1;
-        }
-    }
-
     my %found;
-    for my $var ( keys %vars ) {
+    for my $var ( keys %{ $self->_vars } ) {
         if ( $self->_is_importable($var) ) {
             $found{$var} = 1;
         }
@@ -250,7 +256,7 @@ sub _build_imports {
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word (
         @{
-            $doc->find(
+            $self->_document->find(
                 sub {
                     $_[1]->isa('PPI::Token::Word')
                         || $_[1]->isa('PPI::Token::Symbol')
@@ -271,6 +277,8 @@ sub _build_imports {
         # use List::Util qw( any );
         # sub any {}
         next if exists $sub_names{"$word"};
+
+        next if is_hash_key($word);
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
@@ -356,6 +364,28 @@ sub _build_original_imports {
     }
 
     return \@imports;
+}
+
+sub _build_vars {
+    my $self = shift;
+    my %vars;
+    for my $quote (
+        @{
+            $self->_document->find(
+                sub {
+                    $_[1]->isa('PPI::Token::Quote')
+                        && !$_[1]->isa('PPI::Token::Quote::Single');
+                }
+                )
+                || []
+        }
+    ) {
+        my $vars = String::InterpolatedVariables::extract($quote);
+        for my $var ( @{$vars} ) {
+            $vars{$var} = 1;
+        }
+    }
+    return \%vars;
 }
 
 sub _build_is_ignored {
