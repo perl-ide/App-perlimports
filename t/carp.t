@@ -3,16 +3,14 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
+use App::perlimports           ();
+use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];
+use TestHelper qw( source2pi );
 
 subtest 'verbose' => sub {
     my $source_text = 'use Carp qw( croak verbose );';
-
-    my $e = App::perlimports->new(
-        filename    => 'test-data/carp.pl',
-        source_text => $source_text,
-    );
+    my $e           = source2pi( 'test-data/carp.pl', $source_text );
 
     is(
         $e->formatted_ppi_statement,
@@ -29,11 +27,7 @@ subtest 'verbose' => sub {
 
 subtest 'no verbose' => sub {
     my $source_text = 'use Carp qw( croak );';
-
-    my $e = App::perlimports->new(
-        filename    => 'test-data/carp.pl',
-        source_text => $source_text,
-    );
+    my $e           = source2pi( 'test-data/carp.pl', $source_text );
 
     is(
         $e->formatted_ppi_statement,
@@ -51,10 +45,7 @@ subtest 'no verbose' => sub {
 subtest 'no imports' => sub {
     my $source_text = 'use Carp ();';
 
-    my $e = App::perlimports->new(
-        filename    => 'test-data/carp.pl',
-        source_text => $source_text,
-    );
+    my $e = source2pi( 'test-data/carp.pl', $source_text );
 
     is(
         $e->formatted_ppi_statement,

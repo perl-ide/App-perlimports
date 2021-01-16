@@ -1,12 +1,15 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $e = App::perlimports->new(
-    filename    => 't/lib/UsesMoo.pm',
-    source_text => 'use Moo;',
+my $e = source2pi(
+    't/lib/UsesMoo.pm',
+    'use Moo;',
 );
 is(
     $e->_module_name(), 'Moo',

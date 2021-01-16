@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 use App::perlimports::ExportInspector ();
-use Devel::Confess;
 use Test::More import => [ 'done_testing', 'ok' ];
 use Test::Needs qw( Test2::V0 );
 

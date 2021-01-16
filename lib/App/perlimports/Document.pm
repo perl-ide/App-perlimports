@@ -1,0 +1,116 @@
+package App::perlimports::Document;
+
+use Moo;
+
+our $VERSION = '0.000001';
+
+use MooX::HandlesVia qw( has );
+use MooX::StrictConstructor;
+use Path::Tiny qw( path );
+use PPI::Document 1.270 ();
+use String::InterpolatedVariables ();
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
+
+has ppi_document => (
+    is      => 'ro',
+    isa     => Object,
+    lazy    => 1,
+    builder => '_build_ppi_document',
+);
+
+has _filename => (
+    is       => 'ro',
+    isa      => Str,
+    init_arg => 'filename',
+    required => 1,
+);
+
+has _ignored_modules => (
+    is        => 'ro',
+    isa       => ArrayRef,
+    init_arg  => 'ignored_modules',
+    predicate => '_has_ignored_modules',
+);
+
+has never_exports => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_never_exports',
+);
+
+has _never_export_modules => (
+    is        => 'ro',
+    isa       => ArrayRef [Str],
+    init_arg  => 'never_export_modules',
+    predicate => '_has_never_export_modules',
+);
+
+has vars => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_vars',
+);
+
+sub _build_ppi_document {
+    my $self    = shift;
+    my $content = path( $self->_filename )->slurp;
+    return PPI::Document->new( \$content );
+}
+
+sub _build_vars {
+    my $self = shift;
+    my %vars;
+    for my $quote (
+        @{
+            $self->ppi_document->find(
+                sub {
+                    $_[1]->isa('PPI::Token::Quote')
+                        && !$_[1]->isa('PPI::Token::Quote::Single');
+                }
+                )
+                || []
+        }
+    ) {
+        my $vars = String::InterpolatedVariables::extract($quote);
+        for my $var ( @{$vars} ) {
+            $vars{$var} = 1;
+        }
+    }
+    return \%vars;
+}
+
+# Returns a HashRef of modules which will always be converted to avoid imports.
+# This is mostly for speed and a matter of convenience so that we don't have to
+# examine modules (like strictly Object Oriented modules) which we know will
+# not have anything to export.
+
+sub _build_never_exports {
+    my $self = shift;
+
+    my %modules = (
+        'App::perlimports' => 1,
+        'HTTP::Daemon'     => 1,
+        'HTTP::Headers'    => 1,
+        'HTTP::Response'   => 1,
+        'HTTP::Tiny'       => 1,
+        'LWP::UserAgent'   => 1,
+        'URI'              => 1,
+        'WWW::Mechanize'   => 1,
+    );
+
+    if ( $self->_has_never_export_modules ) {
+        for my $module ( @{ $self->_never_export_modules } ) {
+            $modules{$module} = 1;
+        }
+    }
+
+    return \%modules;
+}
+
+1;
+
+# ABSTRACT: Make implicit imports explicit
+
+=pod

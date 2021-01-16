@@ -1,13 +1,16 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( Pithub );
 
-my $pi = App::perlimports->new(
-    filename    => 'test-data/pithub.pl',
-    source_text => 'use Pithub;',
+my $pi = source2pi(
+    'test-data/pithub.pl',
+    'use Pithub;',
 );
 
 is(

@@ -1,14 +1,15 @@
 use strict;
 use warnings;
 
-use App::perlimports ();
-use Test::More import => [ 'done_testing', 'is' ];
-
 use lib 't/lib';
 
-my $e = App::perlimports->new(
-    filename    => 'test-data/messy-imports.pl',
-    source_text => 'use MooseTypeLibrary;',
+use App::perlimports ();
+use TestHelper qw( source2pi );
+use Test::More import => [ 'done_testing', 'is' ];
+
+my $e = source2pi(
+    'test-data/messy-imports.pl',
+    'use MooseTypeLibrary;',
 );
 
 my $expected = <<'EOF';

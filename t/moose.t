@@ -1,16 +1,17 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import =>
     [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
-use lib 't/lib';
-
 subtest 'Moose' => sub {
-    my $e = App::perlimports->new(
-        filename    => 't/lib/UsesMoose.pm',
-        source_text => 'use Moose;',
+    my $e = source2pi(
+        't/lib/UsesMoose.pm',
+        'use Moose;',
     );
     is(
         $e->_module_name(), 'Moose',
@@ -26,9 +27,9 @@ subtest 'Moose' => sub {
 };
 
 subtest 'Import::Into' => sub {
-    my $e = App::perlimports->new(
-        filename    => 't/lib/MyOwnMoose.pm',
-        source_text => 'use Import::Into;',
+    my $e = source2pi(
+        't/lib/MyOwnMoose.pm',
+        'use Import::Into;',
     );
 
     is(
@@ -41,9 +42,9 @@ subtest 'Import::Into' => sub {
 };
 
 subtest 'Uses MyOwnMoose' => sub {
-    my $e = App::perlimports->new(
-        filename    => 't/lib/UsesMyOwnMoose.pm',
-        source_text => 'use MyOwnMoose;',
+    my $e = source2pi(
+        't/lib/UsesMyOwnMoose.pm',
+        'use MyOwnMoose;',
     );
 
     is(

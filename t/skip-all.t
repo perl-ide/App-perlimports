@@ -1,13 +1,14 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
-my $e = App::perlimports->new(
-    filename    => 'test-data/skip-all.t',
-    source_text =>
-        q{use Test::More 0.93 skip_all => 'Test is broken', tests => 3, foo => ['bar'] ;},
+my $e = source2pi(
+    'test-data/skip-all.t',
+    q{use Test::More 0.93 skip_all => 'Test is broken', tests => 3, foo => ['bar'] ;},
 );
 
 ok( !$e->_is_ignored, 'not an ignored module' );

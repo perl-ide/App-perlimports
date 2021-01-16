@@ -1,14 +1,17 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 subtest 'with version' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/with-version.pl',
-        source_text => 'use LWP::UserAgent 6.49;',
+    my $e = source2pi(
+        'test-data/with-version.pl',
+        'use LWP::UserAgent 6.49;',
     );
 
     ok( !$e->_is_ignored, '_is_ignored' );
@@ -24,9 +27,9 @@ subtest 'with version' => sub {
 };
 
 subtest 'without version' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/with-version.pl',
-        source_text => 'use LWP::UserAgent;',
+    my $e = source2pi(
+        'test-data/with-version.pl',
+        'use LWP::UserAgent;',
     );
 
     ok( !$e->_is_ignored, '_is_ignored' );
@@ -41,9 +44,9 @@ subtest 'without version' => sub {
 };
 
 subtest 'without incorrect import' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/with-version.pl',
-        source_text => 'use LWP::UserAgent qw( new );',
+    my $e = source2pi(
+        'test-data/with-version.pl',
+        'use LWP::UserAgent qw( new );',
     );
 
     ok( !$e->_is_ignored, '_is_ignored' );

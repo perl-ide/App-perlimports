@@ -1,17 +1,17 @@
 use strict;
 use warnings;
 
-use App::perlimports ();
-use Test::More;
-
 use lib 't/lib';
-use TestHelper qw( file2includes ppi_dump );
+
+use App::perlimports ();
+use TestHelper qw( file2includes source2pi );
+use Test::More;
 
 my @includes = file2includes('test-data/http-status.pl');
 
-my $e = App::perlimports->new(
-    filename => 'test-data/http-status.pl',
-    include  => $includes[2],
+my $e = source2pi(
+    'test-data/http-status.pl', undef,
+    { include => $includes[2] }
 );
 
 is(

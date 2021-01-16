@@ -9,15 +9,13 @@ use Data::Dumper qw( Dumper );
 use Data::Printer;
 use List::Util qw( any uniq );
 use Module::Runtime qw( require_module );
-use MooX::HandlesVia;
+use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
-use Path::Tiny qw( path );
-use Perl::Critic::Utils 1.138 qw( is_function_call );
+use Perl::Critic::Utils 1.138 qw( is_function_call is_hash_key );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
-use PPIx::Utils::Classification qw( is_hash_key );
+use PPIx::Utils::Classification qw( is_function_call is_hash_key );
 use Ref::Util qw( is_plain_hashref );
-use String::InterpolatedVariables ();
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
@@ -36,10 +34,10 @@ has _combined_exports => (
 );
 
 has _document => (
-    is      => 'ro',
-    isa     => Object,
-    lazy    => 1,
-    builder => '_build_document',
+    is       => 'ro',
+    isa      => InstanceOf ['App::perlimports::Document'],
+    required => 1,
+    init_arg => 'document',
 );
 
 has errors => (
@@ -60,13 +58,6 @@ has _export_inspector => (
     predicate => '_has_export_inspector',     # used in test
     lazy      => 1,
     builder   => '_build_export_inspector',
-);
-
-has _filename => (
-    is       => 'ro',
-    isa      => Str,
-    init_arg => 'filename',
-    required => 1,
 );
 
 has formatted_ppi_statement => (
@@ -134,21 +125,6 @@ has _module_name => (
     default => sub { shift->_include->module },
 );
 
-has _never_exports => (
-    is       => 'ro',
-    isa      => HashRef,
-    init_arg => 'never_exports',
-    lazy     => 1,
-    builder  => '_build_never_exports',
-);
-
-has _never_export_modules => (
-    is        => 'ro',
-    isa       => ArrayRef [Str],
-    init_arg  => 'never_export_modules',
-    predicate => '_has_never_export_modules',
-);
-
 has _original_imports => (
     is      => 'ro',
     isa     => ArrayRef,
@@ -163,20 +139,13 @@ has _pad_imports => (
     default  => sub { 1 },
 );
 
-has _vars => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-    builder => '_build_vars',
-);
-
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return exists $self->_never_exports->{ $self->_module_name }
+        return exists $self->_document->never_exports->{ $self->_module_name }
             || $self->_export_inspector->is_oo_class;
     },
 );
@@ -194,12 +163,6 @@ around BUILDARGS => sub {
 
     return $class->$orig(%args);
 };
-
-sub _build_document {
-    my $self    = shift;
-    my $content = path( $self->_filename )->slurp;
-    return PPI::Document->new( \$content );
-}
 
 sub _build_export_inspector {
     my $self = shift;
@@ -232,7 +195,7 @@ sub _build_imports {
     my %sub_names;
     for my $sub (
         @{
-            $self->_document->find(
+            $self->_document->ppi_document->find(
                 sub { $_[1]->isa('PPI::Statement::Sub') }
                 )
                 || []
@@ -247,7 +210,7 @@ sub _build_imports {
 
     #  A used import might be a variable interpolated into quotes.
     my %found;
-    for my $var ( keys %{ $self->_vars } ) {
+    for my $var ( keys %{ $self->_document->vars } ) {
         if ( $self->_is_importable($var) ) {
             $found{$var} = 1;
         }
@@ -256,7 +219,7 @@ sub _build_imports {
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word (
         @{
-            $self->_document->find(
+            $self->_document->ppi_document->find(
                 sub {
                     $_[1]->isa('PPI::Token::Word')
                         || $_[1]->isa('PPI::Token::Symbol')
@@ -366,28 +329,6 @@ sub _build_original_imports {
     return \@imports;
 }
 
-sub _build_vars {
-    my $self = shift;
-    my %vars;
-    for my $quote (
-        @{
-            $self->_document->find(
-                sub {
-                    $_[1]->isa('PPI::Token::Quote')
-                        && !$_[1]->isa('PPI::Token::Quote::Single');
-                }
-                )
-                || []
-        }
-    ) {
-        my $vars = String::InterpolatedVariables::extract($quote);
-        for my $var ( @{$vars} ) {
-            $vars{$var} = 1;
-        }
-    }
-    return \%vars;
-}
-
 sub _build_is_ignored {
     my $self = shift;
 
@@ -491,34 +432,6 @@ sub _build_is_translatable {
     # Any other case of "require Foo;" should be translate to "use Foo ();"
     # as those are functionally equivalent."
     return 1;
-}
-
-# Returns a HashRef of modules which will always be converted to avoid imports.
-# This is mostly for speed and a matter of convenience so that we don't have to
-# examine modules (like strictly Object Oriented modules) which we know will
-# not have anything to export.
-
-sub _build_never_exports {
-    my $self = shift;
-
-    my %modules = (
-        'App::perlimports' => 1,
-        'HTTP::Daemon'     => 1,
-        'HTTP::Headers'    => 1,
-        'HTTP::Response'   => 1,
-        'HTTP::Tiny'       => 1,
-        'LWP::UserAgent'   => 1,
-        'URI'              => 1,
-        'WWW::Mechanize'   => 1,
-    );
-
-    if ( $self->_has_never_export_modules ) {
-        for my $module ( @{ $self->_never_export_modules } ) {
-            $modules{$module} = 1;
-        }
-    }
-
-    return \%modules;
 }
 
 sub _build_formatted_ppi_statement {

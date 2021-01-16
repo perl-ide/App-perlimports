@@ -4,13 +4,14 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 subtest 'Getopt::Long' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/foo.pl',
-        source_text => 'use Getopt::Long;',
+    my $e = source2pi(
+        'test-data/foo.pl',
+        'use Getopt::Long;',
     );
     is(
         $e->_module_name(), 'Getopt::Long',
@@ -28,9 +29,9 @@ subtest 'Getopt::Long' => sub {
 };
 
 subtest 'Test::More' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/foo.t',
-        source_text => 'use Test::More;',
+    my $e = source2pi(
+        'test-data/foo.t',
+        'use Test::More;',
     );
     is(
         $e->_module_name(), 'Test::More',
@@ -48,9 +49,9 @@ subtest 'Test::More' => sub {
 };
 
 subtest 'pragma' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/foo.t',
-        source_text => 'use strict;',
+    my $e = source2pi(
+        'test-data/foo.t',
+        'use strict;',
     );
     is(
         $e->_module_name(), 'strict',
@@ -67,9 +68,9 @@ subtest 'pragma' => sub {
 };
 
 subtest 'ViaExporter' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/via-exporter.pl',
-        source_text => 'use ViaExporter qw( foo $foo @foo %foo );',
+    my $e = source2pi(
+        'test-data/via-exporter.pl',
+        'use ViaExporter qw( foo $foo @foo %foo );',
     );
     is(
         $e->_module_name(), 'ViaExporter',

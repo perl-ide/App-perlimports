@@ -7,6 +7,7 @@ use FindBin qw( $Bin );
 use lib "$Bin/../lib";
 
 use App::perlimports ();
+use App::perlimports::Document ();
 use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
@@ -59,9 +60,9 @@ my ( $opt, $usage ) = describe_options(
     ],
     [],
     [],
-    [ 'version', 'Print installed version', { shortcircuit => 1 } ],
+    [ 'version',   'Print installed version', { shortcircuit => 1 } ],
     [ 'verbose|v', 'Print errors to STDERR' ],
-    [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+    [ 'help',      "Print usage message and exit", { shortcircuit => 1 } ],
     [
         'verbose-help', "Print usage message and documentation ",
         { shortcircuit => 1 }
@@ -129,7 +130,7 @@ if ( $opt->never_export_modules_filename ) {
     @never_exports = uniq( @never_exports, @from_file );
 }
 
-my %base_args = (
+my $pi_doc = App::perlimports::Document->new(
     filename => $opt->filename,
     @ignore_modules
     ? ( ignored_modules => \@ignore_modules )
@@ -140,13 +141,13 @@ my %base_args = (
     $opt->libs
     ? ( libs => [ split m{,}, $opt->libs ] )
     : (),
-    pad_imports => $opt->padding,
 );
 
 foreach my $include ( @{$includes} ) {
     my $e = App::perlimports->new(
-        %base_args,
-        include => $include,
+        document    => $pi_doc,
+        include     => $include,
+        pad_imports => $opt->padding,
     );
 
     my $elem;

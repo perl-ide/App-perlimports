@@ -1,12 +1,15 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $e = App::perlimports->new(
-    filename    => 'test-data/find-bin.pl',
-    source_text => 'use FindBin qw( $Bin );',
+my $e = source2pi(
+    'test-data/find-bin.pl',
+    'use FindBin qw( $Bin );',
 );
 is(
     $e->_module_name(), 'FindBin',

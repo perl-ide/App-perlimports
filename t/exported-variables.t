@@ -4,11 +4,12 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $e = App::perlimports->new(
-    filename    => 'test-data/exported-variables.pl',
-    source_text => 'use ViaExporter qw();',
+my $e = source2pi(
+    'test-data/exported-variables.pl',
+    'use ViaExporter qw();',
 );
 
 is( $e->_module_name(), 'ViaExporter', '_module_name' );

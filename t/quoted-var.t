@@ -1,8 +1,11 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
 use Path::Tiny qw( path );
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 my $filename = 'test-data/quoted-var.pl';
@@ -15,9 +18,10 @@ my $includes = $doc->find(
     }
 ) || [];
 
-my $e = App::perlimports->new(
-    filename => $filename,
-    include  => $includes->[2],
+my $e = source2pi(
+    $filename,
+    undef,
+    { include => $includes->[2] },
 );
 
 ok( !$e->_is_ignored, 'is not ignored' );

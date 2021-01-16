@@ -1,16 +1,19 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
 use Path::Tiny qw( path );
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 my $filename = 'test-data/require.pl';
 
 subtest 'replace top level require via snippet' => sub {
-    my $e = App::perlimports->new(
-        filename    => $filename,
-        source_text => 'require LWP::UserAgent;',
+    my $e = source2pi(
+        $filename,
+        'require LWP::UserAgent;',
     );
 
     ok( !$e->_is_ignored, 'is not ignored' );
@@ -31,9 +34,10 @@ my $includes = $doc->find(
 ) || [];
 
 subtest 'replace top level require from document' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[2],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[2] },
     );
 
     ok( !$e->_is_ignored, 'is not ignored' );
@@ -45,9 +49,10 @@ subtest 'replace top level require from document' => sub {
 };
 
 subtest 'preserve require inside if block' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[3],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[3] },
     );
 
     ok( $e->_is_ignored, 'is ignored' );
@@ -59,9 +64,10 @@ subtest 'preserve require inside if block' => sub {
 };
 
 subtest 'preserve require inside postfix if defined' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[4],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[4] },
     );
 
     ok( $e->_is_ignored, 'is ignored' );
@@ -73,9 +79,10 @@ subtest 'preserve require inside postfix if defined' => sub {
 };
 
 subtest 'do not import fully qualified function calls' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[5],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[5] },
     );
 
     is(
@@ -86,9 +93,10 @@ subtest 'do not import fully qualified function calls' => sub {
 };
 
 subtest 'preserve require inside postfix if eq' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[6],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[6] },
     );
 
     ok( $e->_is_ignored, 'is ignored' );
@@ -100,9 +108,10 @@ subtest 'preserve require inside postfix if eq' => sub {
 };
 
 subtest 'require rewritten as use' => sub {
-    my $e = App::perlimports->new(
-        filename => $filename,
-        include  => $includes->[7],
+    my $e = source2pi(
+        $filename,
+        undef,
+        { include => $includes->[7] },
     );
 
     ok( !$e->_is_ignored, 'is not ignored' );
@@ -114,9 +123,9 @@ subtest 'require rewritten as use' => sub {
 };
 
 subtest 'require Exporter not rewritten' => sub {
-    my $e = App::perlimports->new(
-        filename    => 't/lib/RequireExporter.pm',
-        source_text => 'require Exporter;',
+    my $e = source2pi(
+        't/lib/RequireExporter.pm',
+        'require Exporter;',
     );
 
     ok( $e->_is_ignored, 'is not ignored' );

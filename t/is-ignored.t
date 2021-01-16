@@ -1,13 +1,16 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 subtest 'Types::Standard' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'lib/App/perlimports.pm',
-        source_text => 'use Types::Standard;',
+    my $e = source2pi(
+        'lib/App/perlimports.pm',
+        'use Types::Standard;',
     );
     is(
         $e->_module_name, 'Types::Standard',
@@ -17,10 +20,9 @@ subtest 'Types::Standard' => sub {
 };
 
 subtest 'Test::RequiresInternet' => sub {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/noop.t',
-        source_text =>
-            q{use Test::RequiresInternet ('www.example.com' => 80 );},
+    my $e = source2pi(
+        'test-data/noop.t',
+        q{use Test::RequiresInternet ('www.example.com' => 80 );},
     );
     is(
         $e->_module_name, 'Test::RequiresInternet',

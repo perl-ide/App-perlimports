@@ -1,13 +1,16 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is' ];
 
 {
-    my $e = App::perlimports->new(
-        filename    => 'test-data/geo-ip.pl',
-        source_text => 'use Geo::IP;',
+    my $e = source2pi(
+        'test-data/geo-ip.pl',
+        'use Geo::IP;',
     );
 
     is(
@@ -18,10 +21,10 @@ use Test::More import => [ 'done_testing', 'is' ];
 }
 
 {
-    my $e = App::perlimports->new(
-        filename        => 'test-data/geo-ip.pl',
-        ignored_modules => ['Geo::IP'],
-        source_text     => 'use Geo::IP;',
+    my $e = source2pi(
+        'test-data/geo-ip.pl',
+        'use Geo::IP;',
+        { ignored_modules => ['Geo::IP'] },
     );
     is(
         $e->formatted_ppi_statement,

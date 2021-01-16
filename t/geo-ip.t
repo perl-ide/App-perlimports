@@ -3,12 +3,15 @@ use warnings;
 
 # misses import in ternary
 
+use lib 't/lib';
+
 use App::perlimports ();
+use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply' ];
 
-my $e = App::perlimports->new(
-    filename    => 'test-data/geo-ip.pl',
-    source_text => 'use Geo::IP;',
+my $e = source2pi(
+    'test-data/geo-ip.pl',
+    'use Geo::IP;',
 );
 
 is_deeply(
