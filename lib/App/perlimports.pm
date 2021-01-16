@@ -110,14 +110,6 @@ has _is_translatable => (
     documentation => 'Is this a require which can be converted to a use?',
 );
 
-has _libs => (
-    is       => 'ro',
-    isa      => ArrayRef,
-    init_arg => 'libs',
-    lazy     => 1,
-    default  => sub { [ 'lib', 't/lib' ] },
-);
-
 has _module_name => (
     is      => 'ro',
     isa     => Maybe [Str],

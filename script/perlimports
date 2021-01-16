@@ -138,9 +138,6 @@ my $pi_doc = App::perlimports::Document->new(
     @never_exports
     ? ( never_export_modules => \@never_exports )
     : (),
-    $opt->libs
-    ? ( libs => [ split m{,}, $opt->libs ] )
-    : (),
 );
 
 foreach my $include ( @{$includes} ) {
