@@ -413,6 +413,7 @@ sub _build_is_ignored {
 
     my %ignore = (
         'Moo'                    => 1,
+        'Moo::Role'              => 1,
         'Moose'                  => 1,
         'namespace::autoclean'   => 1,
         'Test::Needs'            => 1,
