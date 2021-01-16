@@ -11,7 +11,7 @@ use Sub::Exporter -setup => { exports => [qw( file2includes ppi_dump )] };
 
 sub file2includes {
     my $filename = shift;
-    my $content  = path('test-data')->child($filename)->slurp;
+    my $content  = path($filename)->slurp;
     my $doc      = PPI::Document->new( \$content );
 
     my $includes = $doc->find(

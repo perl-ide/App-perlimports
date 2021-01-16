@@ -7,7 +7,7 @@ use Test::More;
 use lib 't/lib';
 use TestHelper qw( file2includes ppi_dump );
 
-my @includes = file2includes('http-status.pl');
+my @includes = file2includes('test-data/http-status.pl');
 
 my $e = App::perlimports->new(
     filename => 'test-data/http-status.pl',
