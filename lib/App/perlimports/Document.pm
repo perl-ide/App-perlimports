@@ -62,12 +62,14 @@ sub _build_ppi_document {
 sub _build_vars {
     my $self = shift;
     my %vars;
+
     for my $quote (
         @{
             $self->ppi_document->find(
                 sub {
-                    $_[1]->isa('PPI::Token::Quote')
-                        && !$_[1]->isa('PPI::Token::Quote::Single');
+                    ( $_[1]->isa('PPI::Token::Quote')
+                            && !$_[1]->isa('PPI::Token::Quote::Single') )
+                        || ( $_[1]->isa('PPI::Token::QuoteLike::Regexp') );
                 }
                 )
                 || []
