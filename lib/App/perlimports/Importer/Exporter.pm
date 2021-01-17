@@ -27,15 +27,17 @@ sub maybe_get_exports {
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
-    my @export    = @{ $module_name . '::EXPORT' };
-    my @export_ok = @{ $module_name . '::EXPORT_OK' };
+    my @export      = @{ $module_name . '::EXPORT' };
+    my @export_ok   = @{ $module_name . '::EXPORT_OK' };
+    my %export_tags = %{ $module_name . '::EXPORT_TAGS' };
     use strict;
 ## use critic
 
     return {
-        export    => _list_to_hash(@export),
-        export_ok => _list_to_hash(@export_ok),
-        error     => $error
+        export      => _list_to_hash(@export),
+        export_ok   => _list_to_hash(@export_ok),
+        export_tags => \%export_tags,
+        error       => $error
     };
 }
 

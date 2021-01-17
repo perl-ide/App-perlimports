@@ -5,12 +5,13 @@ use warnings;
 
 use App::perlimports::ExportInspector ();
 use Data::Printer;
+use List::Util qw( max );
 use Pod::Usage qw( pod2usage );
 use Text::SimpleTable::AutoWidth ();
 
 my $module_name = shift @ARGV;
 
-if (!$module_name || $module_name eq '--help' ) {
+if ( !$module_name || $module_name eq '--help' ) {
     print pod2usage();
     exit;
 }
@@ -39,6 +40,30 @@ if ( $ei->class_isa ) {
     $t->captions( ['ISA'] );
     for my $class ( $ei->class_isa ) {
         $t->row($class);
+    }
+    print $t->draw;
+}
+
+if ( $ei->export_tag_names ) {
+    my %tags = %{ $ei->export_tags };
+    my @keys = keys %tags;
+
+    my @headings = ( 'Export Tag', 'Exported Symbols' );
+
+    my $col1_width = max map { length($_) } @keys, $headings[0];
+    my $col2_width = max map { length($_) } map ( { @{$_} } values %tags ),
+        $headings[1];
+
+    my $t = Text::SimpleTable->new(
+        [ $col1_width, 'Export Tag' ],
+        [ $col2_width, 'Exported Symbols' ]
+    );
+
+    my $i = 0;
+    for my $key ( sort @keys ) {
+        $t->row( $key, join "\n", sort @{ $tags{$key} } );
+        ++$i;
+        $t->hr if $i < scalar @keys;
     }
     print $t->draw;
 }

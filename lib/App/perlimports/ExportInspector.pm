@@ -85,6 +85,17 @@ has export_ok => (
     default => sub { $_[0]->_exporter_lists->{export_ok} },
 );
 
+has export_tags => (
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        export_tag_names => 'keys',
+    },
+    lazy    => 1,
+    default => sub { $_[0]->_exporter_lists->{export_tags} },
+);
+
 has import_flags => (
     is          => 'ro',
     isa         => ArrayRef,
@@ -222,7 +233,7 @@ sub _build_exporter_lists {
     my $self = shift;
 
     if ( !$self->can_require_module ) {
-        return { export => {}, export_ok => {}, };
+        return { export => {}, export_ok => {}, export_tags => {}, };
     }
 
     my $lists
