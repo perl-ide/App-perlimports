@@ -313,7 +313,6 @@ sub _build_original_imports {
         my $expr  = $expr_qw->[0];
         my @words = $expr_qw->[0]->literal;
         for my $w (@words) {
-            next if $w =~ /\A [:\-\+]/x;
             push @imports, $w;
         }
     }
