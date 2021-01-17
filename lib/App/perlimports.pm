@@ -284,15 +284,15 @@ sub _build_imports {
 
     my @found = map { $self->_import_name($_) } keys %found;
 
-    # Carp exports verbose, which is a symbol which doesn't actually exist.
-    # It's basically a flag, so if it's in the import, we'll just preserve it.
-    if (
-        $self->_module_name eq 'Carp' && (
-            any { $_ eq 'verbose' }
-            @{ $self->_original_imports }
-        )
-    ) {
-        push @found, 'verbose';
+    # Some modules have imports which are basically flags, rather than names of
+    # symbols to export.  So if a flag is already in the import, we need to
+    # preserve it, rather than risk altering the behaviour of the module.
+    if ( $self->_export_inspector->has_import_flags ) {
+        for my $arg ( @{ $self->_export_inspector->import_flags } ) {
+            if ( any { $_ eq $arg } @{ $self->_original_imports } ) {
+                push @found, $arg;
+            }
+        }
     }
 
     @found = uniq sort { "\L$a" cmp "\L$b" } @found;

@@ -85,6 +85,17 @@ has export_ok => (
     default => sub { $_[0]->_exporter_lists->{export_ok} },
 );
 
+has import_flags => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    lazy        => 1,
+    handles_via => 'Array',
+    handles     => {
+        has_import_flags => 'count',
+    },
+    builder => '_build_import_flags',
+);
+
 has is_moose_class => (
     is      => 'ro',
     isa     => Bool,
@@ -166,6 +177,20 @@ sub _build_combined_exports {
     }
 
     return \%exports;
+}
+
+sub _build_import_flags {
+    my $self = shift;
+
+    my %modules = (
+        Carp    => ['verbose'],
+        English => ['-no_match_vars'],
+    );
+
+    return
+        exists $modules{ $self->_module_name }
+        ? $modules{ $self->_module_name }
+        : [];
 }
 
 sub _build_module_is_exporter {
