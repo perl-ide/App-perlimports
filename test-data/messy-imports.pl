@@ -9,7 +9,7 @@ use MooseTypeLibrary qw( HashRef ArrayRef Object Str Bool Maybe CodeRef FileHand
 is_HashRef();
 ArrayRef();
 Object();
-Str();
+my $ref = \&is_Str();
 Bool();
 Maybe();
 CodeRef();

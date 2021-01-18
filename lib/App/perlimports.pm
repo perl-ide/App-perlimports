@@ -255,6 +255,13 @@ sub _build_imports {
             $found_import = $word->symbol;
         }
 
+        # Match on \&is_Str as is_Str
+        elsif ($word->isa('PPI::Token::Symbol')
+            && $word->symbol_type eq '&'
+            && $self->_is_importable( substr( $word->symbol, 1 ) ) ) {
+            $found_import = substr( $word->symbol, 1 );
+        }
+
         elsif ( $self->_is_importable("$word") ) {
             $found_import = "$word";
         }
