@@ -458,7 +458,7 @@ sub _build_formatted_ppi_statement {
     if (   $self->_will_never_export
         || $self->_is_translatable
         || ( $self->_has_combined_exports && !@{ $self->_imports } ) ) {
-        return $self->_new_include(
+        return $self->_maybe_get_new_include(
             sprintf(
                 'use %s %s();', $self->_module_name,
                 $self->_include->module_version
@@ -594,16 +594,26 @@ sub _build_formatted_ppi_statement {
         $statement .= ");";
     }
 
-    return $self->_new_include($statement);
+    return $self->_maybe_get_new_include($statement);
 }
 
-sub _new_include {
+sub _maybe_get_new_include {
     my $self      = shift;
     my $statement = shift;
     my $doc       = PPI::Document->new( \$statement );
     my $includes
         = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
-    return $includes->[0]->clone;
+
+    my $check_string = $self->_include . q{};
+    $check_string =~ s{\s+}{ }g;
+
+    my $rewrite = $includes->[0]->clone;
+
+    # If the only difference is spacing, we'll just return the original
+    # statement rather than mess with the original formatting. This check is
+    # naive, but should be good enough for now. It should reduce the churn
+    # created by this script.
+    return ( "$rewrite" eq $check_string ) ? $self->_include : $rewrite;
 }
 
 sub _maybe_require_module {
