@@ -30,7 +30,7 @@ has _combined_exports => (
         _import_name          => 'get',
     },
     lazy    => 1,
-    default => sub { $_[0]->_export_inspector->combined_exports },
+    builder => '_build_combined_exports',
 );
 
 has _document => (
@@ -161,6 +161,15 @@ sub _build_export_inspector {
     return App::perlimports::ExportInspector->new(
         module_name => $self->_module_name,
     );
+}
+
+sub _build_combined_exports {
+    my $self    = shift;
+    my $exports = $self->_export_inspector->combined_exports;
+    if ( $self->_export_inspector->has_errors ) {
+        $self->_add_error($_) for @{ $self->_export_inspector->errors };
+    }
+    return $exports;
 }
 
 sub _build_isa_test_builder_module {
@@ -441,14 +450,6 @@ sub _build_formatted_ppi_statement {
 
     # Nothing to do here. Preserve the original statement.
     return $self->_include if $self->_is_ignored;
-
-    # Create this attribute so that we know if there are errors
-    if ( !$self->_will_never_export ) {
-        $self->_combined_exports;
-        if ( $self->_export_inspector->has_errors ) {
-            $self->_add_error($_) for @{ $self->_export_inspector->errors };
-        }
-    }
 
     # In this case we either have a module which we know will never export
     # symbols or a module which can export but for which we haven't found any
