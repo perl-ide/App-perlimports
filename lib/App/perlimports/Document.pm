@@ -77,7 +77,25 @@ sub _build_vars {
     ) {
         my $vars = String::InterpolatedVariables::extract($quote);
         for my $var ( @{$vars} ) {
-            $vars{$var} = 1;
+            ++$vars{$var};
+        }
+    }
+
+    # Catch vars like ${FOO_BAR}. This is probably not good enough.
+    for my $cast (
+        @{
+            $self->ppi_document->find(
+                sub { $_[1]->isa('PPI::Token::Cast'); }
+                )
+                || []
+        }
+    ) {
+        next unless $cast->snext_sibling->isa('PPI::Structure::Block');
+
+        my $sigil   = $cast . q{};
+        my $sibling = $cast->snext_sibling . q{};
+        if ( $sibling =~ m/{(\w+)}/ ) {
+            ++$vars{ $sigil . $1 };
         }
     }
     return \%vars;
