@@ -4,4 +4,5 @@ use warnings;
 on 'test' => sub {
     requires 'Perl::Critic::Utils' => 0;
     requires 'Pithub' => '0';
+    requires 'File::Spec::Functions' => '0';
 };

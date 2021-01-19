@@ -232,6 +232,8 @@ sub _build_imports {
     ) {
         my $found_import;
 
+        next if exists $found{"$word"};
+
         # Without the sub name check, we turn
         # use List::Util ();
         # sub any { }
@@ -250,12 +252,14 @@ sub _build_imports {
         # ie:
         # use warnings;
         # use Test::Warnings; # exports warnings()
-        if ( $word->parent && $word->parent->isa('PPI::Statement::Include') )
-        {
+        #
+        # However, we also want to catch function calls in use statements, like
+        # "use lib catfile( 't', 'lib');"
+        if (   $word->parent
+            && $word->parent->isa('PPI::Statement::Include')
+            && !is_function_call($word) ) {
             next;
         }
-
-        next if exists $found{"$word"};
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
