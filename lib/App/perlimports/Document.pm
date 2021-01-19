@@ -81,6 +81,29 @@ sub _build_vars {
         }
     }
 
+    # Crude hack to catch vars like ${FOO_BAR} in heredocs.
+    for my $heredoc (
+        @{
+            $self->ppi_document->find(
+                sub {
+                    $_[1]->isa('PPI::Token::HereDoc');
+                }
+                )
+                || []
+        }
+    ) {
+        # Skip obvious single quotes.
+        next if $heredoc =~ m{'};
+        my $vars
+            = String::InterpolatedVariables::extract( $heredoc->heredoc );
+        for my $var ( @{$vars} ) {
+            if ( $var =~ m/([\$\@\%])\{(\w+)\}/ ) {
+                $var = $1 . $2;
+            }
+            ++$vars{$var};
+        }
+    }
+
     # Catch vars like ${FOO_BAR}. This is probably not good enough.
     for my $cast (
         @{

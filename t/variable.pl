@@ -6,7 +6,7 @@ use lib 't/lib';
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use TestHelper qw( source2pi );
 
-my $source_text = 'use Getopt::Long qw( $RETURN_IN_ORDER );';
+my $source_text = 'use Getopt::Long qw( $REQUIRE_ORDER $RETURN_IN_ORDER );';
 my $e           = source2pi( 'test-data/variable.pl', $source_text );
 
 is(
