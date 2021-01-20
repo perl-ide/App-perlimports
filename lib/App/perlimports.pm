@@ -238,7 +238,10 @@ sub _build_imports {
         # sub any {}
         next if exists $sub_names{"$word"};
 
-        next if is_hash_key($word);
+        # A hash key might, for example, be a variable.
+        if ( is_hash_key($word) && !$word->isa('PPI::Token::Symbol') ) {
+            next;
+        }
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
