@@ -69,7 +69,8 @@ sub _build_vars {
                 sub {
                     ( $_[1]->isa('PPI::Token::Quote')
                             && !$_[1]->isa('PPI::Token::Quote::Single') )
-                        || ( $_[1]->isa('PPI::Token::QuoteLike::Regexp') );
+                        || ( $_[1]->isa('PPI::Token::QuoteLike::Regexp') )
+                        || ( $_[1]->isa('PPI::Token::Symbol') );
                 }
                 )
                 || []
