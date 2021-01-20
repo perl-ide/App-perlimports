@@ -228,7 +228,7 @@ sub _build_imports {
 
         next if exists $found{"$word"};
 
-        # Without the sub name check, we turn
+        # Without the sub name check, we accidentally turn
         # use List::Util ();
         # sub any { }
         #
