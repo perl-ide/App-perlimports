@@ -26,13 +26,6 @@ has _filename => (
     required => 1,
 );
 
-has _ignored_modules => (
-    is        => 'ro',
-    isa       => ArrayRef,
-    init_arg  => 'ignored_modules',
-    predicate => '_has_ignored_modules',
-);
-
 has never_exports => (
     is      => 'ro',
     isa     => HashRef,
