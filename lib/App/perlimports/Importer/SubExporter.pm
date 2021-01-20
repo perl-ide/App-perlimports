@@ -22,7 +22,7 @@ sub maybe_get_exports {
     ## use critic
 
     my %export = map { $_ => $_ }
-        grep { $_ ne 'BEGIN' && $_ ne '__ANON__' && $_ ne 'ISA' }
+        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
         Symbol::Get::get_names($pkg);
 
     my %attr = ( is_moose_type_class => 0, isa => [] );
