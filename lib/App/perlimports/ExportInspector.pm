@@ -74,6 +74,17 @@ has export => (
     default => sub { $_[0]->_exporter_lists->{export} },
 );
 
+has export_fail => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        has_export_fail => 'count',
+    },
+    lazy    => 1,
+    default => sub { $_[0]->_exporter_lists->{export_fail} },
+);
+
 has export_ok => (
     is          => 'ro',
     isa         => HashRef,
@@ -233,7 +244,12 @@ sub _build_exporter_lists {
     my $self = shift;
 
     if ( !$self->can_require_module ) {
-        return { export => {}, export_ok => {}, export_tags => {}, };
+        return {
+            export      => {},
+            export_fail => {},
+            export_ok   => {},
+            export_tags => {},
+        };
     }
 
     my %no_import = (

@@ -77,6 +77,15 @@ if ( $ei->export_tag_names ) {
     print $t->draw;
 }
 
+if ( $ei->has_export_fail ) {
+    my $t = Text::SimpleTable::AutoWidth->new();
+    $t->captions( ['@EXPORT_FAIL'] );
+    for my $val ( sort @{ $ei->export_fail } ) {
+        $t->row($val);
+    }
+    print $t->draw;
+}
+
 # PODNAME: dump-perl-exports
 # ABSTRACT: A command line utility for describing what a class exports
 

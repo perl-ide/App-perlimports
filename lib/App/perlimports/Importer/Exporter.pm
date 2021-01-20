@@ -29,12 +29,14 @@ sub maybe_get_exports {
     no strict 'refs';
     my @export      = @{ $module_name . '::EXPORT' };
     my @export_ok   = @{ $module_name . '::EXPORT_OK' };
+    my @export_fail = @{ $module_name . '::EXPORT_FAIL' };
     my %export_tags = %{ $module_name . '::EXPORT_TAGS' };
     use strict;
 ## use critic
 
     return {
         export      => _list_to_hash(@export),
+        export_fail => \@export_fail,
         export_ok   => _list_to_hash(@export_ok),
         export_tags => \%export_tags,
         error       => $error
