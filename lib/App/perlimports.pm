@@ -364,10 +364,14 @@ sub _build_is_ignored {
     return 1 if $self->_include->version;
 
     my %ignore = (
+        'Devel::Confess'         => 1,
+        'Exception::Class'       => 1,
+        'Exporter'               => 1,
         'Moo'                    => 1,
         'Moo::Role'              => 1,
         'Moose'                  => 1,
         'namespace::autoclean'   => 1,
+        'Sub::Exporter'          => 1,
         'Test::Needs'            => 1,
         'Test::RequiresInternet' => 1,
         'Types::Standard'        => 1,

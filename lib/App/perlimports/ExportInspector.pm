@@ -183,7 +183,7 @@ sub _build_combined_exports {
 
     my %exports = ( %{ $self->export }, %{ $self->export_ok } );
 
-    if ( !keys %exports ) {
+    if ( !keys %exports && $self->_module_name ne 'Exporter' ) {
         %exports = %{ $self->_sub_exporter_inspection->{export} };
     }
 
@@ -236,9 +236,14 @@ sub _build_exporter_lists {
         return { export => {}, export_ok => {}, export_tags => {}, };
     }
 
-    my $lists
-        = App::perlimports::Importer::Exporter::maybe_get_exports(
-        $self->_module_name );
+    my %no_import = (
+        Exporter => 1,
+    );
+
+    my $lists = App::perlimports::Importer::Exporter::maybe_get_exports(
+        $self->_module_name,
+        exists $no_import{ $self->_module_name } ? 0 : 1
+    );
 
     if ( my $error = delete $lists->{error} ) {
         $self->_add_error($error);
