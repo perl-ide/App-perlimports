@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Perl::Critic::Utils qw( $QUOTE );
 
-my $got = 'PUT http://www.example.com' . "\n";
-
-is( $got, <<"EOT", 'put' );
-PUT http://www.example.com
+my $foo = <<"EOT";
+one $QUOTE two
 EOT
 
-done_testing();
+my $bar = <<'EOT';
+one $DQUOTE two
+EOT

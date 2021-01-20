@@ -8,6 +8,7 @@ use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
+use PPIx::QuoteLike               ();
 use String::InterpolatedVariables ();
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
@@ -69,8 +70,7 @@ sub _build_vars {
                 sub {
                     ( $_[1]->isa('PPI::Token::Quote')
                             && !$_[1]->isa('PPI::Token::Quote::Single') )
-                        || ( $_[1]->isa('PPI::Token::QuoteLike::Regexp') )
-                        || ( $_[1]->isa('PPI::Token::Symbol') );
+                        || $_[1]->isa('PPI::Token::QuoteLike::Regexp');
                 }
                 )
                 || []
@@ -93,10 +93,10 @@ sub _build_vars {
                 || []
         }
     ) {
-        # Skip obvious single quotes.
+        my $content = join "\n", $heredoc->heredoc;
         next if $heredoc =~ m{'};
-        my $vars
-            = String::InterpolatedVariables::extract( $heredoc->heredoc );
+
+        my $vars = String::InterpolatedVariables::extract($content);
         for my $var ( @{$vars} ) {
             if ( $var =~ m/([\$\@\%])\{(\w+)\}/ ) {
                 $var = $1 . $2;
