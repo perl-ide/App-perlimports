@@ -209,13 +209,7 @@ sub _build_imports {
         }
     }
 
-    #  A used import might be a variable interpolated into quotes.
     my %found;
-    for my $var ( keys %{ $self->_document->vars } ) {
-        if ( $self->_is_importable($var) ) {
-            $found{$var} = 1;
-        }
-    }
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word (
@@ -300,6 +294,13 @@ sub _build_imports {
         }
 
         $found{$found_import}++ if $found_import;
+    }
+
+    #  A used import might be a variable interpolated into quotes.
+    for my $var ( keys %{ $self->_document->vars } ) {
+        if ( $self->_is_importable($var) ) {
+            $found{$var} = 1;
+        }
     }
 
     my @found = map { $self->_import_name($_) } keys %found;
