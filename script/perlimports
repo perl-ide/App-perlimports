@@ -132,7 +132,6 @@ if ( $opt->never_export_modules_filename ) {
 
 my $pi_doc = App::perlimports::Document->new(
     filename => $opt->filename,
-    @ignore_modules,
     @never_exports
     ? ( never_export_modules => \@never_exports )
     : (),
