@@ -13,8 +13,45 @@ use List::Util qw( uniq );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
 use Try::Tiny qw( catch try );
+use Types::Standard qw( ArrayRef HashRef InstanceOf Str );
 
-sub run {
+has _args => (
+    is      => 'rw',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_args',
+);
+
+has _ignore_modules => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_ignore_modules',
+);
+
+has _never_exports => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_never_exports',
+);
+
+has _opts => (
+    is      => 'rw',
+    isa     => InstanceOf ['Getopt::Long::Descriptive::Opts'],
+    lazy    => 1,
+    default => sub { $_[0]->_args->{opts} },
+);
+
+has _usage => (
+    is      => 'rw',
+    isa     => Str,
+    lazy    => 1,
+    default => sub { $_[0]->_args->{usage} },
+);
+
+sub _build_args {
+    my $self = shift;
     my ( $opt, $usage ) = describe_options(
         'perlimports %o',
         [
@@ -71,31 +108,71 @@ sub run {
             { shortcircuit => 1 }
         ],
     );
+    return { opts => $opt, usage => $usage, };
+}
 
-    if ( $opt->help ) {
-        print $usage->text;
-        exit;
+sub _build_ignore_modules {
+    my $self = shift;
+    my @ignore_modules
+        = $self->_opts->ignore_modules
+        ? split m{,}, $self->_opts->ignore_modules
+        : ();
+
+    if ( $self->_opts->ignore_modules_filename ) {
+        my @from_file
+            = path( $self->_opts->ignore_modules_filename )
+            ->lines( { chomp => 1 } );
+        @ignore_modules = uniq( @ignore_modules, @from_file );
+    }
+    return \@ignore_modules;
+}
+
+sub _build_never_exports {
+    my $self = shift;
+
+    my @never_exports
+        = $self->_opts->never_export_modules
+        ? split m{,}, $self->_opts->never_export_modules
+        : ();
+
+    if ( $self->_opts->never_export_modules_filename ) {
+        my @from_file
+            = path( $self->_opts->never_export_modules_filename )
+            ->lines( { chomp => 1 } );
+        @never_exports = uniq( @never_exports, @from_file );
+    }
+    return \@never_exports;
+}
+
+sub run {
+    my $self = shift;
+
+    my $opts = $self->_opts;
+
+    if ( $opts->help ) {
+        print $self->_usage->text;
+        return;
     }
 
-    if ( $opt->verbose_help ) {
-        print $usage->text;
+    if ( $opts->verbose_help ) {
+        print $self->_usage->text;
         print pod2usage();
-        exit;
+        return;
     }
 
-    if ( $opt->version ) {
+    if ( $opts->version ) {
         print $App::perlimports::VERSION;
-        exit;
+        return;
     }
 
     my $input;
 
-    if ( $opt->read_stdin ) {
+    if ( $opts->read_stdin ) {
         local $/;
         $input = <STDIN>;
     }
     else {
-        $input = path( $opt->filename )->slurp;
+        $input = path( $opts->filename )->slurp;
     }
 
     my $doc = PPI::Document->new( \$input );
@@ -106,48 +183,26 @@ sub run {
         }
     ) || [];
 
-    if ( $opt->libs ) {
-        unshift @INC, ( split m{,}, $opt->libs );
-    }
-
-    my @ignore_modules
-        = $opt->ignore_modules
-        ? split m{,}, $opt->ignore_modules
-        : ();
-
-    if ( $opt->ignore_modules_filename ) {
-        my @from_file
-            = path( $opt->ignore_modules_filename )->lines( { chomp => 1 } );
-        @ignore_modules = uniq( @ignore_modules, @from_file );
-    }
-
-    my @never_exports
-        = $opt->never_export_modules
-        ? split m{,}, $opt->never_export_modules
-        : ();
-
-    if ( $opt->never_export_modules_filename ) {
-        my @from_file
-            = path( $opt->never_export_modules_filename )
-            ->lines( { chomp => 1 } );
-        @never_exports = uniq( @never_exports, @from_file );
+    if ( $opts->libs ) {
+        unshift @INC, ( split m{,}, $opts->libs );
     }
 
     my $pi_doc = App::perlimports::Document->new(
-        filename => $opt->filename,
-        @never_exports
-        ? ( never_export_modules => \@never_exports )
+        filename => $opts->filename,
+        @{ $self->_never_exports }
+        ? ( never_export_modules => $self->_never_exports )
         : (),
     );
 
     foreach my $include ( @{$includes} ) {
         my $e = App::perlimports->new(
             document => $pi_doc,
-            @ignore_modules
-            ? ( ignored_modules => \@ignore_modules )
+            @{ $self->_ignore_modules }
+            ? ( ignored_modules => $self->_ignore_modules )
             : (),
+
             include     => $include,
-            pad_imports => $opt->padding,
+            pad_imports => $opts->padding,
         );
 
         my $elem;
@@ -155,7 +210,7 @@ sub run {
             $elem = $e->formatted_ppi_statement;
         }
         catch {
-            print STDERR 'Error: ' . $opt->filename . "\n";
+            print STDERR 'Error: ' . $opts->filename . "\n";
             print STDERR $include;
             print STDERR $_;
         };
@@ -166,8 +221,8 @@ sub run {
         $include->insert_before( $elem->clone );
         $include->remove;
 
-        if ( $opt->verbose && $e->has_errors ) {
-            print STDERR 'Error: ' . $opt->filename . "\n";
+        if ( $opts->verbose && $e->has_errors ) {
+            print STDERR 'Error: ' . $opts->filename . "\n";
             print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
         }
     }
@@ -176,11 +231,11 @@ sub run {
     # See https://metacpan.org/pod/PPI::Document#serialize
     my $serialized = $doc->serialize;
 
-    if ( $opt->read_stdin ) {
+    if ( $opts->read_stdin ) {
         print $serialized;
     }
-    elsif ( $opt->inplace_edit ) {
-        path( $opt->filename )->spew($serialized);
+    elsif ( $opts->inplace_edit ) {
+        path( $opts->filename )->spew($serialized);
     }
     else {
         print $serialized;
@@ -195,6 +250,12 @@ __END__
 
 =pod
 
-=head1 SYNOPSIS
+=head1 DESCRIPTION
+
+This module isn't really meant to provide a public interface.
+
+=head2 run()
+
+The method which will do the argument parsing and print out the results.
 
 =cut
