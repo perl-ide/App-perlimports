@@ -22,7 +22,7 @@ is(
 
 ok( $e->has_errors, 'has_errors' );
 like(
-    $e->errors->[0], qr{Can't locate Local/Module/Does/Not},
+    $e->errors->[0], qr{Can't locate Local},
     'error message'
 );
 

@@ -5,12 +5,14 @@ use Moo;
 our $VERSION = '0.000001';
 
 use App::perlimports::ExportInspector ();
+use Class::Inspector                  ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
 use List::Util qw( any uniq );
 use Module::Runtime qw( require_module );
 use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
+use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call is_hash_key );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
@@ -135,6 +137,13 @@ has _pad_imports => (
     isa      => Bool,
     init_arg => 'pad_imports',
     default  => sub { 1 },
+);
+
+has _uses_import_into => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_uses_import_into',
 );
 
 has _will_never_export => (
@@ -435,6 +444,9 @@ sub _build_is_ignored {
         };
     }
 
+    # It's really hard to know how to handle these.
+    return 1 if $self->_uses_import_into;
+
     return 0;
 }
 
@@ -626,6 +638,41 @@ sub _build_formatted_ppi_statement {
     }
 
     return $self->_maybe_get_new_include($statement);
+}
+
+sub _build_uses_import_into {
+    my $self = shift;
+
+    my $error;
+
+    # We may not have already required the module
+    try {
+        require_module( $self->_module_name );
+    }
+    catch {
+        $self->_add_error(
+            sprintf(
+                q{Can't locate %s in Import::Into check},
+                $self->_module_name
+            )
+        );
+        $error = 1;
+    };
+
+    return 0 if $error;
+
+    my $filename = Class::Inspector->loaded_filename( $self->_module_name );
+    my $content  = path($filename)->slurp;
+    my $doc      = PPI::Document->new( \$content );
+
+    my $found = $doc->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include')
+                && $_[1]->module eq 'Import::Into';
+        }
+    ) || [];
+
+    return scalar @{$found} ? 1 : 0;
 }
 
 sub _maybe_get_new_include {
