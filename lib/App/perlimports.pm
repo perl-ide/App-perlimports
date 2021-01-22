@@ -118,8 +118,14 @@ has _module_name => (
 );
 
 has _original_imports => (
-    is      => 'ro',
-    isa     => ArrayRef,
+    is          => 'ro',
+    isa         => ArrayRef,
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        _all_original_imports => 'elements',
+        _has_original_imports => 'count',
+    },
     lazy    => 1,
     builder => '_build_original_imports',
 );
@@ -392,6 +398,15 @@ sub _build_is_ignored {
     }
 
     return 1 if exists $ignore{ $self->_module_name };
+
+    # If switches are being passed to import, we can't guess as what is correct
+    # here.
+    if (
+        $self->_has_original_imports && any { $_ =~ m{^\-} }
+        $self->_all_original_imports
+    ) {
+        return 1;
+    }
 
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;
