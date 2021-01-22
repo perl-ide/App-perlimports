@@ -12,18 +12,29 @@ use PPIx::QuoteLike               ();
 use String::InterpolatedVariables ();
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
-has ppi_document => (
-    is      => 'ro',
-    isa     => Object,
-    lazy    => 1,
-    builder => '_build_ppi_document',
-);
-
 has _filename => (
     is       => 'ro',
     isa      => Str,
     init_arg => 'filename',
     required => 1,
+);
+
+has includes => (
+    is          => 'ro',
+    isa         => ArrayRef [Object],
+    handles_via => 'Array',
+    handles     => {
+        all_includes => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_includes',
+);
+
+has original_imports => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_original_imports',
 );
 
 has never_exports => (
@@ -40,6 +51,13 @@ has _never_export_modules => (
     predicate => '_has_never_export_modules',
 );
 
+has ppi_document => (
+    is      => 'ro',
+    isa     => Object,
+    lazy    => 1,
+    builder => '_build_ppi_document',
+);
+
 has vars => (
     is      => 'ro',
     isa     => HashRef,
@@ -47,10 +65,56 @@ has vars => (
     builder => '_build_vars',
 );
 
+sub _build_includes {
+    my $self = shift;
+
+    # version() returns a value if this a dependency on a version of Perl, e.g
+    # use 5.006;
+    # require 5.006;
+    #
+    # We check for type so that we can filter out undef types or "no".
+
+    return $self->ppi_document->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include')
+                && !$_[1]->pragma     # no pragmas
+                && !$_[1]->version    # Perl version requirement
+                && $_[1]->type
+                && ( $_[1]->type eq 'use'
+                || $_[1]->type eq 'require' );
+        }
+    ) || [];
+}
+
 sub _build_ppi_document {
     my $self    = shift;
     my $content = path( $self->_filename )->slurp;
     return PPI::Document->new( \$content );
+}
+
+sub _build_original_imports {
+    my $self = shift;
+
+    my $found
+        = $self->ppi_document->find(
+        sub { $_[1]->isa('PPI::Statement::Include'); } )
+        || [];
+
+    my %imports;
+    for my $include ( @{$found} ) {
+        for my $child ( $include->schildren ) {
+            next unless $child->isa('PPI::Token::QuoteLike::Words');
+            my @imports = $child->literal;
+            if ( exists $imports{ $include->module } ) {
+                push( @{ $imports{ $include->module } }, $child->literal );
+            }
+            else {
+                $imports{ $include->module } = [ $child->literal ];
+            }
+        }
+    }
+
+    return \%imports;
 }
 
 sub _build_vars {

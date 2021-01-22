@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
-use Test::More import => [qw( done_testing is subtest )];
+use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 
 subtest '--filename' => sub {
     my $expected = <<'EOF';
@@ -91,7 +91,7 @@ EOF
 
     local @ARGV = ( '--no-padding', '-f', 'test-data/var-in-hash-key.pl', );
     my $cli = App::perlimports::CLI->new;
-    my ($stdout) = capture {
+    my ( $stdout, $stderr ) = capture {
         $cli->run;
     };
     is( $stdout, $expected );

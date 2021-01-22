@@ -12,7 +12,7 @@ use List::Util qw( uniq );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
 use Try::Tiny qw( catch try );
-use Types::Standard qw( ArrayRef HashRef InstanceOf Str );
+use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
 
 has _args => (
     is      => 'rw',
@@ -44,7 +44,7 @@ has _opts => (
 
 has _usage => (
     is      => 'rw',
-    isa     => Str,
+    isa     => Object,
     lazy    => 1,
     default => sub { $_[0]->_args->{usage} },
 );
@@ -145,13 +145,10 @@ sub _build_never_exports {
 
 sub run {
     my $self = shift;
-
     my $opts = $self->_opts;
 
-    if ( $opts->help ) {
-        print $self->_usage->text;
-        return;
-    }
+    ( print $VERSION )            && return if $opts->version;
+    ( print $self->_usage->text ) && return if $opts->help;
 
     if ( $opts->verbose_help ) {
         print $self->_usage->text;
@@ -159,28 +156,14 @@ sub run {
         return;
     }
 
-    if ( $opts->version ) {
-        print $App::perlimports::VERSION;
-        return;
-    }
-
+    my $doc;
     my $input;
 
     if ( $opts->read_stdin ) {
         local $/;
         $input = <STDIN>;
+        $doc   = PPI::Document->new( \$input );
     }
-    else {
-        $input = path( $opts->filename )->slurp;
-    }
-
-    my $doc = PPI::Document->new( \$input );
-
-    my $includes = $doc->find(
-        sub {
-            $_[1]->isa('PPI::Statement::Include');
-        }
-    ) || [];
 
     if ( $opts->libs ) {
         unshift @INC, ( split m{,}, $opts->libs );
@@ -191,19 +174,18 @@ sub run {
         @{ $self->_never_exports }
         ? ( never_export_modules => $self->_never_exports )
         : (),
+        $doc ? ( ppi_document => $doc ) : (),
     );
 
-    foreach my $include ( @{$includes} ) {
+    foreach my $include ( $pi_doc->all_includes ) {
         my $e = App::perlimports->new(
             document => $pi_doc,
             @{ $self->_ignore_modules }
             ? ( ignored_modules => $self->_ignore_modules )
             : (),
-
             include     => $include,
             pad_imports => $opts->padding,
         );
-
         my $elem;
         try {
             $elem = $e->formatted_ppi_statement;
@@ -217,8 +199,13 @@ sub run {
         next unless $elem;
 
         # https://github.com/adamkennedy/PPI/issues/189
-        $include->insert_before( $elem->clone );
-        $include->remove;
+        my $inserted = $include->insert_before($elem);
+        if ( !$inserted ) {
+            print STDERR 'Could not insert ' . $elem;
+        }
+        else {
+            $include->remove;
+        }
 
         if ( $opts->verbose && $e->has_errors ) {
             print STDERR 'Error: ' . $opts->filename . "\n";
@@ -228,7 +215,7 @@ sub run {
 
     # We need to do this in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
-    my $serialized = $doc->serialize;
+    my $serialized = $pi_doc->ppi_document->serialize;
 
     if ( $opts->read_stdin ) {
         print $serialized;
