@@ -344,15 +344,6 @@ sub _build_is_ignored {
         return 1 if !$self->_is_translatable;
     }
 
-    # If switches are being passed to import, we can't guess as what is correct
-    # here.
-    if (
-        $self->_has_original_imports && any { $_ =~ m{^\-} }
-        $self->_all_original_imports
-    ) {
-        return 1;
-    }
-
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;
 

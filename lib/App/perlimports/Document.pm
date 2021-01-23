@@ -6,6 +6,7 @@ our $VERSION = '0.000001';
 
 use App::perlimports ();
 use Data::Printer;
+use List::Util qw( any );
 use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
@@ -136,7 +137,8 @@ sub _build_includes {
                 && $_[1]->type
                 && ( $_[1]->type eq 'use'
                 || $_[1]->type eq 'require' )
-                && !$self->_is_ignored( $_[1]->module );
+                && !$self->_is_ignored( $_[1]->module )
+                && !$self->_has_import_switches( $_[1]->module );
         }
     ) || [];
 }
@@ -264,6 +266,21 @@ sub _build_never_exports {
     }
 
     return \%modules;
+}
+
+sub _has_import_switches {
+    my $self        = shift;
+    my $module_name = shift;
+
+    # If switches are being passed to import, we can't guess as what is correct
+    # here.
+    if (
+        exists $self->original_imports->{$module_name} && any { $_ =~ m{^\-} }
+        @{ $self->original_imports->{$module_name} || [] }
+    ) {
+        return 1;
+    }
+    return 0;
 }
 
 sub _is_ignored {
