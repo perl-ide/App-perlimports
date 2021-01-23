@@ -122,14 +122,13 @@ has _module_name => (
 has _original_imports => (
     is          => 'ro',
     isa         => ArrayRef,
-    isa         => ArrayRef,
+    init_arg    => 'original_imports',
     handles_via => 'Array',
     handles     => {
         _all_original_imports => 'elements',
         _has_original_imports => 'count',
     },
-    lazy    => 1,
-    builder => '_build_original_imports',
+    default => sub { [] },
 );
 
 has _pad_imports => (
@@ -336,27 +335,6 @@ sub _build_imports {
 
     @found = uniq sort { "\L$a" cmp "\L$b" } @found;
     return \@found;
-}
-
-sub _build_original_imports {
-    my $self = shift;
-
-    # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnusedImport
-    my $expr_qw
-        = $self->_include->find(
-        sub { $_[1]->isa('PPI::Token::QuoteLike::Words'); } )
-        || [];
-
-    my @imports;
-    if ( @$expr_qw == 1 ) {
-        my $expr  = $expr_qw->[0];
-        my @words = $expr_qw->[0]->literal;
-        for my $w (@words) {
-            push @imports, $w;
-        }
-    }
-
-    return \@imports;
 }
 
 sub _build_is_ignored {

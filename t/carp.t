@@ -5,57 +5,72 @@ use lib 't/lib';
 
 use App::perlimports           ();
 use App::perlimports::Document ();
-use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];
+use Test::More import =>
+    [ 'diag', 'done_testing', 'is', 'is_deeply', 'subtest' ];
 use TestHelper qw( source2pi );
 
 subtest 'verbose' => sub {
+    my $doc
+        = App::perlimports::Document->new( filename => 'test-data/carp.pl' );
     my $source_text = 'use Carp qw( croak verbose );';
-    my $e           = source2pi( 'test-data/carp.pl', $source_text );
 
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Carp qw( croak verbose );
+
+croak('oof');
+EOF
     is(
-        $e->formatted_ppi_statement,
-        $source_text,
+        $doc->tidied_document,
+        $expected,
         'verbose is preserved'
-    );
-
-    is_deeply(
-        $e->_original_imports,
-        [ 'croak', 'verbose' ],
-        'original imports'
     );
 };
 
 subtest 'no verbose' => sub {
-    my $source_text = 'use Carp qw( croak );';
-    my $e           = source2pi( 'test-data/carp.pl', $source_text );
+    my $doc = App::perlimports::Document->new(
+        filename => 'test-data/carp-without-verbose.pl' );
+
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Carp qw( croak );
+
+croak('oof');
+EOF
 
     is(
-        $e->formatted_ppi_statement,
-        $source_text,
+        $doc->tidied_document,
+        $expected,
         'verbose is not inserted'
-    );
-
-    is_deeply(
-        $e->_original_imports,
-        ['croak'],
-        'original imports'
     );
 };
 
 subtest 'no imports' => sub {
-    my $source_text = 'use Carp ();';
+    my $doc = App::perlimports::Document->new(
+        filename => 'test-data/carp-with-no-imports.pl' );
 
-    my $e = source2pi( 'test-data/carp.pl', $source_text );
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Carp qw( croak );
+
+croak('oof');
+EOF
 
     is(
-        $e->formatted_ppi_statement,
-        'use Carp qw( croak );',
+        $doc->tidied_document,
+        $expected,
         'verbose is not inserted'
     );
 
     is_deeply(
-        $e->_original_imports,
-        [],
+        $doc->original_imports->{Carp},
+        undef,
         'original imports'
     );
 };

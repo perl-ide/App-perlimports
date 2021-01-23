@@ -4,6 +4,7 @@ use Moo;
 
 our $VERSION = '0.000001';
 
+use App::perlimports ();
 use Data::Printer;
 use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
@@ -39,13 +40,6 @@ has includes => (
     builder => '_build_includes',
 );
 
-has original_imports => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-    builder => '_build_original_imports',
-);
-
 has never_exports => (
     is      => 'ro',
     isa     => HashRef,
@@ -58,6 +52,13 @@ has _never_export_modules => (
     isa       => ArrayRef [Str],
     init_arg  => 'never_export_modules',
     predicate => '_has_never_export_modules',
+);
+
+has original_imports => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_original_imports',
 );
 
 has _padding => (
@@ -277,9 +278,14 @@ sub tidied_document {
     my $self = shift;
 
     foreach my $include ( $self->all_includes ) {
+        my $imports = $self->original_imports->{ $include->module };
+
         my $e = App::perlimports->new(
-            document    => $self,
-            include     => $include,
+            document => $self,
+            include  => $include,
+            $imports
+            ? ( original_imports => $imports )
+            : (),
             pad_imports => $self->_padding,
         );
         my $elem;
