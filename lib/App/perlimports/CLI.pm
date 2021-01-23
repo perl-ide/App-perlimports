@@ -171,60 +171,26 @@ sub run {
 
     my $pi_doc = App::perlimports::Document->new(
         filename => $opts->filename,
+        @{ $self->_ignore_modules }
+        ? ( ignore_modules => $self->_ignore_modules )
+        : (),
         @{ $self->_never_exports }
         ? ( never_export_modules => $self->_never_exports )
         : (),
+        padding => $opts->padding,
         $doc ? ( ppi_document => $doc ) : (),
     );
 
-    foreach my $include ( $pi_doc->all_includes ) {
-        my $e = App::perlimports->new(
-            document => $pi_doc,
-            @{ $self->_ignore_modules }
-            ? ( ignored_modules => $self->_ignore_modules )
-            : (),
-            include     => $include,
-            pad_imports => $opts->padding,
-        );
-        my $elem;
-        try {
-            $elem = $e->formatted_ppi_statement;
-        }
-        catch {
-            print STDERR 'Error: ' . $opts->filename . "\n";
-            print STDERR $include;
-            print STDERR $_;
-        };
-
-        next unless $elem;
-
-        # https://github.com/adamkennedy/PPI/issues/189
-        my $inserted = $include->insert_before($elem);
-        if ( !$inserted ) {
-            print STDERR 'Could not insert ' . $elem;
-        }
-        else {
-            $include->remove;
-        }
-
-        if ( $opts->verbose && $e->has_errors ) {
-            print STDERR 'Error: ' . $opts->filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
-        }
-    }
-
-    # We need to do this in order to preserve HEREDOCs.
-    # See https://metacpan.org/pod/PPI::Document#serialize
-    my $serialized = $pi_doc->ppi_document->serialize;
+    my $tidied = $pi_doc->tidied_document;
 
     if ( $opts->read_stdin ) {
-        print $serialized;
+        print $tidied;
     }
     elsif ( $opts->inplace_edit ) {
-        path( $opts->filename )->spew($serialized);
+        path( $opts->filename )->spew($tidied);
     }
     else {
-        print $serialized;
+        print $tidied;
     }
 }
 

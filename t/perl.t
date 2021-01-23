@@ -3,24 +3,18 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
-use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'ok' ];
+use App::perlimports::Document ();
+use Test::More import => [ 'done_testing', 'is' ];
 
-my $source_text = 'use 5.008001;';
+my $doc
+    = App::perlimports::Document->new(
+    filename => 'test-data/perl-version.pl' );
+my $expected = <<'EOF';
+use strict;
+use warnings;
+use 5.008001;
+EOF
 
-my $e = source2pi(
-    'test-data/geo-ip.pl',
-    $source_text,
-);
-
-is(
-    $e->formatted_ppi_statement,
-    $source_text,
-    'formatted_ppi_statement unchanged'
-);
-
-ok( !$e->has_errors, 'empty has_errors' );
+is( $doc->tidied_document, $expected, 'perl use statement ignored' );
 
 done_testing();
-

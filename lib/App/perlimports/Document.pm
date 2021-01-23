@@ -4,12 +4,14 @@ use Moo;
 
 our $VERSION = '0.000001';
 
+use Data::Printer;
 use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
 use PPIx::QuoteLike               ();
 use String::InterpolatedVariables ();
+use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
 has _filename => (
@@ -17,6 +19,13 @@ has _filename => (
     isa      => Str,
     init_arg => 'filename',
     required => 1,
+);
+
+has _ignore_modules => (
+    is       => 'ro',
+    isa      => HashRef,
+    init_arg => 'ignore_modules',
+    default  => sub { +{} },
 );
 
 has includes => (
@@ -51,6 +60,13 @@ has _never_export_modules => (
     predicate => '_has_never_export_modules',
 );
 
+has _padding => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'padding',
+    default  => 1,
+);
+
 has ppi_document => (
     is      => 'ro',
     isa     => Object,
@@ -63,6 +79,43 @@ has vars => (
     isa     => HashRef,
     lazy    => 1,
     builder => '_build_vars',
+);
+
+has _verbose => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'verbose',
+    default  => sub { 0 },
+);
+
+around BUILDARGS => sub {
+    my ( $orig, $class, @args ) = @_;
+
+    my %args = @args;
+    if ( my $modules = delete $args{ignore_modules} ) {
+        my %modules = map { $_ => 1 } @{$modules};
+        $args{ignore_modules} = \%modules;
+    }
+
+    return $class->$orig(%args);
+};
+
+my %default_ignore = (
+    'Data::Printer'                  => 1,
+    'Devel::Confess'                 => 1,
+    'Exception::Class'               => 1,
+    'Exporter'                       => 1,
+    'Moo'                            => 1,
+    'Moo::Role'                      => 1,
+    'Moose'                          => 1,
+    'Moose::Exporter'                => 1,
+    'MooseX::SemiAffordanceAccessor' => 1,
+    'MooseX::StrictConstructor'      => 1,
+    'namespace::autoclean'           => 1,
+    'Sub::Exporter'                  => 1,
+    'Test::Needs'                    => 1,
+    'Test::RequiresInternet'         => 1,
+    'Types::Standard'                => 1,
 );
 
 sub _build_includes {
@@ -81,7 +134,8 @@ sub _build_includes {
                 && !$_[1]->version    # Perl version requirement
                 && $_[1]->type
                 && ( $_[1]->type eq 'use'
-                || $_[1]->type eq 'require' );
+                || $_[1]->type eq 'require' )
+                && !$self->_is_ignored( $_[1]->module );
         }
     ) || [];
 }
@@ -211,8 +265,63 @@ sub _build_never_exports {
     return \%modules;
 }
 
+sub _is_ignored {
+    my $self   = shift;
+    my $module = shift;
+
+    return exists $default_ignore{$module}
+        || exists $self->_ignore_modules->{$module};
+}
+
+sub tidied_document {
+    my $self = shift;
+
+    foreach my $include ( $self->all_includes ) {
+        my $e = App::perlimports->new(
+            document    => $self,
+            include     => $include,
+            pad_imports => $self->_padding,
+        );
+        my $elem;
+        try {
+            $elem = $e->formatted_ppi_statement;
+        }
+        catch {
+            print STDERR 'Error: ' . $self->_filename . "\n";
+            print STDERR $include;
+            print STDERR $_;
+        };
+
+        next unless $elem;
+
+        # https://github.com/adamkennedy/PPI/issues/189
+        my $inserted = $include->insert_before($elem);
+        if ( !$inserted ) {
+            print STDERR 'Could not insert ' . $elem;
+        }
+        else {
+            $include->remove;
+        }
+
+        if ( $self->_verbose && $e->has_errors ) {
+            print STDERR 'Error: ' . $self->_filename . "\n";
+            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
+        }
+    }
+
+    # We need to do this in order to preserve HEREDOCs.
+    # See https://metacpan.org/pod/PPI::Document#serialize
+    return $self->ppi_document->serialize;
+}
+
 1;
 
 # ABSTRACT: Make implicit imports explicit
 
 =pod
+
+=head2 tidied_document
+
+Returns a serialized PPI document with (hopefully) tidy import statements.
+
+=cut

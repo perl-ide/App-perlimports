@@ -362,51 +362,9 @@ sub _build_original_imports {
 sub _build_is_ignored {
     my $self = shift;
 
-    # Ignore undef and "no".
-    if (
-        !$self->_include->type
-        || (   $self->_include->type ne 'use'
-            && $self->_include->type ne 'require' )
-    ) {
-        return 1;
-    }
-
-    return 1 if $self->_include->pragma;
-
     if ( $self->_include->type eq 'require' ) {
         return 1 if !$self->_is_translatable;
     }
-
-    # Is this a dependency on a version of Perl?
-    # use 5.006;
-    # require 5.006;
-    return 1 if $self->_include->version;
-
-    my %ignore = (
-        'Data::Printer'                  => 1,
-        'Devel::Confess'                 => 1,
-        'Exception::Class'               => 1,
-        'Exporter'                       => 1,
-        'Moo'                            => 1,
-        'Moo::Role'                      => 1,
-        'Moose'                          => 1,
-        'Moose::Exporter'                => 1,
-        'MooseX::SemiAffordanceAccessor' => 1,
-        'MooseX::StrictConstructor'      => 1,
-        'namespace::autoclean'           => 1,
-        'Sub::Exporter'                  => 1,
-        'Test::Needs'                    => 1,
-        'Test::RequiresInternet'         => 1,
-        'Types::Standard'                => 1,
-    );
-
-    if ( $self->_has_ignored_modules ) {
-        for my $name ( @{ $self->_ignored_modules } ) {
-            $ignore{$name} = 1;
-        }
-    }
-
-    return 1 if exists $ignore{ $self->_module_name };
 
     # If switches are being passed to import, we can't guess as what is correct
     # here.
