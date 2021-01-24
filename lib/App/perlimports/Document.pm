@@ -149,24 +149,51 @@ sub _build_ppi_document {
     return PPI::Document->new( \$content );
 }
 
+# Create a key for every included module.
+# use Carp;
+# use Data::Dumper qw( Dumper );
+# use POSIX ();
+#
+# becomes:
+#
+# {
+#     Carp => undef,
+#     'Data::Dumper' => ['Dumper'],
+#     POSIX => [],
+# }
+
 sub _build_original_imports {
     my $self = shift;
 
-    my $found
-        = $self->ppi_document->find(
-        sub { $_[1]->isa('PPI::Statement::Include'); } )
-        || [];
+    my $found = $self->ppi_document->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include')
+                && !$_[1]->pragma     # no pragmas
+                && !$_[1]->version    # Perl version requirement
+                && $_[1]->type
+                && ( $_[1]->type eq 'use'
+                || $_[1]->type eq 'require' );
+        }
+    ) || [];
 
     my %imports;
+
     for my $include ( @{$found} ) {
+        my $pkg = $include->module;
+        $imports{$pkg} = undef unless exists $imports{$pkg};
+
         for my $child ( $include->schildren ) {
+            if ( $child->isa('PPI::Structure::List')
+                && !$imports{$pkg} ) {
+                $imports{$pkg} = [];
+            }
             next unless $child->isa('PPI::Token::QuoteLike::Words');
             my @imports = $child->literal;
-            if ( exists $imports{ $include->module } ) {
-                push( @{ $imports{ $include->module } }, $child->literal );
+            if ( exists $imports{$pkg} ) {
+                push( @{ $imports{$pkg} }, $child->literal );
             }
             else {
-                $imports{ $include->module } = [ $child->literal ];
+                $imports{$pkg} = [ $child->literal ];
             }
         }
     }
