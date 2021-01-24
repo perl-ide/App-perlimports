@@ -17,7 +17,7 @@ use Perl::Critic::Utils 1.138 qw( is_function_call is_hash_key );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw( is_function_call is_hash_key );
-use Ref::Util qw( is_plain_hashref );
+use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
@@ -310,7 +310,9 @@ sub _build_imports {
             }
         }
 
-        $found{$found_import}++ if $found_import;
+        if ( $found_import && !$self->_is_already_imported($found_import) ) {
+            $found{$found_import}++;
+        }
     }
 
     #  A used import might be a variable interpolated into quotes.
@@ -635,6 +637,38 @@ sub _maybe_require_module {
     };
 
     return $success;
+}
+
+# If there's a different module in this document which has already imported
+# a symbol of the same name in its original imports, the we should make
+# sure we don't accidentally create a duplicate import here. For example,
+# Path::Tiny and Test::TempDir::Tiny both export a tempdir() function.
+# Without this check we'd add a "tempdir" to both modules if we find it
+# being used in the document.
+
+sub _is_already_imported {
+    my $self      = shift;
+    my $symbol    = shift;
+    my $duplicate = 0;
+
+    foreach my $module ( keys %{ $self->_document->original_imports } ) {
+        next if $module eq $self->_module_name;
+        if (
+            is_plain_arrayref(
+                $self->_document->original_imports->{$module}
+            )
+        ) {
+            if (
+                any { $_ eq $symbol }
+                @{ $self->_document->original_imports->{$module} }
+            ) {
+                $duplicate = 1;
+                last;
+            }
+        }
+    }
+
+    return $duplicate;
 }
 
 1;
