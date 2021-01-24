@@ -301,8 +301,12 @@ sub _has_import_switches {
 
     # If switches are being passed to import, we can't guess as what is correct
     # here.
+    #
+    # Getopt::Long uses a leading colon rather than a dash.
+    # use Getopt::Long qw(:config no_ignore_case bundling);
     if (
-        exists $self->original_imports->{$module_name} && any { $_ =~ m{^\-} }
+        exists $self->original_imports->{$module_name}
+        && any { $_ =~ m{^[\-:]} }
         @{ $self->original_imports->{$module_name} || [] }
     ) {
         return 1;
