@@ -68,7 +68,7 @@ has export => (
     isa         => HashRef,
     handles_via => 'Hash',
     handles     => {
-        _has_export => 'keys',
+        default_export_names => 'keys',
     },
     lazy    => 1,
     default => sub { $_[0]->_exporter_lists->{export} },
@@ -218,7 +218,7 @@ sub _build_import_flags {
 sub _build_module_is_exporter {
     my $self = shift;
     return (
-        $self->can_require_module && ( $self->_has_export
+        $self->can_require_module && ( $self->default_export_names
             || $self->_has_export_ok )
     ) ? 1 : 0;
 }
