@@ -14,10 +14,9 @@ subtest 'Test::Most' => sub {
     my $ei
         = App::perlimports::ExportInspector->new(
         module_name => 'Test::Most' );
-    ok( scalar keys %{ $ei->export },     'found export' );
-    ok( !scalar keys %{ $ei->export_ok }, 'no export_ok' );
-    ok( keys %{ $ei->combined_exports },  'found combined_exports' );
-    ok( !$ei->has_errors,                 'no errors' );
+    ok( $ei->has_default_exports,  'found export' );
+    ok( $ei->has_combined_exports, 'found combined_exports' );
+    ok( !$ei->has_errors,          'no errors' );
 };
 
 subtest 'List::Util' => sub {
@@ -25,10 +24,9 @@ subtest 'List::Util' => sub {
         = App::perlimports::ExportInspector->new(
         module_name => 'List::Util' );
 
-    ok( !scalar keys %{ $ei->export },   'found no export' );
-    ok( scalar %{ $ei->export_ok },      'found export_ok' );
-    ok( keys %{ $ei->combined_exports }, 'found combined_exports' );
-    ok( !$ei->has_errors,                'no errors' );
+    ok( !$ei->has_default_exports, 'found no export' );
+    ok( $ei->has_combined_exports, 'found combined_exports' );
+    ok( !$ei->has_errors,          'no errors' );
 };
 
 # UsesMoose.pm literally just includes a "use Moose;"
@@ -39,7 +37,7 @@ subtest 'UsesMoose' => sub {
     ok( !$ei->has_errors,     'no errors' );
     ok( $ei->is_oo_class,     'is oo class' );
     ok( !$ei->is_moose_class, 'Not a Moose class' );
-    is_deeply( [ $ei->class_isa ], ['Moose::Object'], 'ISA Moose::Object' );
+    is_deeply( $ei->class_isa, ['Moose::Object'], 'ISA Moose::Object' );
 };
 
 # UsesMoo.pm literally just includes a "use Moo;"
@@ -49,7 +47,7 @@ subtest 'UsesMoo' => sub {
     ok( !$ei->has_errors,     'no errors' );
     ok( $ei->is_oo_class,     'is oo class' );
     ok( !$ei->is_moose_class, 'Not a Moose class' );
-    is_deeply( [ $ei->class_isa ], ['Moo::Object'], 'ISA Moo::Object' );
+    is_deeply( $ei->class_isa, ['Moo::Object'], 'ISA Moo::Object' );
 };
 
 # Check ISA here
@@ -80,7 +78,7 @@ subtest 'MyOwnMoose' => sub {
     );
     ok( !$ei->is_oo_class,   'is OO class' );
     ok( $ei->is_moose_class, 'class with imported Moose' );
-    is_deeply( [ $ei->class_isa ], ['Moose::Object'], 'class_isa' );
+    is_deeply( $ei->class_isa, ['Moose::Object'], 'class_isa' );
 };
 
 done_testing();

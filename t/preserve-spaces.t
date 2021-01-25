@@ -15,7 +15,4 @@ is(
     'arbitrary spacing is preserved'
 );
 
-#use DDP;
-#p $e;
-
 done_testing();

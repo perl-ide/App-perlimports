@@ -10,24 +10,26 @@ use lib 't/lib';
 subtest 'Moose Type Library' => sub {
     my $module = 'MooseTypeLibrary';
 
-    my ( $exports, $attr, $error )
+    my ($inspection)
         = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
-    ok( $exports, 'exports' );
-    is( $exports->{is_Bool}, 'Bool', 'is_ aliased' );
-    is( $exports->{to_File}, 'File', 'to_ aliased' );
-    ok( !exists $exports->{to_Str}, 'Coercion does not exist' );
-    ok( !$error,                    'no error' );
+    ok( $inspection->has_all_exports, 'exports' );
+    is( $inspection->all_exports->{is_Bool}, 'Bool', 'is_ aliased' );
+    is( $inspection->all_exports->{to_File}, 'File', 'to_ aliased' );
+    ok(
+        !exists $inspection->all_exports->{to_Str},
+        'Coercion does not exist'
+    );
 };
 
 subtest 'Moo' => sub {
     my $module = 'Moo';
 
-    my ( $exports, $attr, $error )
+    my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
-        $exports,
+        $inspection->default_exports,
         {
             after   => 'after',
             around  => 'around',
@@ -39,50 +41,34 @@ subtest 'Moo' => sub {
         'exports'
     );
 
-    ok( $exports, 'exports' );
-    ok( !$error,  'no error' );
-};
-
-subtest 'Does not exist' => sub {
-    my $module = 'Local::Does::Not::Exist';
-
-    my ( $exports, $attr, $error )
-        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
-
-    is_deeply(
-        $exports,
-        {},
-        'exports'
-    );
-
-    like( $error, qr{you may need to install}, 'error' );
+    is_deeply( $inspection->errors, [] );
 };
 
 subtest 'ViaSubExporter' => sub {
     my $module = 'ViaSubExporter';
 
-    my ( $exports, $attr, $error )
+    my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
-        $exports,
+        $inspection->all_exports,
         {
             bar => 'bar',
             foo => 'foo',
         },
         'exports'
     );
-    ok( !$error, 'no error' );
+    is_deeply( $inspection->errors, [] );
 };
 
 subtest 'MyOwnMoose' => sub {
     my $module = 'MyOwnMoose';
 
-    my ( $exports, $attr, $error )
+    my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
 
     is_deeply(
-        $exports,
+        $inspection->all_exports,
         {
             after    => 'after',
             around   => 'around',
@@ -101,7 +87,7 @@ subtest 'MyOwnMoose' => sub {
         },
         'exports'
     );
-    ok( !$error, 'no error' );
+    is_deeply( $inspection->errors, [] );
 };
 
 done_testing();

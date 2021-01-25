@@ -5,7 +5,8 @@ use warnings;
 
 our $VERSION = '0.000001';
 
-use Class::Inspector ();
+use App::perlimports::ExportInspector::Inspection ();
+use Class::Inspector                              ();
 use List::Util qw( any );
 use Symbol::Get ();
 
@@ -13,19 +14,32 @@ sub maybe_get_exports {
     my $module_name = shift;
 
     my $pkg = 'Local::App::perlimports::imported::' . $module_name;
-    my $error;
+    my @error;
+
+    local $@ = undef;
+
+    # XXX trap error
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval "package $pkg; use $module_name qw( :default );1;";
+    push @error, $@ if $@;
+    local $@ = undef;
+    ## use critic
+
+    my %default_export = map { $_ => $_ }
+        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
+        Symbol::Get::get_names($pkg);
 
     # XXX trap error
     ## no critic (BuiltinFunctions::ProhibitStringyEval)
     eval "package $pkg; use $module_name qw( :all );1;";
-    $error = $@;
+    push @error, $@ if $@;
     ## use critic
 
     my %export = map { $_ => $_ }
         grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
         Symbol::Get::get_names($pkg);
 
-    my %attr = ( is_moose_type_class => 0, isa => [] );
+    my $is_moose_type_class;
 
     # Treat Moose type libraries a bit differently. Importing ArrayRef, for
     # instance, also imports is_ArrayRef and to_ArrayRef (if a coercion)
@@ -40,15 +54,27 @@ sub maybe_get_exports {
                 $export{$key} = substr( $key, 3 );
             }
         }
+        $is_moose_type_class = 1;
     }
 
+    my $isa;
     ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
-    $attr{isa} = [ @{ $pkg . '::ISA' } ];
+    $isa = [ @{ $pkg . '::ISA' } ];
     use strict;
     ## use critic
 
-    return ( \%export, \%attr, $error );
+    return App::perlimports::ExportInspector::Inspection->new(
+        {
+            all_exports => \%export,
+            @{$isa} ? ( class_isa => $isa ) : (),
+            default_exports => \%default_export,
+            errors          => \@error,
+            $is_moose_type_class ? ( is_moose_type_class => 1 ) : (),
+            is_sub_exporter =>
+                ( !!keys %export || !!keys %default_export || 0 ),
+        }
+    );
 }
 
 1;

@@ -13,25 +13,7 @@ use Module::Runtime qw( require_module );
 use MooX::HandlesVia;
 use PPI::Document ();
 use Try::Tiny qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef Maybe Str);
-
-has can_require_module => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_can_require_module',
-);
-
-has _class_isa => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        class_isa => 'elements',
-    },
-    lazy    => 1,
-    builder => '_build_class_isa',
-);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 
 has combined_exports => (
     is          => 'ro',
@@ -41,7 +23,18 @@ has combined_exports => (
         has_combined_exports => 'count',
     },
     lazy    => 1,
-    builder => '_build_combined_exports',
+    default => sub { $_[0]->inspection->all_exports },
+);
+
+has default_exports => (
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        has_default_exports => 'count',
+    },
+    lazy    => 1,
+    default => sub { $_[0]->inspection->default_exports },
 );
 
 has errors => (
@@ -56,13 +49,6 @@ has errors => (
     default  => sub { [] },
 );
 
-has _exporter_lists => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-    builder => '_build_exporter_lists',
-);
-
 has export => (
     is          => 'ro',
     isa         => HashRef,
@@ -71,7 +57,7 @@ has export => (
         default_export_names => 'keys',
     },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export} },
+    default => sub { $_[0]->inspection->default_exports },
 );
 
 has export_fail => (
@@ -82,7 +68,7 @@ has export_fail => (
         has_export_fail => 'count',
     },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export_fail} },
+    default => sub { $_[0]->inspection->export_fail },
 );
 
 has export_ok => (
@@ -93,7 +79,7 @@ has export_ok => (
         _has_export_ok => 'keys',
     },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export_ok} },
+    default => sub { $_[0]->inspection->export_ok },
 );
 
 has export_tags => (
@@ -104,7 +90,7 @@ has export_tags => (
         export_tag_names => 'keys',
     },
     lazy    => 1,
-    default => sub { $_[0]->_exporter_lists->{export_tags} },
+    default => sub { $_[0]->inspection->export_tags },
 );
 
 has import_flags => (
@@ -118,11 +104,11 @@ has import_flags => (
     builder => '_build_import_flags',
 );
 
-has is_moose_class => (
+has inspection => (
     is      => 'ro',
-    isa     => Bool,
+    isa     => InstanceOf ['App::perlimports::ExportInspector::Inspection'],
     lazy    => 1,
-    builder => '_build_is_moose_class',
+    builder => '_build_inspection',
 );
 
 has is_oo_class => (
@@ -132,13 +118,6 @@ has is_oo_class => (
     builder => '_build_is_oo_class',
 );
 
-has module_is_exporter => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_module_is_exporter',
-);
-
 has _module_name => (
     is       => 'ro',
     isa      => Str,
@@ -146,60 +125,15 @@ has _module_name => (
     required => 1,
 );
 
-has _sub_exporter_inspection => (
-    is      => 'ro',
-    isa     => HashRef,
-    lazy    => 1,
-    builder => '_build_sub_exporter_inspection',
-);
+around BUILDARGS => sub {
+    my ( $orig, $class, @args ) = @_;
 
-sub _build_can_require_module {
-    my $self = shift;
-
-    my $error;
-    try {
-        require_module( $self->_module_name );
+    my %args = @args;
+    if ( $args{module_name} ) {
+        require_module( $args{module_name} );
     }
-    catch {
-        $error = $_;
-    };
-
-    return 1 if !$error;
-
-    $self->_add_error($error) if $error;
-    return 0;
-}
-
-sub _build_class_isa {
-    my $self = shift;
-
-    return [] unless $self->can_require_module;
-
-    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my $module = $self->_module_name;
-    my @isa    = @{ $self->_module_name . '::ISA' };
-    use strict;
-    ## use critic
-
-    return \@isa if @isa || $self->module_is_exporter;
-
-    # For Moose, for example, we don't see anything in @ISA until the
-    # Sub::Exporter inspection.
-    return $self->_sub_exporter_inspection->{attr}->{isa} || [];
-}
-
-sub _build_combined_exports {
-    my $self = shift;
-
-    my %exports = ( %{ $self->export }, %{ $self->export_ok } );
-
-    if ( !keys %exports && $self->_module_name ne 'Exporter' ) {
-        %exports = %{ $self->_sub_exporter_inspection->{export} };
-    }
-
-    return \%exports;
-}
+    return $class->$orig(@args);
+};
 
 sub _build_import_flags {
     my $self = shift;
@@ -215,62 +149,35 @@ sub _build_import_flags {
         : [];
 }
 
-sub _build_module_is_exporter {
-    my $self = shift;
-    return (
-        $self->can_require_module && ( $self->default_export_names
-            || $self->_has_export_ok )
-    ) ? 1 : 0;
-}
-
-sub _build_sub_exporter_inspection {
+sub _build_inspection {
     my $self = shift;
 
-    # This is basically be a no-op if the module uses Exporter, but because we
-    # try to import a tag which probably doesn't exist, this throws errors as
-    # well, so let's make sure we bypass it entirely.
-    if ( !$self->can_require_module || $self->module_is_exporter ) {
-        return { export => {}, attr => {} };
+    my $exporter = App::perlimports::Importer::Exporter::maybe_get_exports(
+        $self->_module_name,
+    );
+
+    if ( $exporter->has_errors ) {
+        $self->_add_error for @{ $exporter->errors };
     }
 
-    my ( $export, $attr, $error )
+    return $exporter if $exporter->is_exporter;
+
+    my $sub_exporter
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
         $self->_module_name );
-    $self->_add_error($error) if $error;
-    return { export => $export, attr => $attr };
-}
 
-sub _build_exporter_lists {
-    my $self = shift;
-
-    if ( !$self->can_require_module ) {
-        return {
-            export      => {},
-            export_fail => {},
-            export_ok   => {},
-            export_tags => {},
-        };
+    if ( $sub_exporter->has_errors ) {
+        $self->_add_error for @{ $sub_exporter->errors };
     }
+    return $sub_exporter if $sub_exporter->is_sub_exporter;
 
-    my %no_import = (
-        Exporter => 1,
-    );
-
-    my $lists = App::perlimports::Importer::Exporter::maybe_get_exports(
-        $self->_module_name,
-        exists $no_import{ $self->_module_name } ? 0 : 1
-    );
-
-    if ( my $error = delete $lists->{error} ) {
-        $self->_add_error($error);
-    }
-
-    return $lists;
+    # If it's neither, return the $exporter, because it will probably have a
+    # more useful class_isa.
+    return $exporter;
 }
 
 sub _build_is_oo_class {
     my $self = shift;
-    return 0 unless $self->can_require_module;
 
     my $methods
         = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
@@ -281,23 +188,17 @@ sub _build_is_oo_class {
     @{$methods};
 }
 
-sub _build_is_moose_class {
+sub module_is_exporter {
     my $self = shift;
-    return 0 unless $self->can_require_module;
+    return $self->inspection->is_exporter;
+}
 
-    my $class = $self->_module_name;
+sub class_isa {
+    return shift->inspection->class_isa;
+}
 
-    if (
-        (
-            any { $_ eq 'Moose::Object' || $_ eq 'Test::Class::Moose' }
-            $self->class_isa
-        )
-        && $self->has_combined_exports
-    ) {
-        return 1;
-    }
-
-    return 0;
+sub is_moose_class {
+    return shift->inspection->is_moose_class;
 }
 
 1;
