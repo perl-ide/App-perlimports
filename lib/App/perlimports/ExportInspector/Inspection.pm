@@ -32,26 +32,39 @@ has default_exports => (
     default     => sub { +{} },
     handles_via => 'Hash',
     handles     => {
-        has_default_exports => 'count',
+        default_export_names => 'keys',
+        has_default_exports  => 'count',
     },
 );
 
 has export_fail => (
-    is        => 'ro',
-    isa       => ArrayRef,
-    predicate => 'has_export_fail',
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        has_export_fail => 'count',
+    },
+    default => sub { [] },
 );
 
 has export_tags => (
-    is        => 'ro',
-    isa       => HashRef,
-    predicate => 'has_export_tags',
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        has_export_tags => 'count',
+    },
+    default => sub { +{} },
 );
 
 has errors => (
-    is        => 'ro',
-    isa       => ArrayRef,
-    predicate => 'has_errors',
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        has_errors => 'count',
+    },
+    default => sub { [] },
 );
 
 has is_exporter => (

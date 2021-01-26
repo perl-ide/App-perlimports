@@ -44,7 +44,7 @@ if ( $ei->inspection->has_class_isa ) {
     print $t->draw;
 }
 
-if ( $ei->export_tag_names ) {
+if ( $ei->has_export_tags ) {
     my %tags = %{ $ei->export_tags };
     my @keys = keys %tags;
 
@@ -68,11 +68,11 @@ if ( $ei->export_tag_names ) {
     print $t->draw;
 }
 
-if ( $ei->default_export_names ) {
+if ( $ei->has_default_exports ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     $t->captions( [ 'Default Export Symbol', 'Import Name' ] );
     for my $key ( sort $ei->default_export_names ) {
-        $t->row( $key, $ei->export->{$key} );
+        $t->row( $key, $ei->default_exports->{$key} );
     }
     print $t->draw;
 }
