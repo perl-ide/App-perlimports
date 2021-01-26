@@ -11,7 +11,7 @@ use List::Util qw( any );
 use Module::Runtime qw( require_module );
 use PPI::Document ();
 use Sub::HandlesVia;
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
+use Types::Standard qw(ArrayRef Bool InstanceOf Str);
 
 has errors => (
     is          => 'rw',
