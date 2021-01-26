@@ -70,7 +70,7 @@ sub maybe_get_exports {
             @{$isa} ? ( class_isa => $isa ) : (),
             default_exports => \%default_export,
             errors          => \@error,
-            $is_moose_type_class ? ( is_moose_type_class => 1 ) : (),
+            $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter =>
                 ( !!keys %export || !!keys %default_export || 0 ),
         }
