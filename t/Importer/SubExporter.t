@@ -3,7 +3,7 @@ use warnings;
 
 use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
-    [qw( diag done_testing is is_deeply like ok subtest )];
+    [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 use lib 't/lib';
 

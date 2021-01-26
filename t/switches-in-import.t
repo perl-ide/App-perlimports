@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
-use Test::More import => [qw( done_testing is subtest )];
+use Test::More import => [ 'done_testing', 'is' ];
 
 my $expected = <<'EOF';
 use strict;

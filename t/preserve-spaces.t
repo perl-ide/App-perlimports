@@ -3,7 +3,7 @@ use warnings;
 
 use lib 't/lib';
 
-use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is' ];
 use TestHelper qw( source2pi );
 
 my $source_text = 'use Carp    ();';

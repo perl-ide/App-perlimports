@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports::ExportInspector ();
-use Test::More;
+use Test::More import => [qw( done_testing is_deeply ok )];
 
 my $ei = App::perlimports::ExportInspector->new(
     module_name => 'ViaSubExporter' );

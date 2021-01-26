@@ -4,8 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports::Document ();
-use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $doc = App::perlimports::Document->new(
     filename => 't/lib/UsesTypesStandard.pm',

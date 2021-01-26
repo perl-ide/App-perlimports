@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::Document ();
 use TestHelper qw( source2pi );
-use Test::More import => [ 'diag', 'done_testing', 'is', 'ok' ];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 {
     my $e = source2pi(

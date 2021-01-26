@@ -11,7 +11,6 @@ use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
-use Try::Tiny qw( catch try );
 use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
 
 has _args => (

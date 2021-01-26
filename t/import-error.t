@@ -6,7 +6,7 @@ use lib 't/lib';
 use App::perlimports ();
 use TestHelper qw( source2pi );
 use Test::Fatal qw( exception );
-use Test::More import => [ 'done_testing', 'is', 'like', 'ok' ];
+use Test::More import => [ 'done_testing', 'like' ];
 
 my $source_text = 'use Local::Module::Does::Not::Exist::At::All;';
 

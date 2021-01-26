@@ -5,7 +5,6 @@ use lib 't/lib';
 
 use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is' ];
-use TestHelper qw( source2pi );
 
 my $doc
     = App::perlimports::Document->new( filename => 'test-data/english.pl' );

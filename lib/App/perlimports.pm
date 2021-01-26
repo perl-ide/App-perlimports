@@ -12,7 +12,6 @@ use List::Util qw( any uniq );
 use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
-use Perl::Critic::Utils 1.138 qw( is_function_call is_hash_key );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw( is_function_call is_hash_key );

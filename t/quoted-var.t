@@ -6,7 +6,7 @@ use lib 't/lib';
 use App::perlimports ();
 use Path::Tiny qw( path );
 use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $filename = 'test-data/quoted-var.pl';
 my $content  = path($filename)->slurp;

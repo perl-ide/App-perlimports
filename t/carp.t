@@ -3,11 +3,8 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports           ();
 use App::perlimports::Document ();
-use Test::More import =>
-    [ 'diag', 'done_testing', 'is', 'is_deeply', 'subtest' ];
-use TestHelper qw( source2pi );
+use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];
 
 subtest 'verbose' => sub {
     my $doc
