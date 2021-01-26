@@ -12,7 +12,7 @@ has all_exports => (
     isa         => HashRef,
     handles_via => 'Hash',
     handles     => {
-        has_all_exports => 'keys',
+        has_all_exports => 'count',
     },
 );
 
@@ -27,8 +27,13 @@ has class_isa => (
 );
 
 has default_exports => (
-    is  => 'ro',
-    isa => HashRef,
+    is          => 'ro',
+    isa         => HashRef,
+    default     => sub { +{} },
+    handles_via => 'Hash',
+    handles     => {
+        has_default_exports => 'count',
+    },
 );
 
 has export_fail => (

@@ -7,34 +7,11 @@ our $VERSION = '0.000001';
 use App::perlimports::Importer::Exporter    ();
 use App::perlimports::Importer::SubExporter ();
 use Class::Inspector                        ();
-use Data::Printer;
 use List::Util qw( any );
 use Module::Runtime qw( require_module );
 use PPI::Document ();
 use Sub::HandlesVia;
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
-
-has combined_exports => (
-    is          => 'ro',
-    isa         => HashRef,
-    handles_via => 'Hash',
-    handles     => {
-        has_combined_exports => 'count',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->all_exports },
-);
-
-has default_exports => (
-    is          => 'ro',
-    isa         => HashRef,
-    handles_via => 'Hash',
-    handles     => {
-        has_default_exports => 'count',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->default_exports },
-);
 
 has errors => (
     is          => 'rw',
@@ -46,50 +23,6 @@ has errors => (
     },
     init_arg => undef,
     default  => sub { [] },
-);
-
-has export => (
-    is          => 'ro',
-    isa         => HashRef,
-    handles_via => 'Hash',
-    handles     => {
-        default_export_names => 'keys',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->default_exports },
-);
-
-has export_fail => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        has_export_fail => 'count',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->export_fail },
-);
-
-has export_ok => (
-    is          => 'ro',
-    isa         => HashRef,
-    handles_via => 'Hash',
-    handles     => {
-        _has_export_ok => 'keys',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->export_ok },
-);
-
-has export_tags => (
-    is          => 'ro',
-    isa         => HashRef,
-    handles_via => 'Hash',
-    handles     => {
-        export_tag_names => 'keys',
-    },
-    lazy    => 1,
-    default => sub { $_[0]->inspection->export_tags },
 );
 
 has import_flags => (
@@ -104,8 +37,25 @@ has import_flags => (
 );
 
 has inspection => (
-    is      => 'ro',
-    isa     => InstanceOf ['App::perlimports::ExportInspector::Inspection'],
+    is  => 'ro',
+    isa => InstanceOf ['App::perlimports::ExportInspector::Inspection'],
+    handles_via => ['Object'],
+    handles     => {
+        class_isa            => 'class_isa',
+        combined_exports     => 'all_exports',
+        default_exports      => 'default_exports',
+        export               => 'default_exports',
+        export_fail          => 'export_fail',
+        export_ok            => 'export_ok',
+        export_tags          => 'export_tags',
+        has_combined_exports => 'has_all_exports',
+        has_default_exports  => 'has_default_exports',
+        has_export_fail      => 'has_export_fail',
+        has_export_ok        => 'has_export_ok',
+        has_export_tags      => 'has_export_tags',
+        is_moose_class       => 'is_moose_class',
+        module_is_exporter   => 'is_exporter',
+    },
     lazy    => 1,
     builder => '_build_inspection',
 );
@@ -185,19 +135,6 @@ sub _build_is_oo_class {
         $_ eq 'Moose::Object::BUILDALL' || $_ eq 'Moo::Object::BUILDALL'
     }
     @{$methods};
-}
-
-sub module_is_exporter {
-    my $self = shift;
-    return $self->inspection->is_exporter;
-}
-
-sub class_isa {
-    return shift->inspection->class_isa;
-}
-
-sub is_moose_class {
-    return shift->inspection->is_moose_class;
 }
 
 1;
