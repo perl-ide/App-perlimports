@@ -3,7 +3,7 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
+use App::perlimports::Document ();
 use TestHelper qw( source2pi );
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
@@ -49,19 +49,13 @@ subtest 'Test::More' => sub {
 };
 
 subtest 'pragma' => sub {
-    my $e = source2pi(
-        'test-data/foo.t',
-        'use strict;',
-    );
-    is(
-        $e->_module_name(), 'strict',
-        '_module_name'
+    my $doc = App::perlimports::Document->new(
+        filename  => 'test-data/foo.t',
+        selection => 'use strict;',
     );
 
-    ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
-    is_deeply( $e->_imports, [], '_imports' );
     is(
-        $e->formatted_ppi_statement,
+        $doc->tidied_document,
         'use strict;',
         'formatted_ppi_statement'
     );

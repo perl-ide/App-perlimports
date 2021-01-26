@@ -38,10 +38,14 @@ sub source2pi {
     my $source_text = shift;
     my $pi_args     = shift;
 
-    my $doc = App::perlimports::Document->new( filename => $filename );
+    my $doc = App::perlimports::Document->new(
+        filename => $filename,
+        $source_text ? ( selection => $source_text ) : (),
+    );
+
     return App::perlimports->new(
         document => $doc,
-        $source_text ? ( source_text => $source_text ) : (),
+        include  => $doc->includes->[0],
         %{$pi_args},
     );
 }

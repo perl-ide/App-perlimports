@@ -76,6 +76,14 @@ has ppi_document => (
     builder => '_build_ppi_document',
 );
 
+has _ppi_selection => (
+    is       => 'ro',
+    isa      => Object,
+    init_arg => 'ppi_selection',
+    lazy     => 1,
+    default  => sub { $_[0]->ppi_document },
+);
+
 has vars => (
     is      => 'ro',
     isa     => HashRef,
@@ -97,6 +105,10 @@ around BUILDARGS => sub {
     if ( my $modules = delete $args{ignore_modules} ) {
         my %modules = map { $_ => 1 } @{$modules};
         $args{ignore_modules} = \%modules;
+    }
+
+    if ( my $selection = delete $args{selection} ) {
+        $args{ppi_selection} = PPI::Document->new( \$selection );
     }
 
     return $class->$orig(%args);
@@ -129,7 +141,7 @@ sub _build_includes {
     #
     # We check for type so that we can filter out undef types or "no".
 
-    return $self->ppi_document->find(
+    return $self->_ppi_selection->find(
         sub {
             $_[1]->isa('PPI::Statement::Include')
                 && !$_[1]->pragma     # no pragmas
@@ -365,7 +377,7 @@ sub tidied_document {
 
     # We need to do this in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
-    return $self->ppi_document->serialize;
+    return $self->_ppi_selection->serialize;
 }
 
 1;

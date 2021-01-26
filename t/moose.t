@@ -3,57 +3,82 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
+use App::perlimports::Document ();
 use TestHelper qw( source2pi );
 use Test::More import =>
     [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
 subtest 'Moose' => sub {
-    my $e = source2pi(
-        't/lib/UsesMoose.pm',
-        'use Moose;',
-    );
-    is(
-        $e->_module_name(), 'Moose',
-        '_module_name'
-    );
+    my $doc
+        = App::perlimports::Document->new( filename => 't/lib/UsesMoose.pm' );
 
-    ok( $e->_is_ignored, '_is_ignored' );
+    my $expected = <<'EOF';
+package UsesMoose;
+
+use Moose;
+
+has foo => (
+    is  => 'ro',
+    isa => 'Str',
+);
+
+__PACKAGE__->meta->make_immutable;
+1;
+EOF
+
     is(
-        $e->formatted_ppi_statement,
-        q{use Moose;},
-        'formatted_ppi_statement'
+        $doc->tidied_document,
+        $expected,
+        'document unchanged'
     );
 };
 
 subtest 'Import::Into' => sub {
-    my $e = source2pi(
-        't/lib/MyOwnMoose.pm',
-        'use Import::Into;',
+    my $doc = App::perlimports::Document->new(
+        filename => 't/lib/MyOwnMoose.pm',
     );
+
+    my $expected = <<'EOF';
+package MyOwnMoose;
+
+use strict;
+use warnings;
+
+use Import::Into;
+
+sub import {
+    $_->import::into( scalar caller ) for qw( Moose );
+}
+
+1;
+EOF
 
     is(
-        $e->formatted_ppi_statement,
-        q{use Import::Into;},
-        'formatted_ppi_statement'
+        $doc->tidied_document,
+        $expected,
     );
-
-    ok( !$e->has_errors, 'has no errors' );
 };
 
 subtest 'Uses MyOwnMoose' => sub {
-    my $e = source2pi(
-        't/lib/UsesMyOwnMoose.pm',
-        'use MyOwnMoose;',
+    my $doc = App::perlimports::Document->new(
+        filename => 't/lib/UsesMyOwnMoose.pm',
     );
+
+    my $expected = <<'EOF';
+package UsesMyOwnMoose;
+
+use strict;
+use warnings;
+
+use MyOwnMoose;
+
+1;
+EOF
 
     is(
-        $e->formatted_ppi_statement,
-        q{use MyOwnMoose;},
-        'formatted_ppi_statement'
+        $doc->tidied_document,
+        $expected,
     );
-
-    ok( !$e->has_errors, 'has no errors' );
 };
 
 done_testing();

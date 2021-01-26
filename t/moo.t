@@ -3,25 +3,26 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
-use TestHelper qw( source2pi );
+use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $e = source2pi(
-    't/lib/UsesMoo.pm',
-    'use Moo;',
-);
-is(
-    $e->_module_name(), 'Moo',
-    '_module_name'
+my $doc = App::perlimports::Document->new(
+    filename => 't/lib/UsesMoo.pm',
 );
 
-ok( $e->_is_ignored, '_is_ignored' );
-is_deeply( $e->_imports, [], '_imports' );
+my $expected = <<'EOF';
+package UsesMoo;
+
+use Moo;
+
+__PACKAGE__->meta->make_immutable;
+1;
+EOF
+
 is(
-    $e->formatted_ppi_statement,
-    q{use Moo;},
-    'formatted_ppi_statement'
+    $doc->tidied_document,
+    $expected,
+    'document unchanged'
 );
 
 done_testing();

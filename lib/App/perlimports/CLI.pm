@@ -156,13 +156,11 @@ sub run {
         return;
     }
 
-    my $doc;
     my $input;
 
     if ( $opts->read_stdin ) {
         local $/;
         $input = <STDIN>;
-        $doc   = PPI::Document->new( \$input );
     }
 
     if ( $opts->libs ) {
@@ -178,7 +176,7 @@ sub run {
         ? ( never_export_modules => $self->_never_exports )
         : (),
         padding => $opts->padding,
-        $doc ? ( ppi_document => $doc ) : (),
+        $input ? ( selection => $input ) : (),
     );
 
     my $tidied = $pi_doc->tidied_document;

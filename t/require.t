@@ -3,7 +3,7 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
+use App::perlimports::Document ();
 use Path::Tiny qw( path );
 use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
@@ -123,15 +123,27 @@ subtest 'require rewritten as use' => sub {
 };
 
 subtest 'require Exporter not rewritten' => sub {
-    my $e = source2pi(
-        't/lib/RequireExporter.pm',
-        'require Exporter;',
+    my $doc = App::perlimports::Document->new(
+        filename => 't/lib/RequireExporter.pm',
     );
 
-    ok( $e->_is_ignored, 'is not ignored' );
+    my $expected = <<'EOF';
+package RequireExporter;
+
+use strict;
+use warnings;
+
+require Exporter;
+our @EXPORT = qw(foo);
+
+sub foo { return 'from sub foo' }
+
+1;
+EOF
+
     is(
-        $e->formatted_ppi_statement,
-        q{require Exporter;},
+        $doc->tidied_document,
+        $expected,
         'statement is unchanged'
     );
 };

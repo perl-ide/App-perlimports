@@ -35,10 +35,10 @@ if ( !keys %{$exports} ) {
     exit(0);
 }
 
-if ( $ei->class_isa ) {
+if ( $ei->inspection->has_class_isa ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     $t->captions( ['ISA'] );
-    for my $class ( $ei->class_isa ) {
+    for my $class ( @{$ei->inspection->class_isa} ) {
         $t->row($class);
     }
     print $t->draw;

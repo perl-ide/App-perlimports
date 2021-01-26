@@ -156,20 +156,6 @@ has _will_never_export => (
     },
 );
 
-around BUILDARGS => sub {
-    my ( $orig, $class, @args ) = @_;
-
-    my %args = @args;
-    if ( my $source = delete $args{source_text} ) {
-        my $doc = PPI::Document->new( \$source );
-        my $includes
-            = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
-        $args{include} = $includes->[0]->clone;
-    }
-
-    return $class->$orig(%args);
-};
-
 sub _build_export_inspector {
     my $self = shift;
     return App::perlimports::ExportInspector->new(
