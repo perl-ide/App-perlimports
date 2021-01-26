@@ -64,16 +64,19 @@
             "List::Util" : "0",
             "Module::Runtime" : "0",
             "Moo" : "0",
-            "MooX::HandlesVia" : "0",
             "MooX::StrictConstructor" : "0",
             "PPI::Document" : "1.270",
+            "PPIx::QuoteLike" : "0",
+            "PPIx::Utils::Classification" : "0",
             "Path::Tiny" : "0",
             "Perl::Critic::Utils" : "1.138",
             "Perl::Tidy" : "20210111",
             "Pod::Usage" : "0",
             "Ref::Util" : "0",
             "String::InterpolatedVariables" : "0",
+            "Sub::HandlesVia" : "0",
             "Symbol::Get" : "0",
+            "Text::SimpleTable::AutoWidth" : "0",
             "Try::Tiny" : "0",
             "Types::Standard" : "0",
             "lib" : "0",
@@ -87,6 +90,7 @@
             "CPAN::Meta" : "2.120900"
          },
          "requires" : {
+            "Capture::Tiny" : "0",
             "Cpanel::JSON::XS" : "0",
             "Data::Printer" : "0",
             "Exporter" : "0",
@@ -94,15 +98,19 @@
             "File::Spec" : "0",
             "Geo::IP" : "0",
             "Getopt::Long" : "2.40",
+            "Import::Into" : "0",
             "LWP::UserAgent" : "6.49",
             "Moose" : "0",
             "MooseX::Types::Combine" : "0",
             "MooseX::Types::Moose" : "0",
             "MooseX::Types::Path::Class" : "0",
+            "PPI::Dumper" : "0",
             "Path::Class" : "0",
             "Sub::Exporter" : "0",
+            "Test::Fatal" : "0",
             "Test::More" : "0",
             "Test::Most" : "0",
+            "Test::Needs" : "0",
             "Test::RequiresInternet" : "0",
             "Test::Warnings" : "0",
             "parent" : "0",
@@ -122,7 +130,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.001",
+   "version" : "0.000001",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030002"
@@ -269,6 +277,7 @@
                   "stopwords" : [
                      "Alders",
                      "Alders'",
+                     "PPI",
                      "sandboxed"
                   ],
                   "wordlist" : "Pod::Wordlist"
@@ -618,21 +627,7 @@
                   "global" : 0,
                   "skip_version_provider" : 0
                },
-               "Dist::Zilla::Plugin::RewriteVersion::Transitional" : {
-                  "_fallback_version_provider_args" : {},
-                  "fallback_version_provider" : "Git::NextVersion"
-               },
-               "Git::NextVersion" : {
-                  "Dist::Zilla::Plugin::Git::NextVersion" : {
-                     "first_version" : "0.001",
-                     "version_by_branch" : 0,
-                     "version_regexp" : "(?^:^v(.+)$)"
-                  },
-                  "Dist::Zilla::Role::Git::Repo" : {
-                     "git_version" : "2.28.0",
-                     "repo_root" : "."
-                  }
-               }
+               "Dist::Zilla::Plugin::RewriteVersion::Transitional" : {}
             },
             "name" : "@Author::OALDERS/@Git::VersionManager/RewriteVersion::Transitional",
             "version" : "0.009"
@@ -695,7 +690,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.001",
+                  "tag" : "v0.000001",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
