@@ -69,7 +69,6 @@
             "PPIx::QuoteLike" : "0",
             "PPIx::Utils::Classification" : "0",
             "Path::Tiny" : "0",
-            "Perl::Critic::Utils" : "1.138",
             "Perl::Tidy" : "20210111",
             "Pod::Usage" : "0",
             "Ref::Util" : "0",

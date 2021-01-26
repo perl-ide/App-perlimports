@@ -14,7 +14,6 @@ requires "PPI::Document" => "1.270";
 requires "PPIx::QuoteLike" => "0";
 requires "PPIx::Utils::Classification" => "0";
 requires "Path::Tiny" => "0";
-requires "Perl::Critic::Utils" => "1.138";
 requires "Perl::Tidy" => "20210111";
 requires "Pod::Usage" => "0";
 requires "Ref::Util" => "0";
