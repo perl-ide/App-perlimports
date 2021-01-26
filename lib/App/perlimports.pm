@@ -10,7 +10,6 @@ use Data::Dumper qw( Dumper );
 use Data::Printer;
 use List::Util qw( any uniq );
 use Module::Runtime qw( require_module );
-use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use Perl::Critic::Utils 1.138 qw( is_function_call is_hash_key );
@@ -18,6 +17,7 @@ use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw( is_function_call is_hash_key );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
+use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 

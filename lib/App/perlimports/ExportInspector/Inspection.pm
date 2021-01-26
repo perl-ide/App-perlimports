@@ -3,8 +3,8 @@ package App::perlimports::ExportInspector::Inspection;
 use Moo;
 
 use List::Util qw( any );
-use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
+use Sub::HandlesVia;
 use Types::Standard qw( ArrayRef Bool HashRef );
 
 has all_exports => (

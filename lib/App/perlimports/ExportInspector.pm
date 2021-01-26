@@ -10,8 +10,8 @@ use Class::Inspector                        ();
 use Data::Printer;
 use List::Util qw( any );
 use Module::Runtime qw( require_module );
-use MooX::HandlesVia;
 use PPI::Document ();
+use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Str);
 

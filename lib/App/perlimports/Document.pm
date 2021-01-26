@@ -7,12 +7,12 @@ our $VERSION = '0.000001';
 use App::perlimports ();
 use Data::Printer;
 use List::Util qw( any );
-use MooX::HandlesVia qw( has );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
 use PPIx::QuoteLike               ();
 use String::InterpolatedVariables ();
+use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
@@ -127,6 +127,7 @@ my %default_ignore = (
     'MooseX::StrictConstructor'      => 1,
     'namespace::autoclean'           => 1,
     'Sub::Exporter'                  => 1,
+    'Sub::HandlesVia'                => 1,
     'Test::Needs'                    => 1,
     'Test::RequiresInternet'         => 1,
     'Types::Standard'                => 1,
