@@ -8,13 +8,17 @@ use App::perlimports::ExportInspector ();
 use Class::Inspector                  ();
 use Data::Dumper qw( Dumper );
 use Data::Printer;
-use List::Util qw( any uniq );
+use List::Util qw( any none uniq );
 use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
-use PPIx::Utils::Classification qw( is_function_call is_hash_key );
+use PPIx::Utils::Classification qw(
+    is_function_call
+    is_hash_key
+    is_perl_builtin
+);
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
@@ -120,14 +124,13 @@ has _module_name => (
 
 has _original_imports => (
     is          => 'ro',
-    isa         => ArrayRef,
+    isa         => Maybe [ArrayRef],
     init_arg    => 'original_imports',
     handles_via => 'Array',
     handles     => {
         _all_original_imports => 'elements',
         _has_original_imports => 'count',
     },
-    default => sub { [] },
 );
 
 has _pad_imports => (
@@ -257,6 +260,17 @@ sub _build_imports {
             next;
         }
 
+        # Don't turn "use POSIX ();" into "use POSIX qw( sprintf );"
+        # If it's a function and it's a builtin function and it's either not
+        # included in original_imports or original imports are not implicit
+        # then skip this.
+        if (   defined $self->_original_imports
+            && ( none { $_ eq $word } @{ $self->_original_imports } )
+            && is_function_call($word)
+            && is_perl_builtin($word) ) {
+            next;
+        }
+
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
         if (   $word->isa('PPI::Token::Symbol')
@@ -314,7 +328,12 @@ sub _build_imports {
     # preserve it, rather than risk altering the behaviour of the module.
     if ( $self->_export_inspector->has_import_flags ) {
         for my $arg ( @{ $self->_export_inspector->import_flags } ) {
-            if ( any { $_ eq $arg } @{ $self->_original_imports } ) {
+            if (
+                defined $self->_original_imports && (
+                    any { $_ eq $arg }
+                    @{ $self->_original_imports }
+                )
+            ) {
                 push @found, $arg;
             }
         }

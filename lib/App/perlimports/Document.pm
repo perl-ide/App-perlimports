@@ -339,15 +339,11 @@ sub tidied_document {
     my $self = shift;
 
     foreach my $include ( $self->all_includes ) {
-        my $imports = $self->original_imports->{ $include->module };
-
         my $e = App::perlimports->new(
-            document => $self,
-            include  => $include,
-            $imports
-            ? ( original_imports => $imports )
-            : (),
-            pad_imports => $self->_padding,
+            document         => $self,
+            include          => $include,
+            original_imports => $self->original_imports->{ $include->module },
+            pad_imports      => $self->_padding,
         );
         my $elem;
         try {
