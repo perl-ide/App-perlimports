@@ -309,7 +309,8 @@ sub _build_imports {
             }
         }
 
-        if ( $found_import && !$self->_is_already_imported($found_import) ) {
+        if ( $found_import
+            && !$self->_is_already_imported($found_import) ) {
             $found{$found_import}++;
         }
     }
@@ -448,8 +449,8 @@ sub _build_formatted_ppi_statement {
     # Exporter) but we also haven't explicitly flagged this as a module which
     # never exports. So basically we can't be correct with confidence, so we'll
     # return the original statement.
-    if ( !$self->_has_combined_exports && $self->_include->type ne 'require' )
-    {
+    if (  !$self->_has_combined_exports
+        && $self->_include->type ne 'require' ) {
         return $self->_include;
     }
 
@@ -655,20 +656,28 @@ sub _is_already_imported {
     my $symbol    = shift;
     my $duplicate = 0;
 
-    foreach my $module ( keys %{ $self->_document->original_imports } ) {
-        next if $module eq $self->_module_name;
+    foreach my $module (
+        grep { $_ ne $self->_module_name }
+        keys %{ $self->_document->original_imports }
+    ) {
+        my @imports;
         if (
             is_plain_arrayref(
                 $self->_document->original_imports->{$module}
             )
         ) {
-            if (
-                any { $_ eq $symbol }
-                @{ $self->_document->original_imports->{$module} }
-            ) {
-                $duplicate = 1;
-                last;
+            @imports = @{ $self->_document->original_imports->{$module} };
+        }
+        else {
+            # Implicit import?
+            if ( my $inspector = $self->_document->inspector_for($module) ) {
+                @imports = $inspector->default_export_names;
             }
+        }
+
+        if ( any { $_ eq $symbol } @imports ) {
+            $duplicate = 1;
+            last;
         }
     }
 

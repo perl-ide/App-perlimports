@@ -41,6 +41,20 @@ has includes => (
     builder => '_build_includes',
 );
 
+has _inspectors => (
+    is          => 'ro',
+    isa         => HashRef [ Maybe [Object] ],
+    handles_via => 'Hash',
+    handles     => {
+        all_inspector_names => 'keys',
+        _get_inspector_for  => 'get',
+        _has_inspector_for  => 'exists',
+        _set_inspector_for  => 'set',
+    },
+    lazy    => 1,
+    default => sub { +{} },
+);
+
 has never_exports => (
     is      => 'ro',
     isa     => HashRef,
@@ -335,6 +349,30 @@ sub _is_ignored {
         || exists $self->_ignore_modules->{$module};
 }
 
+sub inspector_for {
+    my $self   = shift;
+    my $module = shift;
+
+    if ( $self->_has_inspector_for($module) ) {
+        return $self->_get_inspector_for($module);
+    }
+
+    try {
+        $self->_set_inspector_for(
+            $module,
+            App::perlimports::ExportInspector->new(
+                module_name => $module,
+            )
+        );
+    }
+    catch {
+        warn $_;
+        $self->_set_inspector_for( $module, undef );
+    };
+
+    return $self->_get_inspector_for($module);
+}
+
 sub tidied_document {
     my $self = shift;
 
@@ -382,6 +420,10 @@ sub tidied_document {
 # ABSTRACT: Make implicit imports explicit
 
 =pod
+
+=head2 inspector_for( $module_name )
+
+Returns an L<App::perlimports::ExporterInspector> object for the given module.
 
 =head2 tidied_document
 

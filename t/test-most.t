@@ -3,22 +3,25 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
-use TestHelper qw( source2pi );
+use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
-for my $module ( 'Test::More', 'Test::Most' ) {
+my %modules = (
+    'Test::More' => 'test-data/test-more.t',
+    'Test::Most' => 'test-data/test-most.t'
+);
+
+for my $module ( keys %modules ) {
     subtest $module => sub {
-        my $e = source2pi(
-            'test-data/test-most.t',
-            "use $module;",
+        my $doc = App::perlimports::Document->new(
+            filename  => $modules{$module},
+            selection => "use $module;",
         );
 
-        ok( $e->_isa_test_builder_module, '_isa_test_builder_module' );
         is(
-            $e->formatted_ppi_statement,
-            qq{use $module import => [ qw( done_testing ) ];},
-            'formatted_ppi_statement'
+            $doc->tidied_document,
+            "use $module import => [ qw( done_testing ) ];",
+            'tidied document'
         );
     };
 }
