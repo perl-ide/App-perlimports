@@ -64,15 +64,27 @@ sub maybe_get_exports {
     use strict;
     ## use critic
 
+    my $is_exporter     = 0;
+    my $is_sub_exporter = 0;
+
+    # https://metacpan.org/source/TODDR/Exporter-5.74/lib/Exporter/Heavy.pm#L94
+    $is_exporter = any { $_ =~ m{is not defined in .*::EXPORT_TAGS} } @error;
+
+    if (   !$is_exporter
+        && !scalar @error
+        && ( keys %export || keys %default_export ) ) {
+        $is_sub_exporter = 1;
+    }
+
     return App::perlimports::ExportInspector::Inspection->new(
         {
             all_exports => \%export,
             @{$isa} ? ( class_isa => $isa ) : (),
             default_exports => \%default_export,
             errors          => \@error,
+            is_exporter     => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
-            is_sub_exporter =>
-                ( !!keys %export || !!keys %default_export || 0 ),
+            is_sub_exporter => $is_sub_exporter,
         }
     );
 }

@@ -353,6 +353,9 @@ sub inspector_for {
     my $self   = shift;
     my $module = shift;
 
+    # This would produce a warning and no helpful information.
+    return undef if $module eq 'Exporter';
+
     if ( $self->_has_inspector_for($module) ) {
         return $self->_get_inspector_for($module);
     }

@@ -118,7 +118,10 @@ sub _build_inspection {
     if ( $sub_exporter->has_errors ) {
         $self->_add_error for @{ $sub_exporter->errors };
     }
-    return $sub_exporter if $sub_exporter->is_sub_exporter;
+
+    # It may not actually be a Sub::Exporter, but if exports are found that
+    # should generally be good enough.
+    return $sub_exporter if $sub_exporter->has_all_exports;
 
     # If it's neither, return the $exporter, because it will probably have a
     # more useful class_isa.
