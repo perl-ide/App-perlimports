@@ -133,6 +133,7 @@ my %default_ignore = (
     'Devel::Confess'                 => 1,
     'Exception::Class'               => 1,
     'Exporter'                       => 1,
+    'Mojolicious::Lite'              => 1,
     'Moo'                            => 1,
     'Moo::Role'                      => 1,
     'Moose'                          => 1,
