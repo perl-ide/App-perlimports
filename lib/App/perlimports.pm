@@ -17,6 +17,7 @@ use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw(
     is_function_call
     is_hash_key
+    is_method_call
     is_perl_builtin
 );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
@@ -244,6 +245,8 @@ sub _build_imports {
         if ( is_hash_key($word) && !$word->isa('PPI::Token::Symbol') ) {
             next;
         }
+
+        next if is_method_call($word);
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
