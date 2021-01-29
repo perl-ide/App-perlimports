@@ -257,9 +257,17 @@ sub _build_imports {
         #
         # However, we also want to catch function calls in use statements, like
         # "use lib catfile( 't', 'lib');"
-        if (   $word->parent
+        #
+        # or
+        #
+        # use Mojo::File qw( curfile );
+        # use lib curfile->sibling('lib')->to_string;
+        if (
+               $word->parent
             && $word->parent->isa('PPI::Statement::Include')
-            && !is_function_call($word) ) {
+            && (   !is_function_call($word)
+                && !( $word->snext_sibling && $word->snext_sibling eq '->' ) )
+        ) {
             next;
         }
 
