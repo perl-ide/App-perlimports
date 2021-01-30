@@ -196,22 +196,6 @@ sub _build_imports {
     # in the code.
     $self->_delete_export('verbose') if $self->_module_name eq 'Carp';
 
-    my %sub_names;
-    for my $sub (
-        @{
-            $self->_document->ppi_document->find(
-                sub { $_[1]->isa('PPI::Statement::Sub') }
-                )
-                || []
-        }
-    ) {
-        my @children = $sub->schildren;
-        if ( $children[0] eq 'sub' && $children[1]->isa('PPI::Token::Word') )
-        {
-            $sub_names{"$children[1]"} = 1;
-        }
-    }
-
     my %found;
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
@@ -239,7 +223,7 @@ sub _build_imports {
         #
         # use List::Util qw( any );
         # sub any {}
-        next if exists $sub_names{"$word"};
+        next if $self->_document->is_sub_name("$word");
 
         # A hash key might, for example, be a variable.
         if ( is_hash_key($word) && !$word->isa('PPI::Token::Symbol') ) {

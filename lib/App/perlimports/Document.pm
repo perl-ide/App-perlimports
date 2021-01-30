@@ -98,6 +98,17 @@ has _ppi_selection => (
     default  => sub { $_[0]->ppi_document },
 );
 
+has _sub_names => (
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        is_sub_name => 'exists',
+    },
+    lazy    => 1,
+    builder => '_build_sub_names',
+);
+
 has vars => (
     is      => 'ro',
     isa     => HashRef,
@@ -331,6 +342,28 @@ sub _build_never_exports {
     }
 
     return \%modules;
+}
+
+sub _build_sub_names {
+    my $self = shift;
+
+    my %sub_names;
+    for my $sub (
+        @{
+            $self->ppi_document->find(
+                sub { $_[1]->isa('PPI::Statement::Sub') }
+                )
+                || []
+        }
+    ) {
+        my @children = $sub->schildren;
+        if ( $children[0] eq 'sub' && $children[1]->isa('PPI::Token::Word') )
+        {
+            $sub_names{"$children[1]"} = 1;
+        }
+    }
+
+    return \%sub_names;
 }
 
 sub _has_import_switches {
