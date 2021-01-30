@@ -250,6 +250,16 @@ sub _build_vars {
         for my $var ( @{$vars} ) {
             ++$vars{$var};
         }
+
+        # Match on @{[ ... ]}
+        if ( $quote =~ m/ @ \{ \[ (.*) \] \} /x ) {
+            my $doc = PPI::Document->new( \$1 );
+            my $words
+                = $doc->find( sub { $_[1]->isa('PPI::Token::Word') } ) || [];
+            for my $word (@$words) {
+                ++$vars{$word};
+            }
+        }
     }
 
     # Crude hack to catch vars like ${FOO_BAR} in heredocs.
