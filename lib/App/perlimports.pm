@@ -296,7 +296,16 @@ sub _build_imports {
             $found_import = substr( $word->symbol, 1 );
         }
 
-        elsif ( $self->_is_importable("$word") ) {
+        # Don't catch ${foo} here and mistake it for "foo". We deal with that
+        # elsewhere.
+        elsif (
+            $self->_is_importable("$word")
+            && !(
+                   $word =~ m{^\w}
+                && $word->previous_token
+                && $word->previous_token eq '{'
+            )
+        ) {
             $found_import = "$word";
         }
 

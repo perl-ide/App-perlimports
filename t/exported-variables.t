@@ -25,7 +25,7 @@ is_deeply(
 ok( !$e->_is_ignored, '_is_ignored' );
 is(
     $e->formatted_ppi_statement,
-    q{use ViaExporter qw( %foo @foo );},
+    q{use ViaExporter qw( $foo %foo @foo );},
     'formatted_ppi_statement'
 );
 
