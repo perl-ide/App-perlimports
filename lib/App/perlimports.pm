@@ -281,13 +281,15 @@ sub _build_imports {
         }
 
         # Don't catch ${foo} here and mistake it for "foo". We deal with that
-        # elsewhere.
+        # elsewhere. Don't catch @{ split_header $str }.
         elsif (
             $self->_is_importable("$word")
             && !(
                    $word =~ m{^\w}
                 && $word->previous_token
                 && $word->previous_token eq '{'
+                && $word->previous_token->previous_token
+                && $word->previous_token->previous_token eq '$'
             )
         ) {
             $found_import = "$word";
