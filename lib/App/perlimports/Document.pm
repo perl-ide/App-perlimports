@@ -109,11 +109,11 @@ has _sub_names => (
     builder => '_build_sub_names',
 );
 
-has vars => (
+has interpolated_symbols => (
     is      => 'ro',
     isa     => HashRef,
     lazy    => 1,
-    builder => '_build_vars',
+    builder => '_build_interpolated_symbols',
 );
 
 has _verbose => (
@@ -240,9 +240,9 @@ sub _build_original_imports {
     return \%imports;
 }
 
-sub _build_vars {
+sub _build_interpolated_symbols {
     my $self = shift;
-    my %vars;
+    my %symbols;
 
     for my $quote (
         @{
@@ -259,7 +259,7 @@ sub _build_vars {
     ) {
         my $vars = String::InterpolatedVariables::extract($quote);
         for my $var ( @{$vars} ) {
-            ++$vars{$var};
+            ++$symbols{$var};
         }
 
         # Match on @{[ ... ]}
@@ -268,7 +268,7 @@ sub _build_vars {
             my $words
                 = $doc->find( sub { $_[1]->isa('PPI::Token::Word') } ) || [];
             for my $word (@$words) {
-                ++$vars{$word};
+                ++$symbols{$word};
             }
         }
     }
@@ -292,7 +292,7 @@ sub _build_vars {
             if ( $var =~ m/([\$\@\%])\{(\w+)\}/ ) {
                 $var = $1 . $2;
             }
-            ++$vars{$var};
+            ++$symbols{$var};
         }
     }
 
@@ -310,10 +310,10 @@ sub _build_vars {
         my $sigil   = $cast . q{};
         my $sibling = $cast->snext_sibling . q{};
         if ( $sibling =~ m/{(\w+)}/ ) {
-            ++$vars{ $sigil . $1 };
+            ++$symbols{ $sigil . $1 };
         }
     }
-    return \%vars;
+    return \%symbols;
 }
 
 # Returns a HashRef of modules which will always be converted to avoid imports.

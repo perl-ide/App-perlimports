@@ -320,7 +320,7 @@ sub _build_imports {
     }
 
     #  A used import might be a variable interpolated into quotes.
-    for my $var ( keys %{ $self->_document->vars } ) {
+    for my $var ( keys %{ $self->_document->interpolated_symbols } ) {
         if ( $self->_is_importable($var) ) {
             $found{$var} = 1;
         }
