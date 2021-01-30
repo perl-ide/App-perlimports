@@ -211,8 +211,6 @@ sub _build_imports {
                 || []
         }
     ) {
-        my $found_import;
-
         next if exists $found{"$word"};
 
         # Without the sub name check, we accidentally turn
@@ -265,6 +263,8 @@ sub _build_imports {
             && is_perl_builtin($word) ) {
             next;
         }
+
+        my $found_import;
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
