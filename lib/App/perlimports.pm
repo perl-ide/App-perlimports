@@ -224,7 +224,14 @@ sub _build_imports {
         next if $self->_document->is_sub_name("$word");
 
         # A hash key might, for example, be a variable.
-        if ( is_hash_key($word) && !$word->isa('PPI::Token::Symbol') ) {
+        if (
+               is_hash_key($word)
+            && !$word->isa('PPI::Token::Symbol')
+            && !(
+                   $word->statement
+                && $word->statement->isa('PPI::Statement::Variable')
+            )
+        ) {
             next;
         }
 
