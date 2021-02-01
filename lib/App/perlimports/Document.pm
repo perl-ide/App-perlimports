@@ -305,7 +305,9 @@ sub _build_interpolated_symbols {
                 || []
         }
     ) {
-        next unless $cast->snext_sibling->isa('PPI::Structure::Block');
+        if ( !$cast->snext_sibling || !$cast->snext_sibling->isa('PPI::Structure::Block') ) {
+            next;
+        }
 
         my $sigil   = $cast . q{};
         my $sibling = $cast->snext_sibling . q{};
