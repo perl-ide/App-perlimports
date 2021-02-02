@@ -19,12 +19,8 @@ jobs:
       image: perldocker/perl-tester:5.32
     steps:
       - uses: actions/checkout@v2
-      - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v1
-        with:
-          cpanfile: "test-needs-cpanfile"
-          sudo: false
-          args: "--with-suggests --with-recommends --with-test"
+      - name: install test-needs deps
+        run: cpm install -g --cpanfile test-needs-cpanfile
       - name: Run Tests
         env:
           AUTHOR_TESTING: 1
@@ -37,21 +33,57 @@ jobs:
           name: build_dir
           path: build_dir
         if: ${{ github.actor != 'nektos/act' }}
-  coverage-job:
+  integration-job:
     needs: build-job
     runs-on: ubuntu-20.04
     container:
       image: perldocker/perl-tester:5.32
+    strategy:
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v2 # codecov wants to be inside a Git repository
       - uses: actions/download-artifact@v2
         with:
           name: build_dir
           path: .
       - name: Install deps and test
         run: cpan-install-dist-deps && test-dist
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+      - uses: actions/checkout@v2
+        with:
+          repository: mojolicious/mojo
+          path: mojo
+          fetch-depth: 0
+        name: check out Mojo
+      - name: Install Mojo
+        run: cpm install -g Mojo
+      - name: check out a tag
+        run: cd mojo && git checkout v8.72
+      - name: run Mojo tests
+        run: cd mojo && prove -lr t
+      - name: Run perlimports on test suite
+        run: cd mojo && find t -type f | grep "\.t\$" | grep -v t/mojolicious/commands.t | xargs -L 1 perl -I../lib ../script/perlimports --libs lib,t/mojo/lib -i -v --no-padding --ignore-modules Test::More -f
+      - name: run Mojo tests after tidying tests
+        run: cd mojo && prove -lr t
+      - name: Hard reset on Mojo checkout
+        run: cd mojo && git reset --hard
+      - name: Run perlimports on lib
+        run: cd mojo && find lib -type f | grep "\.pm\$" | grep -v lib/Mojo/Base.pm | xargs -n 1 perl -I../lib ../script/perlimports -i -v --libs lib --no-padding -f
+      - name: run Mojo tests after tidying lib
+        run: cd mojo && prove -lr t
+  #coverage-job:
+    #needs: build-job
+    #runs-on: ubuntu-20.04
+    #container:
+      #image: perldocker/perl-tester:5.32
+    #steps:
+      #- uses: actions/checkout@v2 # codecov wants to be inside a Git repository
+      #- uses: actions/download-artifact@v2
+        #with:
+          #name: build_dir
+          #path: .
+      #- name: Install deps and test
+        #run: cpan-install-dist-deps && test-dist
+        #env:
+          #CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
   #test-job:
     #needs: build-job
     #runs-on: ${{ matrix.os }}
