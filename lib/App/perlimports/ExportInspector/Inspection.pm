@@ -12,7 +12,9 @@ has all_exports => (
     isa         => HashRef,
     handles_via => 'Hash',
     handles     => {
-        has_all_exports => 'count',
+        all_export_names  => 'keys',
+        all_export_values => 'values',
+        has_all_exports   => 'count',
     },
 );
 
@@ -32,8 +34,9 @@ has default_exports => (
     default     => sub { +{} },
     handles_via => 'Hash',
     handles     => {
-        default_export_names => 'keys',
-        has_default_exports  => 'count',
+        default_export_names  => 'keys',
+        default_export_values => 'values',
+        has_default_exports   => 'count',
     },
 );
 
@@ -102,6 +105,20 @@ sub _build_is_moose_class {
     @{ $self->class_isa };
 }
 
+sub all_imports_match_exports {
+    my $self = shift;
+    return
+        join( q{}, sort $self->all_export_names ) eq
+        join( q{}, sort $self->all_export_values );
+}
+
+sub default_imports_match_exports {
+    my $self = shift;
+    return
+        join( q{}, sort $self->default_export_names ) eq
+        join( q{}, sort $self->default_export_values );
+}
+
 1;
 
 # ABSTRACT: Class to handle information about class exports
@@ -119,6 +136,11 @@ class exports.
 
 C<HashRef> of all symbols which we think a class exports.
 
+=head2 all_imports_match_exports
+
+Returns true if import and export names match. Used to determine if we should
+dump a one or two column table of import and export names.
+
 =head2 class_isa
 
 C<ArrayRef> of what we think the C<@ISA> for a class is. Note that C<@ISA> can
@@ -133,6 +155,11 @@ invocation like:
     use Foo;
 
 will import all of these symbols for you.
+
+=head2 default_imports_match_exports
+
+Returns true if import and export names match. Used to determine if we should
+dump a one or two column table of import and export names.
 
 =head2 errors
 

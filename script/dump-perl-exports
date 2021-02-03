@@ -35,10 +35,12 @@ if ( !keys %{$exports} ) {
     exit(0);
 }
 
-if ( $ei->inspection->has_class_isa ) {
+my $inspection = $ei->inspection;
+
+if ( $inspection->has_class_isa ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     $t->captions( ['ISA'] );
-    for my $class ( @{$ei->inspection->class_isa} ) {
+    for my $class ( @{ $inspection->class_isa } ) {
         $t->row($class);
     }
     print $t->draw;
@@ -70,20 +72,39 @@ if ( $ei->has_export_tags ) {
 
 if ( $ei->has_default_exports ) {
     my $t = Text::SimpleTable::AutoWidth->new();
-    $t->captions( [ 'Default Export Symbol', 'Import Name' ] );
-    for my $key ( sort $ei->default_export_names ) {
-        $t->row( $key, $ei->default_exports->{$key} );
+    if ( $inspection->default_imports_match_exports ) {
+        $t->captions( ['Default Exported Symbols'] );
+        for my $symbol ( sort $inspection->default_export_names ) {
+            $t->row($symbol);
+        }
+    }
+    else {
+        $t->captions( [ 'Default Export Symbol', 'Import Name' ] );
+        for my $key ( sort $inspection->default_export_names ) {
+            $t->row( $key, $inspection->default_exports->{$key} );
+        }
     }
     print $t->draw;
+    printf( "%i symbols\n", scalar $inspection->default_export_names );
 }
 
 {
     my $t = Text::SimpleTable::AutoWidth->new();
-    $t->captions( [ 'Explicit Export Symbol', 'Import Name' ] );
-    for my $key ( sort keys %$exports ) {
-        $t->row( $key, $exports->{$key} );
+
+    if ( $inspection->all_imports_match_exports ) {
+        $t->captions( ['All Exportable Symbols'] );
+        for my $symbol ( sort $inspection->all_export_names ) {
+            $t->row($symbol);
+        }
+    }
+    else {
+        $t->captions( [ 'Explicit Export Symbol', 'Import Name' ] );
+        for my $key ( sort $inspection->all_export_names ) {
+            $t->row( $key, $exports->{$key} );
+        }
     }
     print $t->draw;
+    printf( "%i symbols\n", scalar $inspection->all_export_names );
 }
 
 if ( $ei->has_export_fail ) {
