@@ -235,7 +235,7 @@ sub _build_imports {
             next;
         }
 
-        next if is_method_call($word);
+        next if is_method_call($word) && !$word->isa('PPI::Token::Symbol');
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
