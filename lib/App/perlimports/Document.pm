@@ -227,7 +227,10 @@ sub _build_original_imports {
                 && !$imports{$pkg} ) {
                 $imports{$pkg} = [];
             }
-            next unless $child->isa('PPI::Token::QuoteLike::Words');
+            if (   !$child->isa('PPI::Token::QuoteLike::Words')
+                && !$child->isa('PPI::Token::Quote::Single') ) {
+                next;
+            }
             my @imports = $child->literal;
             if ( exists $imports{$pkg} ) {
                 push( @{ $imports{$pkg} }, $child->literal );
@@ -265,9 +268,9 @@ sub _build_interpolated_symbols {
 
         # Match on @{[ ... ]}
         if ( $quote =~ m/ @ \{ \[ (.*) \] \} /x ) {
-            my $doc = PPI::Document->new( \$1 );
-            my $words
-                = $doc->find( sub { $_[1]->isa('PPI::Token::Word') } ) || [];
+            my $doc   = PPI::Document->new( \$1 );
+            my $words = $doc->find( sub { $_[1]->isa('PPI::Token::Word') } )
+                || [];
             for my $word (@$words) {
                 ++$symbols{$word};
             }
@@ -361,8 +364,8 @@ sub _build_sub_names {
         }
     ) {
         my @children = $sub->schildren;
-        if ( $children[0] eq 'sub' && $children[1]->isa('PPI::Token::Word') )
-        {
+        if (   $children[0] eq 'sub'
+            && $children[1]->isa('PPI::Token::Word') ) {
             $sub_names{"$children[1]"} = 1;
         }
     }

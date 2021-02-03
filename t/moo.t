@@ -7,8 +7,10 @@ use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 
 subtest 'Moo' => sub {
-    my $doc
-        = App::perlimports::Document->new( filename => 't/lib/UsesMoose.pm', selection => 'use Moo;' );
+    my $doc = App::perlimports::Document->new(
+        filename  => 't/lib/UsesMoose.pm',
+        selection => 'use Moo;'
+    );
 
     is(
         $doc->tidied_document,

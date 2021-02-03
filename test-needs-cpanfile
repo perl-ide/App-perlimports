@@ -2,10 +2,11 @@ use strict;
 use warnings;
 
 on 'test' => sub {
+    requires 'File::Spec::Functions' => '0';
     requires 'HTML::TableExtract' => 0;
     requires 'Mojo' => 0;
     requires 'Object::Tap' => 0;
     requires 'Perl::Critic::Utils' => 0;
     requires 'Pithub' => '0';
-    requires 'File::Spec::Functions' => '0';
+    requires 'Test2::V0' => '0';
 };
