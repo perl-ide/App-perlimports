@@ -4,25 +4,65 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports::Document ();
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 
-my $doc = App::perlimports::Document->new(
-    filename => 't/lib/UsesMoo.pm',
-);
+subtest 'Moo' => sub {
+    my $doc
+        = App::perlimports::Document->new( filename => 't/lib/UsesMoose.pm', selection => 'use Moo;' );
 
-my $expected = <<'EOF';
-package UsesMoo;
+    is(
+        $doc->tidied_document,
+        'use Moo;',
+        'document unchanged'
+    );
+};
 
-use Moo;
+subtest 'Import::Into' => sub {
+    my $doc = App::perlimports::Document->new(
+        filename => 't/lib/MyOwnMoo.pm',
+    );
 
-__PACKAGE__->meta->make_immutable;
+    my $expected = <<'EOF';
+package MyOwnMoo;
+
+use strict;
+use warnings;
+
+use Import::Into;
+
+sub import {
+    $_->import::into( scalar caller ) for qw( Moo );
+}
+
 1;
 EOF
 
-is(
-    $doc->tidied_document,
-    $expected,
-    'document unchanged'
-);
+    is(
+        $doc->tidied_document,
+        $expected,
+    );
+};
+
+subtest 'Uses MyOwnMoo' => sub {
+    my $doc = App::perlimports::Document->new(
+        filename => 't/lib/UsesMyOwnMoo.pm',
+    );
+
+    my $expected = <<'EOF';
+package UsesMyOwnMoo;
+
+use strict;
+use warnings;
+
+use MyOwnMoo;
+
+1;
+EOF
+
+    is(
+        $doc->tidied_document,
+        $expected,
+    );
+};
 
 done_testing();
