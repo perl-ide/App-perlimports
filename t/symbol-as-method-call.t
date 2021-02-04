@@ -3,7 +3,7 @@ use warnings;
 
 use App::perlimports::Document ();
 use Test::More;
-use Test::Needs qw( Mojo::Util );
+use Test::Needs qw( HTML::TableExtract Object::Tap );
 
 my $doc = App::perlimports::Document->new(
     filename  => 'test-data/symbol-as-method-call.pl',

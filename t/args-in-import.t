@@ -3,6 +3,7 @@ use warnings;
 
 use App::perlimports::Document ();
 use Test::More;
+use Test::Needs qw( Test2::V0 );
 
 my $doc = App::perlimports::Document->new(
     filename  => 'test-data/args-in-import.t',
