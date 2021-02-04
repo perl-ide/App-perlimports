@@ -8,6 +8,7 @@ use lib 't/lib', 'test-data/lib';
 use App::perlimports ();
 use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is' ];
+use Test::Needs qw( MooseX::Types::Path::Class );
 
 my $e = source2pi(
     'test-data/messy-imports.pl',

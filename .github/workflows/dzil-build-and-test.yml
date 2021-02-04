@@ -45,6 +45,8 @@ jobs:
         with:
           name: build_dir
           path: .
+      - name: install test-needs deps
+        run: cpm install -g --cpanfile test-needs-cpanfile
       - name: Install deps and test
         run: cpan-install-dist-deps && test-dist
       - uses: actions/checkout@v2
@@ -69,29 +71,30 @@ jobs:
         run: cd mojo && find lib -type f | grep "\.pm\$" | grep -v lib/Mojo/Base.pm | xargs -n 1 perl -I../lib ../script/perlimports -i -v --libs lib --no-padding -f
       - name: run Mojo tests after tidying lib
         run: cd mojo && prove -lr t
-  #coverage-job:
-    #needs: build-job
-    #runs-on: ubuntu-20.04
-    #container:
-      #image: perldocker/perl-tester:5.32
-    #steps:
-      #- uses: actions/checkout@v2 # codecov wants to be inside a Git repository
-      #- uses: actions/download-artifact@v2
-        #with:
-          #name: build_dir
-          #path: .
-      #- name: Install deps and test
-        #run: cpan-install-dist-deps && test-dist
-        #env:
-          #CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-  #test-job:
-    #needs: build-job
-    #runs-on: ${{ matrix.os }}
-    #strategy:
-      #fail-fast: false
-      #matrix:
+  coverage-job:
+    needs: build-job
+    runs-on: ubuntu-20.04
+    container:
+      image: perldocker/perl-tester:5.32
+    steps:
+      - uses: actions/checkout@v2 # codecov wants to be inside a Git repository
+      - uses: actions/download-artifact@v2
+        with:
+          name: build_dir
+          path: .
+      - name: Install deps and test
+        run: cpan-install-dist-deps && test-dist
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+  test-job:
+    needs: build-job
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
         #os: [ubuntu-20.04, macos-latest, windows-latest]
-        #perl-version:
+        os: [ubuntu-20.04]
+        perl-version:
           #- "5.8"
           #- "5.10"
           #- "5.12"
@@ -104,33 +107,71 @@ jobs:
           #- "5.26"
           #- "5.28"
           #- "5.30"
-          #- "5.32"
-        #exclude:
-          #- os: windows-latest
-            #perl-version: "5.8"
-          #- os: windows-latest
-            #perl-version: "5.10"
-          #- os: windows-latest
-            #perl-version: "5.12"
-          #- os: windows-latest
-            #perl-version: "5.32"
-    #name: Perl ${{ matrix.perl-version }} on ${{ matrix.os }}
-    #steps:
-      #- name: Set Up Perl
-        #uses: shogo82148/actions-setup-perl@v1
-        #with:
-          #perl-version: ${{ matrix.perl-version }}
-          #distribution: strawberry # this option only used on Windows
-      #- uses: actions/download-artifact@v2
-        #with:
-          #name: build_dir
-          #path: .
-      #- name: install deps using cpm
-        #uses: perl-actions/install-with-cpm@v1
-        #with:
-          #cpanfile: "cpanfile"
-          #args: "--with-suggests --with-recommends --with-test"
-      #- run: prove -lr t xt
-        #env:
-          #AUTHOR_TESTING: 1
-          #RELEASE_TESTING: 1
+          - "5.32"
+        exclude:
+          - os: windows-latest
+            perl-version: "5.8"
+          - os: windows-latest
+            perl-version: "5.10"
+          - os: windows-latest
+            perl-version: "5.12"
+          - os: windows-latest
+            perl-version: "5.32"
+    name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
+    steps:
+      - name: Set Up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: build_dir
+          path: .
+      - name: install test-needs deps
+        run: cpm install -g --cpanfile test-needs-cpanfile
+      - name: install deps using cpm
+        uses: perl-actions/install-with-cpm@v1
+        with:
+          cpanfile: "cpanfile"
+          args: "--with-suggests --with-recommends --with-test --with-develop"
+      - run: prove -lr t xt
+        env:
+          AUTHOR_TESTING: 1
+          RELEASE_TESTING: 1
+  test-needs-job:
+    needs: build-job
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        perl-version:
+          #- "5.8"
+          #- "5.10"
+          #- "5.12"
+          #- "5.14"
+          #- "5.16"
+          #- "5.18"
+          #- "5.20"
+          #- "5.22"
+          #- "5.24"
+          #- "5.26"
+          #- "5.28"
+          #- "5.30"
+          - "5.32"
+    name: Fewer deps ${{ matrix.perl-version }} on ${{ matrix.os }}
+    steps:
+      - name: Set Up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: build_dir
+          path: .
+      - name: install deps using cpm
+        uses: perl-actions/install-with-cpm@v1
+        with:
+          cpanfile: "cpanfile"
+          args: "--with-test"
+      - run: prove -lr t

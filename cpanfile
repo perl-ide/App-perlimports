@@ -32,19 +32,12 @@ on 'test' => sub {
   requires "Capture::Tiny" => "0";
   requires "Cpanel::JSON::XS" => "0";
   requires "Data::Printer" => "0";
-  requires "Exporter" => "0";
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
   requires "Geo::IP" => "0";
   requires "Getopt::Long" => "2.40";
-  requires "Import::Into" => "0";
   requires "LWP::UserAgent" => "6.49";
-  requires "Moose" => "0";
-  requires "MooseX::Types::Combine" => "0";
-  requires "MooseX::Types::Moose" => "0";
-  requires "MooseX::Types::Path::Class" => "0";
   requires "PPI::Dumper" => "0";
-  requires "Path::Class" => "0";
   requires "Sub::Exporter" => "0";
   requires "Test::Fatal" => "0";
   requires "Test::More" => "0";
@@ -52,7 +45,6 @@ on 'test' => sub {
   requires "Test::Needs" => "0";
   requires "Test::RequiresInternet" => "0";
   requires "Test::Warnings" => "0";
-  requires "parent" => "0";
   requires "perl" => "5.006";
 };
 

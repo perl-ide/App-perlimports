@@ -6,6 +6,7 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use Test::More import => [ 'done_testing', 'ok' ];
+use Test::Needs qw( Import::Into );
 use TestHelper qw( source2pi );
 
 my $source_text = 'use Local::UsesImportInto;';

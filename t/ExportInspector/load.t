@@ -3,6 +3,7 @@ use warnings;
 
 use App::perlimports::ExportInspector ();
 use Test::More import => [ 'done_testing', 'is_deeply', 'ok', 'subtest' ];
+use Test::Needs qw( Import::Into );
 use Test::Warnings ();
 
 use lib 'test-data/lib';

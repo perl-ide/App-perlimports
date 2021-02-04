@@ -4,6 +4,12 @@ use warnings;
 use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
+use Test::Needs qw(
+    Import::Into
+    MooseX::Types::Moose
+    MooseX::Types::Path::Class
+    Path::Class
+);
 
 use lib 'test-data/lib';
 

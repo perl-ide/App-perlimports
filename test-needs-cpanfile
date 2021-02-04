@@ -4,6 +4,11 @@ use warnings;
 on 'test' => sub {
     requires 'File::Spec::Functions' => '0';
     requires 'HTML::TableExtract' => 0;
+    requires 'Moose' => 0;
+    requires 'MooseX::Types' => 0;
+    requires 'MooseX::Types::Moose' => 0;
+    requires 'MooseX::Types::Path::Class' => 0;
+    requires 'Import::Into' => 0;
     requires 'Mojo' => 0;
     requires 'Object::Tap' => 0;
     requires 'Perl::Critic::Utils' => 0;
