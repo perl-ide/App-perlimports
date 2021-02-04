@@ -151,6 +151,7 @@ my %default_ignore = (
     'Moose::Exporter'                => 1,
     'MooseX::SemiAffordanceAccessor' => 1,
     'MooseX::StrictConstructor'      => 1,
+    'MooseX::Types'                  => 1,
     'namespace::autoclean'           => 1,
     'Regexp::Common'                 => 1,
     'Sub::Exporter'                  => 1,
