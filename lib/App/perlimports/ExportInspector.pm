@@ -131,6 +131,8 @@ sub _build_inspection {
 sub _build_is_oo_class {
     my $self = shift;
 
+    return 0 if $self->inspection->has_all_exports;
+
     my $methods
         = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
 
