@@ -1,4 +1,4 @@
-package MyOwnMoose;
+package Local::MyOwnMoose;
 
 use strict;
 use warnings;

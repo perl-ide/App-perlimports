@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use DDP;
-use ViaExporter;
+use Local::ViaExporter;
 
 my $one   = foo();
 my $two   = $foo;

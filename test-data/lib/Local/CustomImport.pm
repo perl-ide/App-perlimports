@@ -1,4 +1,4 @@
-package CustomImport;
+package Local::CustomImport;
 
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-package UsesMoose;
+package Local::UsesMoose;
 
 use Moose;
 

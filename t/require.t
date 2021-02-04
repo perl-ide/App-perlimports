@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 
@@ -124,11 +126,11 @@ subtest 'require rewritten as use' => sub {
 
 subtest 'require Exporter not rewritten' => sub {
     my $doc = App::perlimports::Document->new(
-        filename => 't/lib/RequireExporter.pm',
+        filename => 'test-data/lib/Local/RequireExporter.pm',
     );
 
     my $expected = <<'EOF';
-package RequireExporter;
+package Local::RequireExporter;
 
 use strict;
 use warnings;

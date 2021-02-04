@@ -1,4 +1,4 @@
-package MooseTypeLibrary;
+package Local::MooseTypeLibrary;
 
 use strict;
 use warnings;

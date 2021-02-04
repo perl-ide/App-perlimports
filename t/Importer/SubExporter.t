@@ -5,13 +5,12 @@ use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
-use lib 't/lib';
+use lib 'test-data/lib';
 
 subtest 'Moose Type Library' => sub {
-    my $module = 'MooseTypeLibrary';
-
     my ($inspection)
-        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
+        'Local::MooseTypeLibrary');
 
     ok( $inspection->has_all_exports, 'exports' );
     is( $inspection->all_exports->{is_Bool}, 'Bool', 'is_ aliased' );
@@ -45,10 +44,9 @@ subtest 'Moo' => sub {
 };
 
 subtest 'ViaSubExporter' => sub {
-    my $module = 'ViaSubExporter';
-
     my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
+        'Local::ViaSubExporter');
 
     is_deeply(
         $inspection->all_exports,
@@ -62,10 +60,9 @@ subtest 'ViaSubExporter' => sub {
 };
 
 subtest 'MyOwnMoose' => sub {
-    my $module = 'MyOwnMoose';
-
     my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
+        'Local::MyOwnMoose');
 
     is_deeply(
         $inspection->all_exports,

@@ -1,4 +1,4 @@
-package RequireExporter;
+package Local::RequireExporter;
 
 use strict;
 use warnings;

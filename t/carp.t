@@ -1,7 +1,7 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
-
-use lib 't/lib';
 
 use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];

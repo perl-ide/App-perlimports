@@ -1,4 +1,4 @@
-package UsesUsesImportInto;
+package Local::UsesUsesImportInto;
 
 use strict;
 use warnings;

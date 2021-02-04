@@ -1,17 +1,17 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
-
-use lib 't/lib';
 
 use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my $doc = App::perlimports::Document->new(
-    filename => 't/lib/UsesTypesStandard.pm',
+    filename => 'test-data/lib/Local/UsesTypesStandard.pm',
 );
 
 my $expected = <<EOF;
-package UsesTypesStandard;
+package Local::UsesTypesStandard;
 
 use Types::Standard;
 

@@ -1,4 +1,4 @@
-package UsesMoo;
+package Local::UsesMoo;
 
 use Moo;
 

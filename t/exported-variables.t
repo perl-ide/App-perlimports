@@ -1,7 +1,9 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 'test-data/lib', 't/lib';
 
 use App::perlimports ();
 use TestHelper qw( source2pi );
@@ -9,7 +11,7 @@ use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
 my $e = source2pi(
     'test-data/exported-variables.pl',
-    'use ViaExporter qw();',
+    'use Local::ViaExporter qw();',
 );
 
 is_deeply(
@@ -25,7 +27,7 @@ is_deeply(
 ok( !$e->_is_ignored, '_is_ignored' );
 is(
     $e->formatted_ppi_statement,
-    q{use ViaExporter qw( $foo %foo @foo );},
+    q{use Local::ViaExporter qw( $foo %foo @foo );},
     'formatted_ppi_statement'
 );
 

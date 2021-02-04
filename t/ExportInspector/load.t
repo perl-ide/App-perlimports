@@ -5,7 +5,7 @@ use App::perlimports::ExportInspector ();
 use Test::More import => [ 'done_testing', 'is_deeply', 'ok', 'subtest' ];
 use Test::Warnings ();
 
-use lib 't/lib';
+use lib 'test-data/lib';
 
 # Test::Most imports a lot of functions. any() in particular will clash with an
 # import of List::Util qw( any ). So, Test::Warnings will fail if we try to
@@ -33,7 +33,7 @@ subtest 'List::Util' => sub {
 subtest 'UsesMoose' => sub {
     my $ei
         = App::perlimports::ExportInspector->new(
-        module_name => 'UsesMoose' );
+        module_name => 'Local::UsesMoose' );
     ok( !$ei->has_errors,     'no errors' );
     ok( $ei->is_oo_class,     'is oo class' );
     ok( !$ei->is_moose_class, 'Not a Moose class' );
@@ -43,7 +43,8 @@ subtest 'UsesMoose' => sub {
 # UsesMoo.pm literally just includes a "use Moo;"
 subtest 'UsesMoo' => sub {
     my $ei
-        = App::perlimports::ExportInspector->new( module_name => 'UsesMoo' );
+        = App::perlimports::ExportInspector->new(
+        module_name => 'Local::UsesMoo' );
     ok( !$ei->has_errors,     'no errors' );
     ok( $ei->is_oo_class,     'is oo class' );
     ok( !$ei->is_moose_class, 'Not a Moose class' );
@@ -54,7 +55,7 @@ subtest 'UsesMoo' => sub {
 subtest 'MyOwnMoose' => sub {
     my $ei
         = App::perlimports::ExportInspector->new(
-        module_name => 'MyOwnMoose' );
+        module_name => 'Local::MyOwnMoose' );
     ok( !$ei->has_errors, 'no errors' );
     is_deeply(
         $ei->combined_exports,

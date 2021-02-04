@@ -1,7 +1,9 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 'test-data/lib', 't/lib';
 
 use App::perlimports ();
 use TestHelper qw( source2pi );

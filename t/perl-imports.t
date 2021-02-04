@@ -1,7 +1,9 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 't/lib', 'test-data/lib';
 
 use App::perlimports::Document ();
 use TestHelper qw( source2pi );
@@ -64,10 +66,10 @@ subtest 'pragma' => sub {
 subtest 'ViaExporter' => sub {
     my $e = source2pi(
         'test-data/via-exporter.pl',
-        'use ViaExporter qw( foo $foo @foo %foo );',
+        'use Local::ViaExporter qw( foo $foo @foo %foo );',
     );
     is(
-        $e->_module_name(), 'ViaExporter',
+        $e->_module_name(), 'Local::ViaExporter',
         '_module_name'
     );
 
@@ -85,7 +87,7 @@ subtest 'ViaExporter' => sub {
     is_deeply( $e->_imports, [qw( $foo %foo @foo foo )], '_imports' );
     is(
         $e->formatted_ppi_statement,
-        'use ViaExporter qw( $foo %foo @foo foo );',
+        'use Local::ViaExporter qw( $foo %foo @foo foo );',
         'formatted_ppi_statement'
     );
 };

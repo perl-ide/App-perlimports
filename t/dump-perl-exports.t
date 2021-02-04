@@ -1,7 +1,7 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
-
-use lib 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );

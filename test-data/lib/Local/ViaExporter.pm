@@ -1,4 +1,4 @@
-package ViaExporter;
+package Local::ViaExporter;
 
 use strict;
 use warnings;

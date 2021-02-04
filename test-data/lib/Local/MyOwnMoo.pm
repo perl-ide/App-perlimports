@@ -1,4 +1,4 @@
-package MyOwnMoo;
+package Local::MyOwnMoo;
 
 use strict;
 use warnings;

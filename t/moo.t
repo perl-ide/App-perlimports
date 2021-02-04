@@ -1,14 +1,16 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 'test-data/lib';
 
 use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 
 subtest 'Moo' => sub {
     my $doc = App::perlimports::Document->new(
-        filename  => 't/lib/UsesMoose.pm',
+        filename  => 'test-data/lib/Local/UsesMoose.pm',
         selection => 'use Moo;'
     );
 
@@ -21,11 +23,11 @@ subtest 'Moo' => sub {
 
 subtest 'Import::Into' => sub {
     my $doc = App::perlimports::Document->new(
-        filename => 't/lib/MyOwnMoo.pm',
+        filename => 'test-data/lib/Local/MyOwnMoo.pm',
     );
 
     my $expected = <<'EOF';
-package MyOwnMoo;
+package Local::MyOwnMoo;
 
 use strict;
 use warnings;
@@ -47,16 +49,16 @@ EOF
 
 subtest 'Uses MyOwnMoo' => sub {
     my $doc = App::perlimports::Document->new(
-        filename => 't/lib/UsesMyOwnMoo.pm',
+        filename => 'test-data/lib/Local/UsesMyOwnMoo.pm',
     );
 
     my $expected = <<'EOF';
-package UsesMyOwnMoo;
+package Local::UsesMyOwnMoo;
 
 use strict;
 use warnings;
 
-use MyOwnMoo;
+use Local::MyOwnMoo;
 
 1;
 EOF
