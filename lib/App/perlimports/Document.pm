@@ -334,6 +334,7 @@ sub _build_never_exports {
 
     my %modules = (
         'App::perlimports' => 1,
+        'File::Spec'       => 1,
         'HTTP::Daemon'     => 1,
         'HTTP::Headers'    => 1,
         'HTTP::Response'   => 1,
