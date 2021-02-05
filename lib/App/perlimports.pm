@@ -309,6 +309,15 @@ sub _build_imports {
             $found_import = '&' . "$word";
         }
 
+        # Maybe this is an inner package referencing a function in main.  We
+        # don't really deal with inner packages otherwise, so this could break
+        # some things.
+        elsif (is_function_call($word)
+            && $word =~ m{^::\w+}
+            && $self->_is_importable( substr( $word, 2 ) ) ) {
+            $found_import = substr( $word, 2 );
+        }
+
         # PPI can think that an imported function in a ternary is a label
         # my $foo = $enabled ? GEOIP_MEMORY_CACHE : 0;
         # The content of the $word will be "GEOIP_MEMORY_CACHE :"
