@@ -6,7 +6,9 @@ our $VERSION = '0.000001';
 
 use App::perlimports ();
 use Data::Printer;
-use List::Util qw( any );
+use File::Basename qw( fileparse );
+use List::Util qw( any uniq );
+use Module::Runtime qw( module_notional_filename );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
@@ -15,6 +17,17 @@ use String::InterpolatedVariables ();
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
+
+has _export_list => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        all_document_exports => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_export_list',
+);
 
 has _filename => (
     is       => 'ro',
@@ -156,11 +169,41 @@ my %default_ignore = (
     'Regexp::Common'                 => 1,
     'Sub::Exporter'                  => 1,
     'Sub::HandlesVia'                => 1,
+    'Test2::Util::HashBase'          => 1,
     'Test::Exception'                => 1,
     'Test::Needs'                    => 1,
     'Test::RequiresInternet'         => 1,
     'Types::Standard'                => 1,
 );
+
+# Funky stuff could happen with inner packages.
+sub _build_export_list {
+    my $self = shift;
+    my $pkgs
+        = $self->ppi_document->find(
+        sub { $_[1]->isa('PPI::Statement::Package') && $_[1]->file_scoped } );
+
+    if ( !$pkgs || $pkgs->[0]->namespace eq 'main' ) {
+        return [];
+    }
+
+    my $pkg = $pkgs->[0];
+
+    # file_scoped() doesn't seem to be very reliable, so let's just try a crude
+    # check to see if this is a package we might actually find on disk before
+    # we try to require it.
+    my $notional_file
+        = fileparse( module_notional_filename( $pkg->namespace ) );
+    my $provided_file = fileparse( $self->_filename );
+    return [] unless $notional_file eq $provided_file;
+
+    my $i = $self->inspector_for( $pkg->namespace ) || return [];
+
+    return [
+        uniq values %{ $i->inspection->all_exports },
+        values %{ $i->inspection->default_exports }
+    ];
+}
 
 sub _build_includes {
     my $self = shift;

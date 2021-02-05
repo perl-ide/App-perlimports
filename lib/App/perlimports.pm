@@ -344,6 +344,13 @@ sub _build_imports {
         }
     }
 
+    #  A used import might be just be a symbol that just gets exported.
+    for my $symbol ( $self->_document->all_document_exports ) {
+        if ( $self->_is_importable($symbol) ) {
+            $found{$symbol} = 1;
+        }
+    }
+
     my @found = map { $self->_import_name($_) } keys %found;
 
     # Some modules have imports which are basically flags, rather than names of
