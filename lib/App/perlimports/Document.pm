@@ -172,6 +172,7 @@ my %default_ignore = (
     'Test2::Util::HashBase'          => 1,
     'Test::Exception'                => 1,
     'Test::Needs'                    => 1,
+    'Test::Number::Delta'            => 1,
     'Test::RequiresInternet'         => 1,
     'Types::Standard'                => 1,
 );
