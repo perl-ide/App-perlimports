@@ -156,6 +156,7 @@ my %default_ignore = (
     'Regexp::Common'                 => 1,
     'Sub::Exporter'                  => 1,
     'Sub::HandlesVia'                => 1,
+    'Test::Exception'                => 1,
     'Test::Needs'                    => 1,
     'Test::RequiresInternet'         => 1,
     'Types::Standard'                => 1,
