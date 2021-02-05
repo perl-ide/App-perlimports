@@ -7,6 +7,7 @@ use lib 'test-data/lib';
 
 use App::perlimports::Document ();
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::Needs qw( Import::Into Moose );
 
 subtest 'Moose' => sub {
     my $doc

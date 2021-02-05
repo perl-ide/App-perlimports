@@ -6,6 +6,7 @@ use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 use Test::Needs qw(
     Import::Into
+    Moose
     MooseX::Types::Moose
     MooseX::Types::Path::Class
     Path::Class
