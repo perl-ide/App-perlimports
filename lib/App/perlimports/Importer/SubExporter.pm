@@ -12,32 +12,15 @@ use Symbol::Get ();
 
 sub maybe_get_exports {
     my $module_name = shift;
-
-    my $pkg = 'Local::App::perlimports::imported::' . $module_name;
     my @error;
 
-    local $@ = undef;
+    my ( $implicit_exports, $err ) = _exports_for( $module_name, 'default' );
+    push @error, $err if $err;
 
-    # XXX trap error
-    ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    eval "package $pkg; use $module_name qw( :default );1;";
-    push @error, $@ if $@;
-    local $@ = undef;
-    ## use critic
+    my $isa = _isa_for( $module_name, 'default' );
 
-    my %default_export = map { $_ => $_ }
-        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
-        Symbol::Get::get_names($pkg);
-
-    # XXX trap error
-    ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    eval "package $pkg; use $module_name qw( :all );1;";
-    push @error, $@ if $@;
-    ## use critic
-
-    my %export = map { $_ => $_ }
-        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
-        Symbol::Get::get_names($pkg);
+    ( my $explicit_exports, $err ) = _exports_for( $module_name, 'all' );
+    push @error, $err if $err;
 
     my $is_moose_type_class;
 
@@ -49,20 +32,18 @@ sub maybe_get_exports {
 
     if ( any { $_ eq 'MooseX::Types::Combine::_provided_types' } @{$private} )
     {
-        for my $key ( keys %export ) {
+        for my $key ( keys %$explicit_exports ) {
             if ( $key =~ m{^(is_|to_)} ) {
-                $export{$key} = substr( $key, 3 );
+                $explicit_exports->{$key} = substr( $key, 3 );
+            }
+        }
+        for my $key ( keys %$implicit_exports ) {
+            if ( $key =~ m{^(is_|to_)} ) {
+                $implicit_exports->{$key} = substr( $key, 3 );
             }
         }
         $is_moose_type_class = 1;
     }
-
-    my $isa;
-    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    $isa = [ @{ $pkg . '::ISA' } ];
-    use strict;
-    ## use critic
 
     my $is_exporter     = 0;
     my $is_sub_exporter = 0;
@@ -72,20 +53,66 @@ sub maybe_get_exports {
 
     if (   !$is_exporter
         && !scalar @error
-        && ( keys %export || keys %default_export ) ) {
+        && ( keys %$implicit_exports || keys %$explicit_exports ) ) {
         $is_sub_exporter = 1;
     }
 
     return App::perlimports::ExportInspector::Inspection->new(
         {
-            all_exports => \%export,
+            all_exports => $explicit_exports,
             @{$isa} ? ( class_isa => $isa ) : (),
-            default_exports => \%default_export,
+            default_exports => $implicit_exports,
             errors          => \@error,
             is_exporter     => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,
         }
+    );
+}
+
+sub _exports_for {
+    my $module_name = shift;
+    my $tag         = shift;
+
+    my $pkg = _pkg_for_tag( $module_name, $tag );
+    local $@ = undef;
+
+    # XXX trap error
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval "package $pkg; use $module_name qw( :$tag );1;";
+    ## use critic
+
+    my %export = map { $_ => $_ }
+        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
+        Symbol::Get::get_names($pkg);
+
+    my $err = $@;
+    return \%export, $err;
+}
+
+sub _isa_for {
+    my $module_name = shift;
+    my $tag         = shift;
+
+    my $pkg = _pkg_for_tag( $module_name, $tag );
+
+    my $isa;
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    $isa = [ @{ $pkg . '::ISA' } ];
+    use strict;
+    ## use critic
+
+    return $isa;
+}
+
+sub _pkg_for_tag {
+    my $module_name = shift;
+    my $tag         = shift;
+
+    return sprintf(
+        'Local::App::perlimports::imported::%s::%s', $module_name,
+        $tag
     );
 }
 
