@@ -25,18 +25,18 @@ use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
-has _combined_exports => (
+has _explicit_exports => (
     is          => 'ro',
     isa         => HashRef,
     handles_via => 'Hash',
     handles     => {
         _delete_export        => 'delete',
-        _has_combined_exports => 'count',
+        _has_explicit_exports => 'count',
         _is_importable        => 'exists',
         _import_name          => 'get',
     },
     lazy    => 1,
-    builder => '_build_combined_exports',
+    builder => '_build_explicit_exports',
 );
 
 has _document => (
@@ -166,7 +166,7 @@ sub _build_export_inspector {
     );
 }
 
-sub _build_combined_exports {
+sub _build_explicit_exports {
     my $self    = shift;
     my $exports = $self->_export_inspector->combined_exports;
     if ( $self->_export_inspector->has_errors ) {
@@ -463,7 +463,7 @@ sub _build_formatted_ppi_statement {
     # of imports.
     if (   $self->_will_never_export
         || $self->_is_translatable
-        || ( $self->_has_combined_exports && !@{ $self->_imports } ) ) {
+        || ( $self->_has_explicit_exports && !@{ $self->_imports } ) ) {
         return $self->_maybe_get_new_include(
             sprintf(
                 'use %s %s();', $self->_module_name,
@@ -478,7 +478,7 @@ sub _build_formatted_ppi_statement {
     # Exporter) but we also haven't explicitly flagged this as a module which
     # never exports. So basically we can't be correct with confidence, so we'll
     # return the original statement.
-    if (  !$self->_has_combined_exports
+    if (  !$self->_has_explicit_exports
         && $self->_include->type ne 'require' ) {
         return $self->_include;
     }

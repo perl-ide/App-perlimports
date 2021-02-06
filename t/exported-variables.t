@@ -9,24 +9,24 @@ use App::perlimports ();
 use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $e = source2pi(
+my $pi = source2pi(
     'test-data/exported-variables.pl',
     'use Local::ViaExporter qw();',
 );
 
 is_deeply(
-    $e->_combined_exports,
+    $pi->_explicit_exports,
     {
         'foo'  => 'foo',
         '$foo' => '$foo',
         '@foo' => '@foo',
         '%foo' => '%foo',
     },
-    'some _combined_exports'
+    'some _explicit_exports'
 );
-ok( !$e->_is_ignored, '_is_ignored' );
+ok( !$pi->_is_ignored, '_is_ignored' );
 is(
-    $e->formatted_ppi_statement,
+    $pi->formatted_ppi_statement,
     q{use Local::ViaExporter qw( $foo %foo @foo );},
     'formatted_ppi_statement'
 );
