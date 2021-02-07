@@ -168,7 +168,7 @@ sub _build_export_inspector {
 
 sub _build_explicit_exports {
     my $self    = shift;
-    my $exports = $self->_export_inspector->combined_exports;
+    my $exports = $self->_export_inspector->explicit_exports;
     if ( $self->_export_inspector->has_errors ) {
         $self->_add_error($_) for @{ $self->_export_inspector->errors };
     }

@@ -11,9 +11,9 @@ my $ei = App::perlimports::ExportInspector->new(
 
 ok( !$ei->has_errors, 'no errors' );
 is_deeply(
-    $ei->combined_exports,
+    $ei->explicit_exports,
     { bar => 'bar', foo => 'foo', },
-    'combined exports'
+    'explicit exports'
 );
 
 done_testing();

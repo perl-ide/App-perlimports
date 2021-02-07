@@ -16,7 +16,7 @@ subtest 'Test::Most' => sub {
         = App::perlimports::ExportInspector->new(
         module_name => 'Test::Most' );
     ok( $ei->has_default_exports,  'found export' );
-    ok( $ei->has_combined_exports, 'found combined_exports' );
+    ok( $ei->has_explicit_exports, 'found explicit_exports' );
     ok( !$ei->has_errors,          'no errors' );
 };
 
@@ -26,7 +26,7 @@ subtest 'List::Util' => sub {
         module_name => 'List::Util' );
 
     ok( !$ei->has_default_exports, 'found no export' );
-    ok( $ei->has_combined_exports, 'found combined_exports' );
+    ok( $ei->has_explicit_exports, 'found explicit_exports' );
     ok( !$ei->has_errors,          'no errors' );
 };
 
@@ -59,7 +59,7 @@ subtest 'MyOwnMoose' => sub {
         module_name => 'Local::MyOwnMoose' );
     ok( !$ei->has_errors, 'no errors' );
     is_deeply(
-        $ei->combined_exports,
+        $ei->explicit_exports,
         {
             after    => 'after',
             around   => 'around',
@@ -76,7 +76,7 @@ subtest 'MyOwnMoose' => sub {
             super    => 'super',
             with     => 'with',
         },
-        'combined exports'
+        'explicit exports'
     );
     ok( !$ei->is_oo_class,   'is OO class' );
     ok( $ei->is_moose_class, 'class with imported Moose' );

@@ -42,13 +42,13 @@ has inspection => (
     handles_via => ['Object'],
     handles     => {
         class_isa            => 'class_isa',
-        combined_exports     => 'all_exports',
+        explicit_exports     => 'all_exports',
         default_exports      => 'default_exports',
         default_export_names => 'default_export_names',
         export_fail          => 'export_fail',
         export_ok            => 'export_ok',
         export_tags          => 'export_tags',
-        has_combined_exports => 'has_all_exports',
+        has_explicit_exports => 'has_all_exports',
         has_default_exports  => 'has_default_exports',
         has_export_fail      => 'has_export_fail',
         has_export_ok        => 'has_export_ok',
@@ -163,7 +163,7 @@ Inspect modules to see what they might export.
         module_name => 'Carp',
     );
 
-    my $exports = $ei->combined_exports;
+    my $exports = $ei->explicit_exports;
 
 =head1 MOTIVATION
 
@@ -190,7 +190,7 @@ ArrayRef of symbol names which roughly corresponds to C<@EXPORT>.
 
 ArrayRef of symbol names which roughly corresponds to C<@EXPORT_OK>.
 
-=head2 combined_exports
+=head2 explicit_exports
 
 ArrayRef which combines the unique contents of C<export> and C<export_ok>. If
 this is a Moose type library, the exported types will exist in this list, but

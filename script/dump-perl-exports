@@ -19,7 +19,7 @@ if ( !$module_name || $module_name eq '--help' ) {
 my $ei
     = App::perlimports::ExportInspector->new( module_name => $module_name );
 
-my $exports = $ei->combined_exports;
+my $exports = $ei->explicit_exports;
 
 if ( $ei->has_errors ) {
     print 'The following errors occurred:' . "\n";
