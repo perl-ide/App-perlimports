@@ -46,12 +46,10 @@ has inspection => (
         default_exports      => 'default_exports',
         default_export_names => 'default_export_names',
         export_fail          => 'export_fail',
-        export_ok            => 'export_ok',
         export_tags          => 'export_tags',
         has_explicit_exports => 'has_all_exports',
         has_default_exports  => 'has_default_exports',
         has_export_fail      => 'has_export_fail',
-        has_export_ok        => 'has_export_ok',
         has_export_tags      => 'has_export_tags',
         is_moose_class       => 'is_moose_class',
         module_is_exporter   => 'is_exporter',
@@ -181,14 +179,6 @@ An ArrayRef of error messages which may have been triggered during inspection.
 =head2 has_errors
 
 Returns a Boolean to indicate whether any errors exist.
-
-=head2 export
-
-ArrayRef of symbol names which roughly corresponds to C<@EXPORT>.
-
-=head2 export_ok
-
-ArrayRef of symbol names which roughly corresponds to C<@EXPORT_OK>.
 
 =head2 explicit_exports
 
