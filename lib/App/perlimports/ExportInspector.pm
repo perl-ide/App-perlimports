@@ -182,7 +182,7 @@ Returns a Boolean to indicate whether any errors exist.
 
 =head2 explicit_exports
 
-ArrayRef which combines the unique contents of C<export> and C<export_ok>. If
+HashRef which combines the unique contents of C<export> and C<export_ok>. If
 this is a Moose type library, the exported types will exist in this list, but
 not in C<export> or C<export_ok>.
 

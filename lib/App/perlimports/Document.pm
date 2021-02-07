@@ -429,8 +429,12 @@ sub _has_import_switches {
     # If switches are being passed to import, we can't guess as what is correct
     # here.
     #
-    # Getopt::Long uses a leading colon rather than a dash.
+    # Getopt::Long uses a leading colon rather than a dash. This overrides
+    # Exporter's defaults. You would normally assume that :config is an export
+    # tag, but instead it's something entirely different.
+    #
     # use Getopt::Long qw(:config no_ignore_case bundling);
+
     if (
         exists $self->original_imports->{$module_name}
         && any { $_ =~ m{^[\-:]} }
