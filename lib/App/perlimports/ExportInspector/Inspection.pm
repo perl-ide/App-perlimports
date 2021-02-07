@@ -10,6 +10,7 @@ use Types::Standard qw( ArrayRef Bool HashRef );
 has all_exports => (
     is          => 'ro',
     isa         => HashRef,
+    init_arg    => 'explicit_exports',
     handles_via => 'Hash',
     handles     => {
         all_export_names  => 'keys',
@@ -31,6 +32,7 @@ has class_isa => (
 has default_exports => (
     is          => 'ro',
     isa         => HashRef,
+    init_arg    => 'implicit_exports',
     default     => sub { +{} },
     handles_via => 'Hash',
     handles     => {

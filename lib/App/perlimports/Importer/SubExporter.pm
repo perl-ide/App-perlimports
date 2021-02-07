@@ -59,11 +59,11 @@ sub maybe_get_exports {
 
     return App::perlimports::ExportInspector::Inspection->new(
         {
-            all_exports => $explicit_exports,
             @{$isa} ? ( class_isa => $isa ) : (),
-            default_exports => $implicit_exports,
-            errors          => \@error,
-            is_exporter     => $is_exporter,
+            errors           => \@error,
+            explicit_exports => $explicit_exports,
+            implicit_exports => $implicit_exports,
+            is_exporter      => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,
         }

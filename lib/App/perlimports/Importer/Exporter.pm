@@ -36,16 +36,17 @@ sub maybe_get_exports {
     use strict;
 ## use critic
 
+    # Exporter combines @EXPORT and @EXPORT_OK when checking valid explicit
+    # import names.
     return App::perlimports::ExportInspector::Inspection->new(
         {
-            all_exports =>
-                _list_to_hash( List::Util::uniq( @export, @export_ok ) ),
             @{$isa} ? ( class_isa => $isa ) : (),
-            default_exports => _list_to_hash(@export),
-            errors          => $error ? [$error] : [],
-            export_fail     => \@export_fail,
-            export_tags     => \%export_tags,
-            is_exporter     => (
+            errors           => $error ? [$error] : [],
+            explicit_exports => _list_to_hash( @export, @export_ok ),
+            export_fail      => \@export_fail,
+            export_tags      => \%export_tags,
+            implicit_exports => _list_to_hash(@export),
+            is_exporter      => (
                        !!( List::Util::any { $_ eq 'Exporter' } @{$isa} )
                     || !!scalar @export_ok
                     || !!scalar @export
