@@ -32,7 +32,7 @@ sub maybe_get_exports {
     my @export_ok   = @{ $module_name . '::EXPORT_OK' };
     my @export_fail = @{ $module_name . '::EXPORT_FAIL' };
     my %export_tags = %{ $module_name . '::EXPORT_TAGS' };
-    my $isa         = [ @{ $module_name . '::ISA' } ];
+    my @isa         = @{ $module_name . '::ISA' };
     use strict;
 ## use critic
 
@@ -40,14 +40,14 @@ sub maybe_get_exports {
     # import names.
     return App::perlimports::ExportInspector::Inspection->new(
         {
-            @{$isa} ? ( class_isa => $isa ) : (),
+            scalar @isa ? ( class_isa => \@isa ) : (),
             errors           => $error ? [$error] : [],
             explicit_exports => _list_to_hash( @export, @export_ok ),
             export_fail      => \@export_fail,
             export_tags      => \%export_tags,
             implicit_exports => _list_to_hash(@export),
             is_exporter      => (
-                       !!( List::Util::any { $_ eq 'Exporter' } @{$isa} )
+                       !!( List::Util::any { $_ eq 'Exporter' } @isa )
                     || !!scalar @export_ok
                     || !!scalar @export
                     || !!scalar @export_fail
