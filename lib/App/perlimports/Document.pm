@@ -173,6 +173,7 @@ my %default_ignore = (
     'Test::Exception'                => 1,
     'Test::Needs'                    => 1,
     'Test::Number::Delta'            => 1,
+    'Test::Requires::Git'            => 1,
     'Test::RequiresInternet'         => 1,
     'Test::XML'                      => 1,
     'Types::Standard'                => 1,
