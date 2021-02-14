@@ -253,14 +253,14 @@ sub _build_ppi_document {
 sub _build_original_imports {
     my $self = shift;
 
+    # We're missing requires which could be followed by an import.
     my $found = $self->ppi_document->find(
         sub {
             $_[1]->isa('PPI::Statement::Include')
                 && !$_[1]->pragma     # no pragmas
                 && !$_[1]->version    # Perl version requirement
                 && $_[1]->type
-                && ( $_[1]->type eq 'use'
-                || $_[1]->type eq 'require' );
+                && $_[1]->type eq 'use';
         }
     ) || [];
 
