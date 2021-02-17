@@ -14,13 +14,24 @@ sub maybe_get_exports {
     my $module_name = shift;
     my @error;
 
-    my ( $implicit_exports, $err ) = _exports_for( $module_name, 'default' );
+    my ( $implicit_exports, $warning, $err )
+        = _exports_for( $module_name, 'default' );
     push @error, $err if $err;
 
     my $isa = _isa_for( $module_name, 'default' );
+    my $explicit_exports;
 
-    ( my $explicit_exports, $err ) = _exports_for( $module_name, 'all' );
-    push @error, $err if $err;
+    # Are import tags unsupported?
+    if ($warning) {
+        ( $implicit_exports, $warning, $err )
+            = _exports_for( $module_name, undef );
+    }
+
+    else {
+        ( $explicit_exports, $warning, $err )
+            = _exports_for( $module_name, 'all' );
+        push @error, $err if $err;
+    }
 
     my $is_moose_type_class;
 
@@ -77,10 +88,18 @@ sub _exports_for {
 
     my $pkg = _pkg_for_tag( $module_name, $tag );
     local $@ = undef;
+    my $warning = undef;
 
     # XXX trap error
     ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    eval "package $pkg; use $module_name qw( :$tag );1;";
+    local $SIG{__WARN__} = sub { $warning = $_[0] };
+
+    if ($tag) {
+        eval "package $pkg; use $module_name qw( :$tag );1;";
+    }
+    else {
+        eval "package $pkg; use $module_name; 1;";
+    }
     ## use critic
 
     my %export = map { $_ => $_ }
@@ -88,7 +107,7 @@ sub _exports_for {
         Symbol::Get::get_names($pkg);
 
     my $err = $@;
-    return \%export, $err;
+    return \%export, $warning, $err;
 }
 
 sub _isa_for {
@@ -109,7 +128,7 @@ sub _isa_for {
 
 sub _pkg_for_tag {
     my $module_name = shift;
-    my $tag         = shift;
+    my $tag         = shift || 'EMPTY';
 
     return sprintf(
         'Local::App::perlimports::imported::%s::%s', $module_name,
