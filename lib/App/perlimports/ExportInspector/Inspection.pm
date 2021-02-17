@@ -5,7 +5,7 @@ use Moo;
 use List::Util qw( any );
 use MooX::StrictConstructor;
 use Sub::HandlesVia;
-use Types::Standard qw( ArrayRef Bool HashRef );
+use Types::Standard qw( ArrayRef Bool HashRef Str );
 
 has all_exports => (
     is          => 'ro',
@@ -70,6 +70,12 @@ has errors => (
         has_errors => 'count',
     },
     default => sub { [] },
+);
+
+has inspected_by => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
 );
 
 has is_exporter => (

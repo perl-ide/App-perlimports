@@ -63,6 +63,7 @@ sub maybe_get_exports {
             errors           => \@error,
             explicit_exports => $explicit_exports,
             implicit_exports => $implicit_exports,
+            inspected_by     => __PACKAGE__,
             is_exporter      => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,

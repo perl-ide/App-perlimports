@@ -46,6 +46,7 @@ sub maybe_get_exports {
             export_fail      => \@export_fail,
             export_tags      => \%export_tags,
             implicit_exports => _list_to_hash(@export),
+            inspected_by     => __PACKAGE__,
             is_exporter      => (
                        !!( List::Util::any { $_ eq 'Exporter' } @isa )
                     || !!scalar @export_ok
