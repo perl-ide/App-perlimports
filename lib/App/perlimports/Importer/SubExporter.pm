@@ -18,7 +18,7 @@ sub maybe_get_exports {
         = _exports_for_tag( $module_name, 'default' );
     push @error, $err if $err;
 
-    my $isa = _isa_for( $module_name, 'default' );
+    my $isa = _isa_for_module( $module_name, 'default' );
     my $explicit_exports;
 
     # Are import tags unsupported?
@@ -110,7 +110,7 @@ sub _exports_for_tag {
     return \%export, $warning, $err;
 }
 
-sub _isa_for {
+sub _isa_for_module {
     my $module_name = shift;
     my $tag         = shift;
 
