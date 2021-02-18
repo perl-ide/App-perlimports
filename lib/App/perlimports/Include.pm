@@ -25,6 +25,8 @@ use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
+with 'App::perlimports::Role::Logger';
+
 has _explicit_exports => (
     is          => 'ro',
     isa         => HashRef,
@@ -44,18 +46,6 @@ has _document => (
     isa      => InstanceOf ['App::perlimports::Document'],
     required => 1,
     init_arg => 'document',
-);
-
-has errors => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_error => 'push',
-        has_errors => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
 );
 
 has _export_inspector => (
@@ -148,18 +138,6 @@ has _uses_import_into => (
     builder => '_build_uses_import_into',
 );
 
-has warnings => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_warning => 'push',
-        has_warnings => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
-);
-
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
@@ -174,20 +152,14 @@ has _will_never_export => (
 sub _build_export_inspector {
     my $self = shift;
     return App::perlimports::ExportInspector->new(
+        logger      => $self->logger,
         module_name => $self->_module_name,
     );
 }
 
 sub _build_explicit_exports {
-    my $self    = shift;
-    my $exports = $self->_export_inspector->explicit_exports;
-    if ( $self->_export_inspector->has_errors ) {
-        $self->_add_error($_) for @{ $self->_export_inspector->errors };
-    }
-    if ( $self->_export_inspector->has_warnings ) {
-        $self->_add_warning($_) for @{ $self->_export_inspector->warnings };
-    }
-    return $exports;
+    my $self = shift;
+    return $self->_export_inspector->explicit_exports;
 }
 
 sub _build_isa_test_builder_module {
@@ -537,13 +509,13 @@ sub _build_formatted_ppi_statement {
             $args = eval( '{' . $all . '}' );
         }
         catch {
-            $self->_add_error($_);
+            $self->logger->info($_);
             $error = 1;
         };
         ## use critic
 
         if ( !$error && !is_plain_hashref($args) ) {
-            $self->_add_error( 'Not a hashref: ' . np($args) );
+            $self->logger->info( 'Not a hashref: ' . np($args) );
             $error = 1;
         }
 
@@ -628,7 +600,7 @@ sub _build_uses_import_into {
         require_module( $self->_module_name );
     }
     catch {
-        $self->_add_error(
+        $self->logger->info(
             sprintf(
                 q{Can't locate %s in Import::Into check},
                 $self->_module_name
@@ -682,7 +654,7 @@ sub _maybe_require_module {
         $success = 1;
     }
     catch {
-        $self->_add_error("$module_to_require error. $_");
+        $self->logger->info("$module_to_require error. $_");
     };
 
     return $success;
@@ -704,6 +676,7 @@ sub _is_already_imported {
         grep { $_ ne $self->_module_name }
         keys %{ $self->_document->original_imports }
     ) {
+        next if $self->_document->_is_ignored($module);
         my @imports;
         if (
             is_plain_arrayref(

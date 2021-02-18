@@ -1,10 +1,13 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports::Document ();
+use TestHelper qw( doc );
 use Test::More;
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/method.pl',
     selection => 'use HTTP::Status;'
 );

@@ -6,6 +6,7 @@ use warnings;
 use App::perlimports::ExportInspector ();
 use Data::Printer;
 use List::Util qw( max );
+use Log::Dispatch ();
 use Pod::Usage qw( pod2usage );
 use Text::SimpleTable::AutoWidth ();
 
@@ -16,15 +17,14 @@ if ( !$module_name || $module_name eq '--help' ) {
     exit;
 }
 
-my $ei
-    = App::perlimports::ExportInspector->new( module_name => $module_name );
+my $logger
+    = Log::Dispatch->new( outputs => [ [ 'Screen', min_level => 'error' ] ] );
+my $ei = App::perlimports::ExportInspector->new(
+    logger      => $logger,
+    module_name => $module_name,
+);
 
 my $exports = $ei->explicit_exports;
-
-if ( $ei->has_errors ) {
-    print 'The following errors occurred:' . "\n";
-    p $ei;
-}
 
 if ( $ei->is_oo_class ) {
     print 'Appears to be an Object Oriented class.' . "\n";

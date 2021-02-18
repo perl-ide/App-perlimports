@@ -3,14 +3,15 @@
 use strict;
 use warnings;
 
-use lib 'test-data/lib';
+use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::Document ();
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Import::Into );
 
 subtest 'Moo' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename  => 'test-data/lib/Local/UsesMoo.pm',
         selection => 'use Moo;'
     );
@@ -23,7 +24,7 @@ subtest 'Moo' => sub {
 };
 
 subtest 'Import::Into' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename => 'test-data/lib/Local/MyOwnMoo.pm',
     );
 
@@ -49,7 +50,7 @@ EOF
 };
 
 subtest 'Uses MyOwnMoo' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename => 'test-data/lib/Local/UsesMyOwnMoo.pm',
     );
 

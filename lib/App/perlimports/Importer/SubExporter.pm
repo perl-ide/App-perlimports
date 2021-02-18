@@ -12,29 +12,28 @@ use Symbol::Get ();
 
 sub maybe_get_exports {
     my $module_name = shift;
+    my $logger      = shift;
+
+    die 'logger required' unless $logger;
+
     my @error;
     my @warning;
 
     my ( $implicit_exports, $warning, $err )
-        = _exports_for_tag( $module_name, 'default' );
-    push @error, $err if $err;
+        = _exports_for_tag( $module_name, 'default', $logger );
 
     my $isa = _isa_for_module( $module_name, 'default' );
     my $explicit_exports;
 
     # Are import tags unsupported?
     if ($warning) {
-        push @warning, $warning;
-        ( $implicit_exports, $warning, $err )
-            = _exports_for_tag( $module_name, undef );
-        push @warning, $warning if $warning;
+        ($implicit_exports)
+            = _exports_for_tag( $module_name, undef, $logger );
     }
 
     else {
-        ( $explicit_exports, $warning, $err )
-            = _exports_for_tag( $module_name, 'all' );
-        push @error,   $err     if $err;
-        push @warning, $warning if $warning;
+        ($explicit_exports)
+            = _exports_for_tag( $module_name, 'all', $logger );
     }
 
     my $is_moose_type_class;
@@ -75,14 +74,13 @@ sub maybe_get_exports {
     return App::perlimports::ExportInspector::Inspection->new(
         {
             @{$isa} ? ( class_isa => $isa ) : (),
-            errors           => \@error,
-            explicit_exports => $explicit_exports,
-            implicit_exports => $implicit_exports,
+            explicit_exports => $explicit_exports ? $explicit_exports : {},
+            implicit_exports => $implicit_exports ? $implicit_exports : {},
             inspected_by     => __PACKAGE__,
             is_exporter      => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,
-            warnings        => \@warning,
+            logger          => $logger,
         }
     );
 }
@@ -90,14 +88,23 @@ sub maybe_get_exports {
 sub _exports_for_tag {
     my $module_name = shift;
     my $tag         = shift;
+    my $logger      = shift;
 
     my $pkg = _pkg_for_tag( $module_name, $tag );
-    local $@ = undef;
-    my $warning = undef;
+    my $warning;
 
     # XXX trap error
     ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    local $SIG{__WARN__} = sub { $warning = $_[0] };
+    local $SIG{__WARN__} = sub {
+        $warning = $_[0];
+        $logger->info(
+            sprintf(
+                'eval %s in Importer/SubExporter: %s',
+                $pkg,
+                $warning
+            )
+        );
+    };
 
     if ($tag) {
         eval "package $pkg; use $module_name qw( :$tag );1;";
@@ -111,8 +118,7 @@ sub _exports_for_tag {
         grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
         Symbol::Get::get_names($pkg);
 
-    my $err = $@;
-    return \%export, $warning, $err;
+    return \%export, $warning;
 }
 
 sub _isa_for_module {

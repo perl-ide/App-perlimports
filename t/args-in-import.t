@@ -1,11 +1,14 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports::Document ();
+use TestHelper qw( doc );
 use Test::More;
 use Test::Needs qw( Test2::V0 );
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/args-in-import.t',
     selection =>
         q{use Test2::V0 '-no_pragmas' => 1, '!meta', 'diag', 'done_testing', 'is';}

@@ -1,8 +1,11 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
+use TestHelper qw( logger );
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Perl::Critic::Utils );
 
@@ -19,7 +22,7 @@ my %foo = (
 EOF
 
     local @ARGV = ( '-f', 'test-data/var-in-hash-key.pl', );
-    my $cli = App::perlimports::CLI->new;
+    my $cli = App::perlimports::CLI->new( logger => logger( [] ) );
     my ($stdout) = capture {
         $cli->run;
     };

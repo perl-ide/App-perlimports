@@ -3,11 +3,13 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
+use lib 't/lib';
+
+use TestHelper qw( doc );
 use Test::More;
 use Test::Needs qw( MooseX::Types MooseX::Types::Moose );
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/moosex-types-moose.pl',
     selection => 'use MooseX::Types::Moose qw( ArrayRef );',
 );

@@ -18,6 +18,8 @@ use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
+with 'App::perlimports::Role::Logger';
+
 has _export_list => (
     is          => 'ro',
     isa         => ArrayRef,
@@ -154,6 +156,7 @@ around BUILDARGS => sub {
 
 my %default_ignore = (
     'Data::Printer'                  => 1,
+    'DDP'                            => 1,
     'Devel::Confess'                 => 1,
     'Exception::Class'               => 1,
     'Exporter'                       => 1,
@@ -165,6 +168,7 @@ my %default_ignore = (
     'MooseX::SemiAffordanceAccessor' => 1,
     'MooseX::StrictConstructor'      => 1,
     'MooseX::Types'                  => 1,
+    'MooX::StrictConstructor'        => 1,
     'namespace::autoclean'           => 1,
     'Regexp::Common'                 => 1,
     'Sub::Exporter'                  => 1,
@@ -269,6 +273,8 @@ sub _build_original_imports {
     for my $include ( @{$found} ) {
         my $pkg = $include->module;
         $imports{$pkg} = undef unless exists $imports{$pkg};
+
+        next if $self->_is_ignored($pkg);
 
         for my $child ( $include->schildren ) {
             if ( $child->isa('PPI::Structure::List')
@@ -468,6 +474,7 @@ sub inspector_for {
         $self->_set_inspector_for(
             $module,
             App::perlimports::ExportInspector->new(
+                logger      => $self->logger,
                 module_name => $module,
             )
         );
@@ -484,9 +491,12 @@ sub tidied_document {
     my $self = shift;
 
     foreach my $include ( $self->all_includes ) {
+        $self->logger->notice("Processing include: $include");
+
         my $e = App::perlimports::Include->new(
             document         => $self,
             include          => $include,
+            logger           => $self->logger,
             original_imports => $self->original_imports->{ $include->module },
             pad_imports      => $self->_padding,
         );
@@ -509,15 +519,6 @@ sub tidied_document {
         }
         else {
             $include->remove;
-        }
-
-        if ( $self->_verbose && $e->has_errors ) {
-            print STDERR 'Error: ' . $self->_filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
-        }
-        if ( $self->_verbose && $e->has_warnings ) {
-            print STDERR 'Warning: ' . $self->_filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->warnings ) . "\n";
         }
     }
 

@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
+use lib 't/lib';
+
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];
 
 subtest 'verbose' => sub {
-    my $doc
-        = App::perlimports::Document->new( filename => 'test-data/carp.pl' );
+    my ($doc) = doc( filename => 'test-data/carp.pl' );
     my $source_text = 'use Carp qw( croak verbose );';
 
     my $expected = <<'EOF';
@@ -27,8 +28,7 @@ EOF
 };
 
 subtest 'no verbose' => sub {
-    my $doc = App::perlimports::Document->new(
-        filename => 'test-data/carp-without-verbose.pl' );
+    my ($doc) = doc( filename => 'test-data/carp-without-verbose.pl' );
 
     my $expected = <<'EOF';
 use strict;
@@ -47,8 +47,7 @@ EOF
 };
 
 subtest 'no imports' => sub {
-    my $doc = App::perlimports::Document->new(
-        filename => 'test-data/carp-with-no-imports.pl' );
+    my ($doc) = doc( filename => 'test-data/carp-with-no-imports.pl' );
 
     my $expected = <<'EOF';
 use strict;

@@ -14,6 +14,5 @@ my $e
     = source2pi( 'test-data/lib/Local/UsesUsesImportInto.pm', $source_text );
 
 ok( $e->_is_ignored, 'is ignored' );
-ok( !$e->has_errors, 'has no errors' );
 
 done_testing();

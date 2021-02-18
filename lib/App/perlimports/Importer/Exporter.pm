@@ -10,6 +10,7 @@ use Try::Tiny  ();
 
 sub maybe_get_exports {
     my $module_name    = shift;
+    my $logger         = shift;
     my $attempt_import = shift || 1;
 
     my $error;
@@ -17,12 +18,25 @@ sub maybe_get_exports {
     # If this fails, that's ok. No need to return early.
     if ($attempt_import) {
 
+        my $log_sub = sub {
+            $logger->info(
+                sprintf(
+                    'Trying to import %s in %s: %s',
+                    $module_name,
+                    __PACKAGE__,
+                    $_[0]
+                )
+            );
+        };
+
+        local $SIG{__WARN__} = $log_sub;
+
         # This is helpful for (at least) POSIX and Test::Most
         Try::Tiny::try {
             $module_name->import;
         }
         Try::Tiny::catch {
-            $error = $_;
+            $log_sub->($_);
         };
     }
 
@@ -41,7 +55,6 @@ sub maybe_get_exports {
     return App::perlimports::ExportInspector::Inspection->new(
         {
             scalar @isa ? ( class_isa => \@isa ) : (),
-            errors           => $error ? [$error] : [],
             explicit_exports => _list_to_hash( @export, @export_ok ),
             export_fail      => \@export_fail,
             export_tags      => \%export_tags,
@@ -54,6 +67,7 @@ sub maybe_get_exports {
                     || !!scalar @export_fail
                     || !!scalar keys %export_tags
             ),
+            logger => $logger,
         }
     );
 }

@@ -1,11 +1,13 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
+use lib 't/lib';
+
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( HTTP::Status );
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/inner-package.pl',
     selection => 'use HTTP::Status;',
 );
