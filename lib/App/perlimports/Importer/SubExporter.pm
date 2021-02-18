@@ -15,7 +15,7 @@ sub maybe_get_exports {
     my @error;
 
     my ( $implicit_exports, $warning, $err )
-        = _exports_for( $module_name, 'default' );
+        = _exports_for_tag( $module_name, 'default' );
     push @error, $err if $err;
 
     my $isa = _isa_for( $module_name, 'default' );
@@ -24,12 +24,12 @@ sub maybe_get_exports {
     # Are import tags unsupported?
     if ($warning) {
         ( $implicit_exports, $warning, $err )
-            = _exports_for( $module_name, undef );
+            = _exports_for_tag( $module_name, undef );
     }
 
     else {
         ( $explicit_exports, $warning, $err )
-            = _exports_for( $module_name, 'all' );
+            = _exports_for_tag( $module_name, 'all' );
         push @error, $err if $err;
     }
 
@@ -82,7 +82,7 @@ sub maybe_get_exports {
     );
 }
 
-sub _exports_for {
+sub _exports_for_tag {
     my $module_name = shift;
     my $tag         = shift;
 
