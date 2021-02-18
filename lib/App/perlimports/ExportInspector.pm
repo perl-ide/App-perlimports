@@ -72,6 +72,18 @@ has _module_name => (
     required => 1,
 );
 
+has warnings => (
+    is          => 'rw',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        _add_warning => 'push',
+        has_warnings => 'count',
+    },
+    init_arg => undef,
+    default  => sub { [] },
+);
+
 around BUILDARGS => sub {
     my ( $orig, $class, @args ) = @_;
 
@@ -115,6 +127,9 @@ sub _build_inspection {
 
     if ( $sub_exporter->has_errors ) {
         $self->_add_error for @{ $sub_exporter->errors };
+    }
+    if ( $sub_exporter->has_warnings ) {
+        $self->_add_warning for @{ $sub_exporter->warnings };
     }
 
     # It may not actually be a Sub::Exporter, but if exports are found that

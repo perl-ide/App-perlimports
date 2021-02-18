@@ -102,6 +102,16 @@ has _is_moose_type_class => (
     isa => Bool,
 );
 
+has warnings => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        has_warnings => 'count',
+    },
+    default => sub { [] },
+);
+
 sub _build_is_moose_class {
     my $self = shift;
 

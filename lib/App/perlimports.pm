@@ -148,6 +148,18 @@ has _uses_import_into => (
     builder => '_build_uses_import_into',
 );
 
+has warnings => (
+    is          => 'rw',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        _add_warning => 'push',
+        has_warnings => 'count',
+    },
+    init_arg => undef,
+    default  => sub { [] },
+);
+
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
@@ -171,6 +183,9 @@ sub _build_explicit_exports {
     my $exports = $self->_export_inspector->explicit_exports;
     if ( $self->_export_inspector->has_errors ) {
         $self->_add_error($_) for @{ $self->_export_inspector->errors };
+    }
+    if ( $self->_export_inspector->has_warnings ) {
+        $self->_add_warning($_) for @{ $self->_export_inspector->warnings };
     }
     return $exports;
 }

@@ -13,6 +13,7 @@ use Symbol::Get ();
 sub maybe_get_exports {
     my $module_name = shift;
     my @error;
+    my @warning;
 
     my ( $implicit_exports, $warning, $err )
         = _exports_for_tag( $module_name, 'default' );
@@ -23,14 +24,17 @@ sub maybe_get_exports {
 
     # Are import tags unsupported?
     if ($warning) {
+        push @warning, $warning;
         ( $implicit_exports, $warning, $err )
             = _exports_for_tag( $module_name, undef );
+        push @warning, $warning if $warning;
     }
 
     else {
         ( $explicit_exports, $warning, $err )
             = _exports_for_tag( $module_name, 'all' );
-        push @error, $err if $err;
+        push @error,   $err     if $err;
+        push @warning, $warning if $warning;
     }
 
     my $is_moose_type_class;
@@ -78,6 +82,7 @@ sub maybe_get_exports {
             is_exporter      => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,
+            warnings        => \@warning,
         }
     );
 }
