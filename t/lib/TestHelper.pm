@@ -3,8 +3,8 @@ package TestHelper;
 use strict;
 use warnings;
 
-use App::perlimports           ();
 use App::perlimports::Document ();
+use App::perlimports::Include  ();
 use Path::Tiny qw( path );
 use PPI::Document ();
 use PPI::Dumper   ();
@@ -43,7 +43,7 @@ sub source2pi {
         $source_text ? ( selection => $source_text ) : (),
     );
 
-    return App::perlimports->new(
+    return App::perlimports::Include->new(
         document => $doc,
         include  => $doc->includes->[0],
         %{$pi_args},

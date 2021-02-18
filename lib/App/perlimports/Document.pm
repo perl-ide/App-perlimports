@@ -4,7 +4,7 @@ use Moo;
 
 our $VERSION = '0.000001';
 
-use App::perlimports ();
+use App::perlimports::Include ();
 use Data::Printer;
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
@@ -380,15 +380,15 @@ sub _build_never_exports {
     my $self = shift;
 
     my %modules = (
-        'App::perlimports' => 1,
-        'File::Spec'       => 1,
-        'HTTP::Daemon'     => 1,
-        'HTTP::Headers'    => 1,
-        'HTTP::Response'   => 1,
-        'HTTP::Tiny'       => 1,
-        'LWP::UserAgent'   => 1,
-        'URI'              => 1,
-        'WWW::Mechanize'   => 1,
+        'App::perlimports::Include' => 1,
+        'File::Spec'                => 1,
+        'HTTP::Daemon'              => 1,
+        'HTTP::Headers'             => 1,
+        'HTTP::Response'            => 1,
+        'HTTP::Tiny'                => 1,
+        'LWP::UserAgent'            => 1,
+        'URI'                       => 1,
+        'WWW::Mechanize'            => 1,
     );
 
     if ( $self->_has_never_export_modules ) {
@@ -484,7 +484,7 @@ sub tidied_document {
     my $self = shift;
 
     foreach my $include ( $self->all_includes ) {
-        my $e = App::perlimports->new(
+        my $e = App::perlimports::Include->new(
             document         => $self,
             include          => $include,
             original_imports => $self->original_imports->{ $include->module },

@@ -206,6 +206,10 @@ Returns true if C<export_fail()> has data to return.
 
 Returns true if C<export_tags()> has data to return.
 
+=head2 inspected_by
+
+Returns the name of the class which created this object.
+
 =head2 is_exporter
 
 Returns true if we think this class uses L<Exporter>.
@@ -213,3 +217,7 @@ Returns true if we think this class uses L<Exporter>.
 =head2 is_sub_exporter
 
 Returns true if we think this class uses L<Sub::Exporter>.
+
+=head2 warnings
+
+An ArrayRef of warnings emitted during inspection.
