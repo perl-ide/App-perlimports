@@ -1,9 +1,12 @@
 use strict;
 use warnings;
 
+use lib 't/lib', 'test-data/lib';
+
 use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
+use TestHelper qw( logger );
 use Test::Needs qw(
     Import::Into
     Moose
@@ -12,12 +15,10 @@ use Test::Needs qw(
     Path::Class
 );
 
-use lib 'test-data/lib';
-
 subtest 'Moose Type Library' => sub {
     my ($inspection)
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::MooseTypeLibrary');
+        'Local::MooseTypeLibrary', logger( [] ) );
 
     ok( $inspection->has_all_exports, 'exports' );
     is( $inspection->all_exports->{is_Bool}, 'Bool', 'is_ aliased' );
@@ -31,8 +32,14 @@ subtest 'Moose Type Library' => sub {
 subtest 'Moo' => sub {
     my $module = 'Moo';
 
+    my @errors;
+    my $logger = logger( \@errors );
+
     my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports($module);
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
+        $module,
+        $logger,
+        );
 
     is_deeply(
         $inspection->default_exports,
@@ -47,13 +54,15 @@ subtest 'Moo' => sub {
         'exports'
     );
 
-    is_deeply( $inspection->errors, [] );
+    is_deeply( \@errors, [] );
 };
 
 subtest 'ViaSubExporter' => sub {
+    my @errors;
+    my $logger = logger( \@errors );
     my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::ViaSubExporter');
+        'Local::ViaSubExporter', $logger );
 
     is_deeply(
         $inspection->all_exports,
@@ -63,13 +72,15 @@ subtest 'ViaSubExporter' => sub {
         },
         'exports'
     );
-    is_deeply( $inspection->errors, [] );
+    is_deeply( \@errors, [] );
 };
 
 subtest 'MyOwnMoose' => sub {
+    my @errors;
+    my $logger = logger( \@errors );
     my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::MyOwnMoose');
+        'Local::MyOwnMoose', $logger );
 
     is_deeply(
         $inspection->all_exports,
@@ -91,7 +102,7 @@ subtest 'MyOwnMoose' => sub {
         },
         'exports'
     );
-    is_deeply( $inspection->errors, [] );
+    is_deeply( \@errors, [] );
 };
 
 done_testing();

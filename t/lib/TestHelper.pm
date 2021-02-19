@@ -5,12 +5,21 @@ use warnings;
 
 use App::perlimports::Document ();
 use App::perlimports::Include  ();
+use Log::Dispatch::Array       ();
 use Path::Tiny qw( path );
 use PPI::Document ();
 use PPI::Dumper   ();
 
-use Sub::Exporter -setup =>
-    { exports => [qw( file2includes ppi_dump source2pi )] };
+use Sub::Exporter -setup => {
+    exports => [
+        qw(
+            file2includes
+            logger
+            ppi_dump
+            source2pi
+        )
+    ]
+};
 
 sub file2includes {
     my $filename = shift;
@@ -25,6 +34,23 @@ sub file2includes {
 
     my @includes = map { $_->clone } @{$includes};
     return @includes;
+}
+
+sub logger {
+    my $target    = shift || die 'log target required';
+    my $log_level = shift || 'debug';
+
+    my $log = Log::Dispatch->new;
+
+    $log->add(
+        Log::Dispatch::Array->new(
+            name      => 'text_table',
+            min_level => $log_level,
+            array     => $target,
+        )
+    );
+
+    return $log;
 }
 
 sub ppi_dump {

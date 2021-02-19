@@ -13,6 +13,8 @@ use PPI::Document ();
 use Sub::HandlesVia;
 use Types::Standard qw(ArrayRef Bool InstanceOf Str);
 
+with 'App::perlimports::Role::Logger';
+
 has errors => (
     is          => 'rw',
     isa         => ArrayRef,
@@ -113,6 +115,7 @@ sub _build_inspection {
 
     my $exporter = App::perlimports::Importer::Exporter::maybe_get_exports(
         $self->_module_name,
+        $self->logger,
     );
 
     if ( $exporter->has_errors ) {
@@ -121,9 +124,13 @@ sub _build_inspection {
 
     return $exporter if $exporter->is_exporter;
 
+    use DDP;
+    p $self->logger;
     my $sub_exporter
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        $self->_module_name );
+        $self->_module_name,
+        $self->logger,
+        );
 
     if ( $sub_exporter->has_errors ) {
         $self->_add_error for @{ $sub_exporter->errors };

@@ -9,8 +9,7 @@ has logger => (
     is      => 'ro',
     isa     => InstanceOf ['Log::Dispatch'],
     lazy    => 1,
-    default => sub {
-    },
+    builder => '_build_logger',
 );
 
 has log_as_array => (
@@ -22,25 +21,15 @@ has log_as_array => (
 
 sub _build_logger {
     my $self   = shift;
-    my $logger = Log::Dispatch->new(
+    my @caller = caller(2);
+    require Carp;
+    use Carp;
+    Carp::croak();
+    return Log::Dispatch->new(
         outputs => [
             [ 'Screen', min_level => 'debug' ],
         ],
     );
-
-    return $logger unless $ENV{HARNESS_ACTIVE};
-
-    require Log::Dispatch::Array;
-
-    $logger->add(
-        Log::Dispatch::Array->new(
-            name      => 'text_table',
-            min_level => 'debug',
-            array     => $self->log_as_array,
-        )
-    );
-
-    return $logger;
 }
 
 1;

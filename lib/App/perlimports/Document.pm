@@ -18,6 +18,8 @@ use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
+with 'App::perlimports::Role::Logger';
+
 has _export_list => (
     is          => 'ro',
     isa         => ArrayRef,
@@ -154,6 +156,7 @@ around BUILDARGS => sub {
 
 my %default_ignore = (
     'Data::Printer'                  => 1,
+    'DDP'                            => 1,
     'Devel::Confess'                 => 1,
     'Exception::Class'               => 1,
     'Exporter'                       => 1,
@@ -269,6 +272,8 @@ sub _build_original_imports {
     for my $include ( @{$found} ) {
         my $pkg = $include->module;
         $imports{$pkg} = undef unless exists $imports{$pkg};
+
+        next if $self->_is_ignored($pkg);
 
         for my $child ( $include->schildren ) {
             if ( $child->isa('PPI::Structure::List')
@@ -487,6 +492,7 @@ sub tidied_document {
         my $e = App::perlimports::Include->new(
             document         => $self,
             include          => $include,
+            logger           => $self->logger,
             original_imports => $self->original_imports->{ $include->module },
             pad_imports      => $self->_padding,
         );

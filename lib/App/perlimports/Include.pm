@@ -25,6 +25,8 @@ use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
+with 'App::perlimports::Role::Logger';
+
 has _explicit_exports => (
     is          => 'ro',
     isa         => HashRef,
@@ -174,20 +176,14 @@ has _will_never_export => (
 sub _build_export_inspector {
     my $self = shift;
     return App::perlimports::ExportInspector->new(
+        logger      => $self->logger,
         module_name => $self->_module_name,
     );
 }
 
 sub _build_explicit_exports {
-    my $self    = shift;
-    my $exports = $self->_export_inspector->explicit_exports;
-    if ( $self->_export_inspector->has_errors ) {
-        $self->_add_error($_) for @{ $self->_export_inspector->errors };
-    }
-    if ( $self->_export_inspector->has_warnings ) {
-        $self->_add_warning($_) for @{ $self->_export_inspector->warnings };
-    }
-    return $exports;
+    my $self = shift;
+    return $self->_export_inspector->explicit_exports;
 }
 
 sub _build_isa_test_builder_module {
@@ -704,6 +700,7 @@ sub _is_already_imported {
         grep { $_ ne $self->_module_name }
         keys %{ $self->_document->original_imports }
     ) {
+        next if $self->_document->_is_ignored($module);
         my @imports;
         if (
             is_plain_arrayref(

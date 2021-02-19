@@ -12,11 +12,15 @@ use Symbol::Get ();
 
 sub maybe_get_exports {
     my $module_name = shift;
+    my $logger      = shift;
+
+    die 'logger required' unless $logger;
+
     my @error;
     my @warning;
 
     my ( $implicit_exports, $warning, $err )
-        = _exports_for_tag( $module_name, 'default' );
+        = _exports_for_tag( $module_name, 'default', $logger );
     push @error, $err if $err;
 
     my $isa = _isa_for_module( $module_name, 'default' );
@@ -26,13 +30,13 @@ sub maybe_get_exports {
     if ($warning) {
         push @warning, $warning;
         ( $implicit_exports, $warning, $err )
-            = _exports_for_tag( $module_name, undef );
+            = _exports_for_tag( $module_name, undef, $logger );
         push @warning, $warning if $warning;
     }
 
     else {
         ( $explicit_exports, $warning, $err )
-            = _exports_for_tag( $module_name, 'all' );
+            = _exports_for_tag( $module_name, 'all', $logger );
         push @error,   $err     if $err;
         push @warning, $warning if $warning;
     }
@@ -90,6 +94,7 @@ sub maybe_get_exports {
 sub _exports_for_tag {
     my $module_name = shift;
     my $tag         = shift;
+    my $logger      = shift;
 
     my $pkg = _pkg_for_tag( $module_name, $tag );
     local $@ = undef;
@@ -112,6 +117,13 @@ sub _exports_for_tag {
         Symbol::Get::get_names($pkg);
 
     my $err = $@;
+
+    $logger->error($err)       if $err;
+    $logger->warning($warning) if $warning;
+
+    use DDP;
+    p $logger if $err;
+
     return \%export, $warning, $err;
 }
 

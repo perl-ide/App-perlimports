@@ -7,6 +7,8 @@ use MooX::StrictConstructor;
 use Sub::HandlesVia;
 use Types::Standard qw( ArrayRef Bool HashRef Str );
 
+with 'App::perlimports::Role::Logger';
+
 has all_exports => (
     is          => 'ro',
     isa         => HashRef,
