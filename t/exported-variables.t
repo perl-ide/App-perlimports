@@ -5,16 +5,15 @@ use warnings;
 
 use lib 'test-data/lib', 't/lib';
 
-use App::perlimports::Document ();
-use TestHelper qw( source2pi );
+use TestHelper qw( doc inc );
 use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/exported-variables.pl',
     selection => 'use Local::ViaExporter qw();',
 );
 
-my $pi = App::perlimports::Include->new(
+my ($pi) = inc(
     document => $doc,
     include  => $doc->includes->[0],
 );

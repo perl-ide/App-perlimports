@@ -1,11 +1,14 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports::Document ();
+use TestHelper qw( doc );
 use Test::More;
 use Test::Needs qw( Mojo::Util );
 
-my $doc = App::perlimports::Document->new(
+my ( $doc, $log ) = doc(
     filename  => 'test-data/cast.pl',
     selection => 'use Mojo::Util;',
 );

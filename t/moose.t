@@ -3,16 +3,15 @@
 use strict;
 use warnings;
 
-use lib 'test-data/lib';
+use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::Document ();
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Import::Into Moose );
 
 subtest 'Moose' => sub {
-    my $doc
-        = App::perlimports::Document->new(
-        filename => 'test-data/lib/Local/UsesMoose.pm' );
+    my ($doc) = doc( filename => 'test-data/lib/Local/UsesMoose.pm' );
 
     my $expected = <<'EOF';
 package Local::UsesMoose;
@@ -36,7 +35,7 @@ EOF
 };
 
 subtest 'Import::Into' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename => 'test-data/lib/Local/MyOwnMoose.pm',
     );
 
@@ -62,7 +61,7 @@ EOF
 };
 
 subtest 'Uses MyOwnMoose' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename => 'test-data/lib/Local/UsesMyOwnMoose.pm',
     );
 

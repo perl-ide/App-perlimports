@@ -1,7 +1,10 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use App::perlimports::Document ();
+use TestHelper qw( logger );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 my %modules = (
@@ -11,8 +14,10 @@ my %modules = (
 
 for my $module ( keys %modules ) {
     subtest $module => sub {
+        my @log;
         my $doc = App::perlimports::Document->new(
             filename  => $modules{$module},
+            logger    => logger( \@log ),
             selection => "use $module;",
         );
 

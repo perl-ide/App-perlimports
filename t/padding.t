@@ -3,10 +3,11 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
+use lib 't/lib';
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is' ];
 
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename => 'test-data/carp.pl',
     padding  => 0,
 );

@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
 use Test::More import => [ 'diag', 'done_testing', 'is', 'ok', 'subtest' ];
 use Test::Needs qw( Moose Moo );

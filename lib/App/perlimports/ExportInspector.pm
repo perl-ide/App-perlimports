@@ -124,8 +124,6 @@ sub _build_inspection {
 
     return $exporter if $exporter->is_exporter;
 
-    use DDP;
-    p $self->logger;
     my $sub_exporter
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
         $self->_module_name,

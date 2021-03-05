@@ -9,6 +9,7 @@ use App::perlimports::Document ();
 use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
+use Log::Dispatch ();
 use Path::Tiny qw( path );
 use Pod::Usage qw( pod2usage );
 use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
@@ -47,6 +48,8 @@ has _usage => (
     lazy    => 1,
     default => sub { $_[0]->_args->{usage} },
 );
+
+with 'App::perlimports::Role::Logger';
 
 sub _build_args {
     my $self = shift;
@@ -166,6 +169,12 @@ sub run {
         unshift @INC, ( split m{,}, $opts->libs );
     }
 
+    my $logger
+        = $self->_has_logger
+        ? $self->logger
+        : Log::Dispatch->new(
+        outputs => [ [ 'Screen', min_level => 'warning' ] ] );
+
     my $pi_doc = App::perlimports::Document->new(
         filename => $opts->filename,
         @{ $self->_ignore_modules }
@@ -174,6 +183,7 @@ sub run {
         @{ $self->_never_exports }
         ? ( never_export_modules => $self->_never_exports )
         : (),
+        logger  => $logger,
         padding => $opts->padding,
         $input ? ( selection => $input ) : (),
     );

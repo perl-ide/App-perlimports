@@ -13,13 +13,39 @@ use PPI::Dumper   ();
 use Sub::Exporter -setup => {
     exports => [
         qw(
+            doc
             file2includes
+            inc
             logger
             ppi_dump
             source2pi
         )
     ]
 };
+
+sub doc {
+    my %args = @_;
+    my @log;
+    return (
+        App::perlimports::Document->new(
+            logger => logger( \@log ),
+            %args,
+        ),
+        \@log
+    );
+}
+
+sub inc {
+    my %args = @_;
+    my @log;
+    return (
+        App::perlimports::Include->new(
+            logger => logger( \@log ),
+            %args,
+        ),
+        \@log
+    );
+}
 
 sub file2includes {
     my $filename = shift;
@@ -63,15 +89,19 @@ sub source2pi {
     my $filename    = shift;
     my $source_text = shift;
     my $pi_args     = shift;
+    my @logs;
+    my $logger = logger( \@logs );
 
     my $doc = App::perlimports::Document->new(
         filename => $filename,
+        logger   => $logger,
         $source_text ? ( selection => $source_text ) : (),
     );
 
     return App::perlimports::Include->new(
         document => $doc,
         include  => $doc->includes->[0],
+        logger   => $logger,
         %{$pi_args},
     );
 }

@@ -16,9 +16,10 @@ use Test::Needs qw(
 );
 
 subtest 'Moose Type Library' => sub {
+    my $log = [];
     my ($inspection)
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::MooseTypeLibrary', logger( [] ) );
+        'Local::MooseTypeLibrary', logger($log) );
 
     ok( $inspection->has_all_exports, 'exports' );
     is( $inspection->all_exports->{is_Bool}, 'Bool', 'is_ aliased' );

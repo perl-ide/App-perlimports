@@ -473,6 +473,7 @@ sub inspector_for {
         $self->_set_inspector_for(
             $module,
             App::perlimports::ExportInspector->new(
+                logger      => $self->logger,
                 module_name => $module,
             )
         );

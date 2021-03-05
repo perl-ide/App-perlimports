@@ -10,6 +10,7 @@ use Try::Tiny  ();
 
 sub maybe_get_exports {
     my $module_name    = shift;
+    my $logger         = shift;
     my $attempt_import = shift || 1;
 
     my $error;
@@ -54,6 +55,7 @@ sub maybe_get_exports {
                     || !!scalar @export_fail
                     || !!scalar keys %export_tags
             ),
+            logger => $logger,
         }
     );
 }

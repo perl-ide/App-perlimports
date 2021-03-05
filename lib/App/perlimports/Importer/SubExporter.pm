@@ -86,6 +86,7 @@ sub maybe_get_exports {
             is_exporter      => $is_exporter,
             $is_moose_type_class ? ( _is_moose_type_class => 1 ) : (),
             is_sub_exporter => $is_sub_exporter,
+            logger          => $logger,
             warnings        => \@warning,
         }
     );
@@ -120,9 +121,6 @@ sub _exports_for_tag {
 
     $logger->error($err)       if $err;
     $logger->warning($warning) if $warning;
-
-    use DDP;
-    p $logger if $err;
 
     return \%export, $warning, $err;
 }
