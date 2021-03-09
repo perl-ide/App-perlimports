@@ -6,7 +6,6 @@ our $VERSION = '0.000001';
 
 use App::perlimports           ();
 use App::perlimports::Document ();
-use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
 use Log::Dispatch ();

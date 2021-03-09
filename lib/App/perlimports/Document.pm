@@ -5,7 +5,6 @@ use Moo;
 our $VERSION = '0.000001';
 
 use App::perlimports::Include ();
-use Data::Printer;
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
 use Module::Runtime qw( module_notional_filename );
