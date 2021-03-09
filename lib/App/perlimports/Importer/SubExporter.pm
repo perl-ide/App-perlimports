@@ -91,12 +91,20 @@ sub _exports_for_tag {
     my $logger      = shift;
 
     my $pkg = _pkg_for_tag( $module_name, $tag );
-    local $@ = undef;
-    my $warning = undef;
+    my $warning;
 
     # XXX trap error
     ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    local $SIG{__WARN__} = sub { $warning = $_[0] };
+    local $SIG{__WARN__} = sub {
+        $warning = $_[0];
+        $logger->warning(
+            sprintf(
+                'eval %s in Importer/SubExporter: %s',
+                $pkg,
+                $warning
+            )
+        );
+    };
 
     if ($tag) {
         eval "package $pkg; use $module_name qw( :$tag );1;";
@@ -110,12 +118,7 @@ sub _exports_for_tag {
         grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
         Symbol::Get::get_names($pkg);
 
-    my $err = $@;
-
-    $logger->error($err)       if $err;
-    $logger->warning($warning) if $warning;
-
-    return \%export, $warning, $err;
+    return \%export, $warning;
 }
 
 sub _isa_for_module {

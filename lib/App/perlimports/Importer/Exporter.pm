@@ -18,12 +18,25 @@ sub maybe_get_exports {
     # If this fails, that's ok. No need to return early.
     if ($attempt_import) {
 
+        my $log_sub = sub {
+            $logger->warning(
+                sprintf(
+                    'Trying to import %s in %s: %s',
+                    $module_name,
+                    __PACKAGE__,
+                    $_[0]
+                )
+            );
+        };
+
+        local $SIG{__WARN__} = $log_sub;
+
         # This is helpful for (at least) POSIX and Test::Most
         Try::Tiny::try {
             $module_name->import;
         }
         Try::Tiny::catch {
-            $error = $_;
+            $log_sub->($_);
         };
     }
 
@@ -42,7 +55,6 @@ sub maybe_get_exports {
     return App::perlimports::ExportInspector::Inspection->new(
         {
             scalar @isa ? ( class_isa => \@isa ) : (),
-            errors           => $error ? [$error] : [],
             explicit_exports => _list_to_hash( @export, @export_ok ),
             export_fail      => \@export_fail,
             export_tags      => \%export_tags,

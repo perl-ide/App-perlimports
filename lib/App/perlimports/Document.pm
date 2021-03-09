@@ -517,15 +517,6 @@ sub tidied_document {
         else {
             $include->remove;
         }
-
-        if ( $self->_verbose && $e->has_errors ) {
-            print STDERR 'Error: ' . $self->_filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->errors ) . "\n";
-        }
-        if ( $self->_verbose && $e->has_warnings ) {
-            print STDERR 'Warning: ' . $self->_filename . "\n";
-            print STDERR $e->_module_name . ' ' . np( $e->warnings ) . "\n";
-        }
     }
 
     # We need to do this in order to preserve HEREDOCs.

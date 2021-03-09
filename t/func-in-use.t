@@ -5,10 +5,9 @@ use warnings;
 
 use lib 't/lib';
 
-use TestHelper qw( doc );
+use TestHelper qw( doc source2pi );
 use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( File::Spec::Functions Mojo );
-use TestHelper qw( source2pi );
 
 my $source_text = 'use File::Spec::Functions;';
 my $e           = source2pi( 'test-data/func-in-use.pl', $source_text );

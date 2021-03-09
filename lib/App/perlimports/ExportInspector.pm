@@ -15,18 +15,6 @@ use Types::Standard qw(ArrayRef Bool InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';
 
-has errors => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_error => 'push',
-        has_errors => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
-);
-
 has import_flags => (
     is          => 'ro',
     isa         => ArrayRef,
@@ -118,10 +106,6 @@ sub _build_inspection {
         $self->logger,
     );
 
-    if ( $exporter->has_errors ) {
-        $self->_add_error for @{ $exporter->errors };
-    }
-
     return $exporter if $exporter->is_exporter;
 
     my $sub_exporter
@@ -129,13 +113,6 @@ sub _build_inspection {
         $self->_module_name,
         $self->logger,
         );
-
-    if ( $sub_exporter->has_errors ) {
-        $self->_add_error for @{ $sub_exporter->errors };
-    }
-    if ( $sub_exporter->has_warnings ) {
-        $self->_add_warning for @{ $sub_exporter->warnings };
-    }
 
     # It may not actually be a Sub::Exporter, but if exports are found that
     # should generally be good enough.
@@ -191,14 +168,6 @@ it a little bit by not doing it in L<App::perlimports> directly.
 =head1 METHODS
 
 The following methods are available.
-
-=head2 errors
-
-An ArrayRef of error messages which may have been triggered during inspection.
-
-=head2 has_errors
-
-Returns a Boolean to indicate whether any errors exist.
 
 =head2 explicit_exports
 

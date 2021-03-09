@@ -101,9 +101,9 @@ sub _build_args {
         ],
         [],
         [],
-        [ 'version',   'Print installed version', { shortcircuit => 1 } ],
-        [ 'verbose|v', 'Print errors to STDERR' ],
-        [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+        [ 'version',     'Print installed version',  { shortcircuit => 1 } ],
+        [ 'log-level|l=s', 'Print messages to STDERR', { default => 'error' } ],
+        [ 'help', "Print usage message and exit",    { shortcircuit => 1 } ],
         [
             'verbose-help', "Print usage message and documentation ",
             { shortcircuit => 1 }
@@ -173,7 +173,7 @@ sub run {
         = $self->_has_logger
         ? $self->logger
         : Log::Dispatch->new(
-        outputs => [ [ 'Screen', min_level => 'warning' ] ] );
+        outputs => [ [ 'Screen', min_level => $opts->log_level ] ] );
 
     my $pi_doc = App::perlimports::Document->new(
         filename => $opts->filename,

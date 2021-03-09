@@ -48,18 +48,6 @@ has _document => (
     init_arg => 'document',
 );
 
-has errors => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_error => 'push',
-        has_errors => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
-);
-
 has _export_inspector => (
     is        => 'ro',
     isa       => InstanceOf ['App::perlimports::ExportInspector'],
@@ -148,18 +136,6 @@ has _uses_import_into => (
     isa     => Bool,
     lazy    => 1,
     builder => '_build_uses_import_into',
-);
-
-has warnings => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_warning => 'push',
-        has_warnings => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
 );
 
 has _will_never_export => (
@@ -533,13 +509,13 @@ sub _build_formatted_ppi_statement {
             $args = eval( '{' . $all . '}' );
         }
         catch {
-            $self->_add_error($_);
+            $self->logger->warning($_);
             $error = 1;
         };
         ## use critic
 
         if ( !$error && !is_plain_hashref($args) ) {
-            $self->_add_error( 'Not a hashref: ' . np($args) );
+            $self->logger->warning( 'Not a hashref: ' . np($args) );
             $error = 1;
         }
 
@@ -624,7 +600,7 @@ sub _build_uses_import_into {
         require_module( $self->_module_name );
     }
     catch {
-        $self->_add_error(
+        $self->logger->warning(
             sprintf(
                 q{Can't locate %s in Import::Into check},
                 $self->_module_name
@@ -678,7 +654,7 @@ sub _maybe_require_module {
         $success = 1;
     }
     catch {
-        $self->_add_error("$module_to_require error. $_");
+        $self->logger->warning("$module_to_require error. $_");
     };
 
     return $success;

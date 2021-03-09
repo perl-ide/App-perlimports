@@ -64,16 +64,6 @@ has export_tags => (
     default => sub { +{} },
 );
 
-has errors => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        has_errors => 'count',
-    },
-    default => sub { [] },
-);
-
 has inspected_by => (
     is       => 'ro',
     isa      => Str,
@@ -102,16 +92,6 @@ has is_moose_class => (
 has _is_moose_type_class => (
     is  => 'ro',
     isa => Bool,
-);
-
-has warnings => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        has_warnings => 'count',
-    },
-    default => sub { [] },
 );
 
 sub _build_is_moose_class {
@@ -181,11 +161,6 @@ will import all of these symbols for you.
 Returns true if import and export names match. Used to determine if we should
 dump a one or two column table of import and export names.
 
-=head2 errors
-
-An C<ArrayRef> of errors which probably happened when we got creative with
-importing modules.
-
 =head2 export_fail
 
 An C<ArrayRef> of the contents of C<@EXPORT_FAIL>. This would only apply to
@@ -195,10 +170,6 @@ modules using L<Exporter>.
 
 An C<ArrayRef> of the contents of C<@EXPORT_TAGS>. This would only apply to
 modules using L<Exporter>.
-
-=head2 has_errors
-
-Returns true if C<errors()> has data to return.
 
 =head2 has_export_fail
 
@@ -219,7 +190,3 @@ Returns true if we think this class uses L<Exporter>.
 =head2 is_sub_exporter
 
 Returns true if we think this class uses L<Sub::Exporter>.
-
-=head2 warnings
-
-An ArrayRef of warnings emitted during inspection.
