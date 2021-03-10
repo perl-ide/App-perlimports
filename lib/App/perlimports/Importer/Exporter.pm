@@ -5,8 +5,9 @@ use warnings;
 
 our $VERSION = '0.000001';
 
-use List::Util ();
-use Try::Tiny  ();
+use List::Util  ();
+use Symbol::Get ();
+use Try::Tiny   ();
 
 sub maybe_get_exports {
     my $module_name    = shift;
@@ -50,15 +51,19 @@ sub maybe_get_exports {
     use strict;
 ## use critic
 
+    my $implicit_exports = _list_to_hash( $module_name, \@export );
+    my $explicit_exports
+        = _list_to_hash( $module_name, [ @export, @export_ok ] );
+
     # Exporter combines @EXPORT and @EXPORT_OK when checking valid explicit
     # import names.
     return App::perlimports::ExportInspector::Inspection->new(
         {
             scalar @isa ? ( class_isa => \@isa ) : (),
-            explicit_exports => _list_to_hash( @export, @export_ok ),
+            explicit_exports => $explicit_exports,
             export_fail      => \@export_fail,
             export_tags      => \%export_tags,
-            implicit_exports => _list_to_hash(@export),
+            implicit_exports => $implicit_exports,
             inspected_by     => __PACKAGE__,
             is_exporter      => (
                        !!( List::Util::any { $_ eq 'Exporter' } @isa )
@@ -73,13 +78,27 @@ sub maybe_get_exports {
 }
 
 sub _list_to_hash {
-    my @list = @_;
+    my $module_name = shift;
+    my $list        = shift;
+
     my %hash;
-    for my $item (@list) {
+    for my $item ( @{$list} ) {
         my $value = $item;
         $value =~ s{^&}{};
         $hash{$item} = $value;
     }
+    for my $key ( keys %hash ) {
+        if ( substr( $key, 0, 1 ) eq '*' ) {
+            my $thing = substr( $key, 1 );
+            for my $sigil ( '&', '$', '@', '%' ) {
+                my $symbol_name = $sigil . $module_name . '::' . $thing;
+                if ( Symbol::Get::get($symbol_name) ) {
+                    $hash{ $sigil . $thing } = $key;
+                }
+            }
+        }
+    }
+
     return \%hash;
 }
 
