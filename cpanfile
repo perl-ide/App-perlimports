@@ -4,11 +4,14 @@
 requires "Class::Inspector" => "1.36";
 requires "Data::Dumper" => "0";
 requires "Data::Printer" => "0";
+requires "File::Basename" => "0";
 requires "FindBin" => "0";
 requires "Getopt::Long::Descriptive" => "0";
 requires "List::Util" => "0";
+requires "Log::Dispatch" => "0";
 requires "Module::Runtime" => "0";
 requires "Moo" => "0";
+requires "Moo::Role" => "0";
 requires "MooX::StrictConstructor" => "0";
 requires "PPI::Document" => "1.270";
 requires "PPIx::QuoteLike" => "0";
@@ -24,7 +27,7 @@ requires "Text::SimpleTable::AutoWidth" => "0";
 requires "Try::Tiny" => "0";
 requires "Types::Standard" => "0";
 requires "lib" => "0";
-requires "perl" => "5.006";
+requires "perl" => "5.008";
 requires "strict" => "0";
 requires "warnings" => "0";
 
@@ -37,6 +40,7 @@ on 'test' => sub {
   requires "Geo::IP" => "0";
   requires "Getopt::Long" => "2.40";
   requires "LWP::UserAgent" => "6.49";
+  requires "Log::Dispatch::Array" => "0";
   requires "PPI::Dumper" => "0";
   requires "Sub::Exporter" => "0";
   requires "Test::Fatal" => "0";
@@ -45,7 +49,7 @@ on 'test' => sub {
   requires "Test::Needs" => "0";
   requires "Test::RequiresInternet" => "0";
   requires "Test::Warnings" => "0";
-  requires "perl" => "5.006";
+  requires "perl" => "5.008";
 };
 
 on 'test' => sub {
@@ -54,7 +58,7 @@ on 'test' => sub {
 
 on 'configure' => sub {
   requires "ExtUtils::MakeMaker" => "0";
-  requires "perl" => "5.006";
+  requires "perl" => "5.008";
 };
 
 on 'develop' => sub {
@@ -76,6 +80,7 @@ on 'develop' => sub {
   requires "Test::Pod::Coverage" => "1.08";
   requires "Test::Portability::Files" => "0";
   requires "Test::Spelling" => "0.12";
+  requires "Test::Synopsis" => "0";
   requires "Test::Vars" => "0.014";
   requires "Test::Version" => "1";
 };

@@ -1,0 +1,165 @@
+#!perl
+
+use strict;
+use warnings;
+
+use FindBin qw( $Bin );
+use lib "$Bin/../lib";
+
+use App::perlimports::CLI ();
+
+App::perlimports::CLI->new->run;
+exit(0);
+
+# PODNAME: perlimports
+# ABSTRACT: A command line utility for cleaning up imports in your Perl code
+
+=pod
+
+=head1 SYNOPSIS
+
+Update a file in place. (Make sure you can revert the file if you need to.)
+
+    perlimports --filename test-data/foo.pl --inplace-edit
+
+If some of your imported modules are in local directories, you can give some
+hints as to where to find them:
+
+    perlimports --filename test-data/foo.pl --inplace-edit --libs t/lib,/some/dir/lib
+
+Redirect output to a new file:
+
+    perlimports --filename test-data/foo.pl > foo.new.pl
+
+Process all test files:
+
+    find t -type f | grep .t$ | xargs -L 1 perlimports --libs lib,t/lib -i --ignore-modules Test::More --log-level notice -f
+
+The above command finds all test files in C<./t> and pipes them to
+C<perlimports>. C<lib> and C<t/lib> have been added to C<@INC>. The files are
+edited in place (C<-i>). Verbose errors will be displayed and the L<Test::More>
+module is ignored.
+
+Process all lib files:
+
+    find lib -type f | grep .pm$ | xargs -n 1 perlimports -i --libs lib -f
+
+The above command finds all C<.pm> files in C<./t> and pipes them to
+C<perlimports>. C<lib> has been added to C<@INC>. The files are edited in place
+(C<-i>). Verbose errors will be displayed.
+
+=head1 COMMAND LINE PARAMETERS
+
+=head2 --filename|-f
+
+The absolute or relative path to a file to process.
+
+    --filename path/to/file
+
+    -f path/to/file
+
+=head2 --ignore-modules
+
+A comma-separated list of module names which should be ignored by this script.
+Any modules in this list should remain unchanged after processing.
+
+    --ignore-modules Foo,Foo::Bar
+
+=head2 --ignore-modules-filename
+
+The absolute or relative path to a file which contains a lost of module names
+to ignore. (See above for behaviour). The pattern is one module name per line.
+
+    Foo
+    Foo::Bar
+
+=head2 --never-export-modules
+
+A comma-separated list of module names which should never export symbols. If
+these modules are found, we will ensure that they have an empty import list.
+So, C<use Foo;> becomes C<use Foo ();>.
+
+    --never-export-modules Foo,Foo::Bar
+
+=head2 --never-export-modules-filename
+
+The absolute or relative path to a file which contains a lost of module names
+which should never export symbols. (See above for behaviour). The pattern is
+one module name per line.
+
+    Foo
+    Foo::Bar
+
+=head2 --inplace-edit|-i
+
+Edit the file in place rather than printing the result to STDOUT. Make sure you
+have a backup copy first.
+
+    --inplace--edit
+    -i
+
+Edit the file in place rather than printing the result to STDOUT. Make sure you
+have a backup copy first.
+
+=head2 --[no-]padding
+
+C<--padding> is enabled by default, so you only need to pass this arg if you
+want to be explicit. This setting adds whitespace inside the parentheses.
+
+    # --padding
+    use Foo qw( bar baz );
+
+The C<--no-padding> arg allows you to disable the additional padding inside
+parentheses.
+
+    # --no-padding
+    use Foo qw(bar baz);
+
+=head2 --libs
+
+A comma separated list of module directories which are not in your C<@INC>
+
+    --libs lib,t/lib
+
+=head2 --read-stdin
+
+Read statements to process from STDIN rather than processing the entire file.
+This is intended for use by editors, like C<vim>. See the C<vim> heading below
+for more information on how to set up an integration with your editor.
+
+If this option is enabled, then C<--inplace-edit|-i> is not available.
+
+    --read-stdin
+
+=head2 --log-level|-l
+
+Generally only useful for debugging. So far two log levels have been
+implemented. C<notice> notifies about progress, like which file or snippet is
+currently being processed. C<info> will generally log the errors which were
+swallowed as text was being processed. All levels are subject to change.
+
+    --log-level notice
+    --log-level info
+    -l notice
+    -l info
+
+=head2 --help
+
+Output a concise help menu, with a summary of available parameters.
+
+    --help
+
+=head2 --verbose-help
+
+Include the SYNOPSIS section from this page after printing the C<--help> menu
+listed above.
+
+=head2 VIM
+
+If you're a C<vim> user, you can pipe your import statements to perlimports directly.
+
+    :vnoremap <silent> im :!perlimports --read-stdin --filename '%:p'<CR>
+
+The above statement will allow you to visually select one or more lines of code
+and have them updated in place by C<perlimports>. Once you have selected the
+code enter C<im> to have your imports (re)formatted.

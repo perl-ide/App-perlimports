@@ -1,6 +1,7 @@
 /App-perlimports*
 .build
 local/
+.ppi_build/
 *.sw*
 .tidyall.d/
 tidyall.ERR
