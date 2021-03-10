@@ -2,6 +2,8 @@ package App::perlimports::ExportInspector::Inspection;
 
 use Moo;
 
+our $VERSION = '0.000001';
+
 use List::Util qw( any );
 use MooX::StrictConstructor;
 use Sub::HandlesVia;

@@ -2,6 +2,8 @@ package App::perlimports::Role::Logger;
 
 use Moo::Role;
 
+our $VERSION = '0.000001';
+
 use Types::Standard qw( InstanceOf );
 
 has logger => (
@@ -11,3 +13,5 @@ has logger => (
 );
 
 1;
+
+# ABSTRACT: Provide a logger attribute to App::perlimports objects
