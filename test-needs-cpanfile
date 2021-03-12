@@ -5,6 +5,7 @@ on 'test' => sub {
     requires 'File::chdir' => 0;
     requires 'File::Spec::Functions' => 0;
     requires 'HTML::TableExtract' => 0;
+    requires 'List::AllUtils' => 0;
     requires 'Moose' => 0;
     requires 'MooseX::Types' => 0;
     requires 'MooseX::Types::Moose' => 0;
