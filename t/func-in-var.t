@@ -3,7 +3,6 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports::Document ();
 use TestHelper qw( doc );
 use Test::More;
 use Test::Needs qw( Mojo::Util );
