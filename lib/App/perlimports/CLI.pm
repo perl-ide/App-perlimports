@@ -6,6 +6,7 @@ our $VERSION = '0.000001';
 
 use App::perlimports           ();
 use App::perlimports::Document ();
+use Capture::Tiny qw( capture_stdout );
 use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
 use Log::Dispatch ();
@@ -179,20 +180,26 @@ sub run {
 
     $logger->info( 'Starting file: ' . $opts->filename );
 
-    my $pi_doc = App::perlimports::Document->new(
-        filename => $opts->filename,
-        @{ $self->_ignore_modules }
-        ? ( ignore_modules => $self->_ignore_modules )
-        : (),
-        @{ $self->_never_exports }
-        ? ( never_export_modules => $self->_never_exports )
-        : (),
-        logger  => $logger,
-        padding => $opts->padding,
-        $input ? ( selection => $input ) : (),
-    );
+    # Capture STDOUT here so that code that 3rd party code printing to STDOUT
+    # doesn't get piped back into vim.
+    my ( $stdout, $tidied ) = capture_stdout(
+        sub {
+            my $pi_doc = App::perlimports::Document->new(
+                filename => $opts->filename,
+                @{ $self->_ignore_modules }
+                ? ( ignore_modules => $self->_ignore_modules )
+                : (),
+                @{ $self->_never_exports }
+                ? ( never_export_modules => $self->_never_exports )
+                : (),
+                logger  => $logger,
+                padding => $opts->padding,
+                $input ? ( selection => $input ) : (),
+            );
 
-    my $tidied = $pi_doc->tidied_document;
+            return $pi_doc->tidied_document;
+        }
+    );
 
     if ( $opts->read_stdin ) {
         print $tidied;

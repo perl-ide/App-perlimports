@@ -99,4 +99,24 @@ EOF
     is( $stdout, $expected );
 };
 
+subtest '--stdout' => sub {
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Local::STDOUT;
+
+BEGIN {
+    print "perlimports should trap this";
+}
+EOF
+
+    local @ARGV = ( '-f', 'test-data/stdout.pl', );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture {
+        $cli->run;
+    };
+    is( $stdout, $expected );
+};
+
 done_testing();
