@@ -356,6 +356,10 @@ sub _build_imports {
     }
 
     @found = uniq sort { "\L$a" cmp "\L$b" } @found;
+    if ( $self->_original_imports ) {
+        my @preserved = grep { m{\A[!_]} } @{ $self->_original_imports };
+        @found = uniq( @preserved, @found );
+    }
     return \@found;
 }
 
