@@ -15,7 +15,7 @@ my $expected = <<'EOF';
 package Local::After;
 
 use Moose;
-use List::AllUtils qw( any uniq );
+use List::AllUtils qw( uniq );
 
 my @foo = uniq { 1..10 };
 
@@ -25,13 +25,10 @@ sub run { 1; }
 1;
 EOF
 
-TODO: {
-    local $TODO = 'Not yet implemented';
-    is(
-        $doc->tidied_document,
-        $expected,
-        'Moose::after() is not assigned to List::AllUtils'
-    );
-}
+is(
+    $doc->tidied_document,
+    $expected,
+    'Moose::after() is not assigned to List::AllUtils'
+);
 
 done_testing;

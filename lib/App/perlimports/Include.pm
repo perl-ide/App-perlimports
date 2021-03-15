@@ -675,7 +675,6 @@ sub _is_already_imported {
         grep { $_ ne $self->_module_name }
         keys %{ $self->_document->original_imports }
     ) {
-        next if $self->_document->_is_ignored($module);
         my @imports;
         if (
             is_plain_arrayref(
