@@ -172,7 +172,7 @@ sub _pkg_for_tag {
     my $tag         = shift || 'EMPTY';
 
     return sprintf(
-        'Local::App::perlimports::imported::%s::%s', $module_name,
+        'Local::%s::%s::%s::%s', __PACKAGE__, 'imported', $module_name,
         $tag
     );
 }

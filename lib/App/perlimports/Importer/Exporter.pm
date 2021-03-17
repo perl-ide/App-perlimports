@@ -107,7 +107,7 @@ sub _pkg_for_eval {
     my $module_name = shift;
 
     return sprintf(
-        'Local::App::perlimports::imported::%s::%s', 'Exporter', $module_name,
+        'Local::%s::%s::%s', __PACKAGE__, 'imported', $module_name,
     );
 }
 1;
