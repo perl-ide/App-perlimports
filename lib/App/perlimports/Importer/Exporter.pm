@@ -10,37 +10,38 @@ use Symbol::Get ();
 use Try::Tiny   ();
 
 sub maybe_get_exports {
-    my $module_name    = shift;
-    my $logger         = shift;
-    my $attempt_import = shift || 1;
+    my $module_name = shift;
+    my $logger      = shift;
 
     my $error;
 
-    # If this fails, that's ok. No need to return early.
-    if ($attempt_import) {
+    my $log_sub = sub {
+        $logger->info(
+            sprintf(
+                'Trying to import %s in %s: %s',
+                $module_name,
+                __PACKAGE__,
+                $_[0]
+            )
+        );
+    };
 
-        my $log_sub = sub {
-            $logger->info(
-                sprintf(
-                    'Trying to import %s in %s: %s',
-                    $module_name,
-                    __PACKAGE__,
-                    $_[0]
-                )
-            );
-        };
+    local $SIG{__WARN__} = $log_sub;
 
-        local $SIG{__WARN__} = $log_sub;
+    my $pkg_to_eval = _pkg_for_eval($module_name);
+    my $to_eval     = <<"EOF";
+package $pkg_to_eval;
+use $module_name;
+EOF
 
-        # This is helpful for (at least) POSIX and Test::Most
-        Try::Tiny::try {
-            $module_name->import;
-        }
-        Try::Tiny::catch {
-            $log_sub->($_);
-        };
+    local $@;
+    eval $to_eval;
+
+    if ($@) {
+        $log_sub->($@);
     }
 
+    print $to_eval;
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
     my @export      = @{ $module_name . '::EXPORT' };
@@ -102,6 +103,13 @@ sub _list_to_hash {
     return \%hash;
 }
 
+sub _pkg_for_eval {
+    my $module_name = shift;
+
+    return sprintf(
+        'Local::App::perlimports::imported::%s::%s', 'Exporter', $module_name,
+    );
+}
 1;
 
 # ABSTRACT: A sandbox for attempting to import arbitrary modules
