@@ -9,6 +9,7 @@ use Test::More import =>
 use TestHelper qw( logger );
 use Test::Needs qw(
     Import::Into
+    MetaCPAN::Moose
     Moose
     MooseX::Types::Moose
     MooseX::Types::Path::Class
@@ -82,6 +83,36 @@ subtest 'MyOwnMoose' => sub {
     my $inspection
         = App::perlimports::Importer::SubExporter::maybe_get_exports(
         'Local::MyOwnMoose', $logger );
+
+    is_deeply(
+        $inspection->all_exports,
+        {
+            after    => 'after',
+            around   => 'around',
+            augment  => 'augment',
+            before   => 'before',
+            blessed  => 'blessed',
+            confess  => 'confess',
+            extends  => 'extends',
+            has      => 'has',
+            inner    => 'inner',
+            isa      => 'isa',
+            meta     => 'meta',
+            override => 'override',
+            super    => 'super',
+            with     => 'with',
+        },
+        'exports'
+    );
+    is_deeply( \@errors, [] );
+};
+
+subtest 'MetaCPAN::Moose' => sub {
+    my @errors;
+    my $logger = logger( \@errors );
+    my $inspection
+        = App::perlimports::Importer::SubExporter::maybe_get_exports(
+        'MetaCPAN::Moose', $logger );
 
     is_deeply(
         $inspection->all_exports,

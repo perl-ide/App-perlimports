@@ -93,30 +93,60 @@ sub _exports_for_tag {
     my $pkg = _pkg_for_tag( $module_name, $tag );
     my $warning;
 
-    # XXX trap error
-    ## no critic (BuiltinFunctions::ProhibitStringyEval)
-    local $SIG{__WARN__} = sub {
-        $warning = $_[0];
+    my $use_statement
+        = $tag ? "use $module_name qw( :$tag );" : "use $module_name;";
+
+    # If you're importing Moose into a namespace and following that with an
+    # import of namespace::autoclean, you may find that symbols like "after"
+    # and "around" are no longer found.
+    #
+    # We log available symbols inside the BEGIN block in order to defeat
+    # namespace::autoclean, which removes symbols from the stash after
+    # compilation but before runtime. Thanks to Florian Ragwizt for the tip and
+    # the preceding explanation.
+
+    my $to_eval = <<"EOF";
+package $pkg;
+
+use Symbol::Get;
+$use_statement;
+our \@__EXPORTABLES;
+
+BEGIN {
+    \@__EXPORTABLES = Symbol::Get::get_names();
+}
+1;
+EOF
+
+    my $logger_cb = sub {
+        my $msg = shift;
         $logger->info(
             sprintf(
-                'eval %s in Importer/SubExporter: %s',
+                'eval %s in %s: %s',
                 $pkg,
-                $warning
+                __PACKAGE__,
+                $msg,
             )
         );
     };
 
-    if ($tag) {
-        eval "package $pkg; use $module_name qw( :$tag );1;";
-    }
-    else {
-        eval "package $pkg; use $module_name; 1;";
-    }
-    ## use critic
+    local $SIG{__WARN__} = $logger_cb;
 
+    local $@;
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval $to_eval;
+
+    if ($@) {
+        $logger_cb->($@);
+    }
+
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
     my %export = map { $_ => $_ }
-        grep { $_ ne 'BEGIN' && $_ !~ m{^__ANON__} && $_ ne 'ISA' }
-        Symbol::Get::get_names($pkg);
+        grep { $_ !~ m{(?:BEGIN|ISA|__EXPORTABLES)} && $_ !~ m{^__ANON__} }
+        @{ $pkg . '::__EXPORTABLES' };
+    use strict;
+    ## use critic
 
     return \%export, $warning;
 }

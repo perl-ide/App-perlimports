@@ -5,8 +5,7 @@ use warnings;
 
 use lib 't/lib', 'test-data/lib';
 
-use App::perlimports::Document ();
-use TestHelper qw( source2pi );
+use TestHelper qw( doc source2pi );
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 
@@ -51,7 +50,7 @@ subtest 'Test::More' => sub {
 };
 
 subtest 'pragma' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename  => 'test-data/foo.t',
         selection => 'use strict;',
     );
