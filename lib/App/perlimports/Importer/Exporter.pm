@@ -35,13 +35,14 @@ use $module_name;
 EOF
 
     local $@;
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
     eval $to_eval;
+    ## use critic
 
     if ($@) {
         $log_sub->($@);
     }
 
-    print $to_eval;
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
     my @export      = @{ $module_name . '::EXPORT' };
