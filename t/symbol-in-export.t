@@ -3,15 +3,12 @@ use warnings;
 
 use lib 'test-data/lib', 't/lib';
 
-use App::perlimports::Document ();
-use TestHelper qw( logger );
+use TestHelper qw( doc logger );
 use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( HTTP::Status );
 
-my @log;
-my $doc = App::perlimports::Document->new(
+my ($doc) = doc(
     filename  => 'test-data/lib/Local/SymbolInExport.pm',
-    logger    => logger( \@log ),
     selection => 'use HTTP::Request::Common;',
 );
 
