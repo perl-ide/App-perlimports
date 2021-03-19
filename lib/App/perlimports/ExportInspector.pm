@@ -5,6 +5,7 @@ use Moo;
 our $VERSION = '0.000001';
 
 use App::perlimports::Importer::Exporter    ();
+use App::perlimports::Importer::Other       ();
 use App::perlimports::Importer::SubExporter ();
 use Class::Inspector                        ();
 use List::Util qw( any );
@@ -118,9 +119,11 @@ sub _build_inspection {
     # should generally be good enough.
     return $sub_exporter if $sub_exporter->has_all_exports;
 
-    # If it's neither, return the $exporter, because it will probably have a
-    # more useful class_isa.
-    return $exporter;
+    # If it's neither, fall back to a generic attempt at getting some information.
+    return App::perlimports::Importer::Other::maybe_get_exports(
+        $self->_module_name,
+        $self->logger,
+    );
 }
 
 sub _build_is_oo_class {
