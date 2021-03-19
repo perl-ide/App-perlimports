@@ -30,6 +30,9 @@ subtest 'Not found' => sub {
 
 sub run {
     my $module = shift;
-    system( 'perl', '-Ilib', 'script/dump-perl-exports', $module );
+    system(
+        'perl', '-Ilib', 'script/dump-perl-exports', '--module',
+        $module
+    );
 }
 done_testing();

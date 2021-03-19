@@ -5,23 +5,30 @@ use warnings;
 
 use App::perlimports::ExportInspector ();
 use Data::Printer;
+use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( max );
 use Log::Dispatch ();
 use Pod::Usage qw( pod2usage );
 use Text::SimpleTable::AutoWidth ();
 
-my $module_name = shift @ARGV;
+my ( $opts, $usage ) = _options();
+( print $App::perlimports::ExportInspector::VERSION ) && exit
+    if $opts->version;
+( print $usage ) && exit if $opts->help;
 
-if ( !$module_name || $module_name eq '--help' ) {
+if ( $opts->verbose_help ) {
+    print $usage;
     print pod2usage();
     exit;
 }
 
 my $logger
-    = Log::Dispatch->new( outputs => [ [ 'Screen', min_level => 'error' ] ] );
+    = Log::Dispatch->new(
+    outputs => [ [ 'Screen', min_level => $opts->log_level ] ] );
+
 my $ei = App::perlimports::ExportInspector->new(
     logger      => $logger,
-    module_name => $module_name,
+    module_name => $opts->module,
 );
 
 my $exports = $ei->explicit_exports;
@@ -114,6 +121,27 @@ if ( $ei->has_export_fail ) {
         $t->row($val);
     }
     print $t->draw;
+}
+
+sub _options {
+    return describe_options(
+        'dump-perl-exports %o',
+        [
+            'module|m=s', 'The module to inspect for exports',
+            { required => 1 }
+        ],
+        [],
+        [ 'version', 'Print installed version', { shortcircuit => 1 } ],
+        [
+            'log-level|l=s', 'Print messages to STDERR',
+            { default => 'error' }
+        ],
+        [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+        [
+            'verbose-help', "Print usage message and documentation ",
+            { shortcircuit => 1 }
+        ],
+    );
 }
 
 # PODNAME: dump-perl-exports
