@@ -19,22 +19,14 @@ sub maybe_get_exports {
     my @error;
     my @warning;
 
-    my ( $implicit_exports, $warning, $err )
+    my $implicit_exports
         = _exports_for_tag( $module_name, 'default', $logger );
 
-    my $isa = _isa_for_module( $module_name, 'default' );
-    my $explicit_exports;
+    my $isa              = _isa_for_module( $module_name, 'default' );
+    my $explicit_exports = _exports_for_tag( $module_name, 'all', $logger );
 
     # Are import tags unsupported?
-    if ($warning) {
-        ($implicit_exports)
-            = _exports_for_tag( $module_name, undef, $logger );
-    }
-
-    else {
-        ($explicit_exports)
-            = _exports_for_tag( $module_name, 'all', $logger );
-    }
+    ($implicit_exports) = _exports_for_tag( $module_name, undef, $logger );
 
     my $is_moose_type_class;
 
@@ -91,7 +83,6 @@ sub _exports_for_tag {
     my $logger      = shift;
 
     my $pkg = _pkg_for_tag( $module_name, $tag );
-    my $warning;
 
     my $use_statement
         = $tag ? "use $module_name qw( :$tag );" : "use $module_name;";
@@ -148,7 +139,7 @@ EOF
     use strict;
     ## use critic
 
-    return \%export, $warning;
+    return \%export;
 }
 
 sub _isa_for_module {
