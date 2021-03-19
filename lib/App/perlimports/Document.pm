@@ -162,6 +162,8 @@ around BUILDARGS => sub {
 };
 
 my %default_ignore = (
+    'Data::Printer'                  => 1,
+    'DDP'                            => 1,
     'Devel::Confess'                 => 1,
     'Exception::Class'               => 1,
     'Exporter'                       => 1,
