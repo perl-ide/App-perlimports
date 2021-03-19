@@ -69,6 +69,14 @@ has _inspectors => (
     default => sub { +{} },
 );
 
+has my_own_inspection => (
+    is  => 'ro',
+    isa => Maybe [
+        InstanceOf ['App::perlimports::ExportInspector::Inspection'] ],
+    lazy    => 1,
+    builder => '_build_my_own_inspection',
+);
+
 has never_exports => (
     is      => 'ro',
     isa     => HashRef,
@@ -181,14 +189,14 @@ my %default_ignore = (
 );
 
 # Funky stuff could happen with inner packages.
-sub _build_export_list {
+sub _build_my_own_inspection {
     my $self = shift;
     my $pkgs
         = $self->ppi_document->find(
         sub { $_[1]->isa('PPI::Statement::Package') && $_[1]->file_scoped } );
 
     if ( !$pkgs || $pkgs->[0]->namespace eq 'main' ) {
-        return [];
+        return;
     }
 
     my $pkg = $pkgs->[0];
@@ -199,13 +207,22 @@ sub _build_export_list {
     my $notional_file
         = fileparse( module_notional_filename( $pkg->namespace ) );
     my $provided_file = fileparse( $self->_filename );
-    return [] unless $notional_file eq $provided_file;
+    return unless $notional_file eq $provided_file;
 
-    my $i = $self->inspector_for( $pkg->namespace ) || return [];
+    my $inspector = App::perlimports::ExportInspector->new(
+        logger      => $self->logger,
+        module_name => $pkg->namespace,
+    );
+    return $inspector ? $inspector->inspection : undef;
+}
+
+sub _build_export_list {
+    my $self = shift;
+    my $i    = $self->my_own_inspection;
 
     return [
-        uniq values %{ $i->inspection->all_exports },
-        values %{ $i->inspection->default_exports }
+        uniq values %{ $i->all_exports },
+        values %{ $i->default_exports }
     ];
 }
 
@@ -477,7 +494,7 @@ sub inspector_for {
         );
     }
     catch {
-        warn $_;
+        $self->logger->info( 'inspector_for' . $_ );
         $self->_set_inspector_for( $module, undef );
     };
 

@@ -330,10 +330,15 @@ sub _build_imports {
         }
     }
 
-    #  A used import might be just be a symbol that just gets exported.
-    for my $symbol ( $self->_document->all_document_exports ) {
-        if ( $self->_is_importable($symbol) ) {
-            $found{$symbol} = 1;
+    #  A used import might be just be a symbol that just gets exported.  ie. If
+    #  it appears as @EXPORT = ( 'SOME_SYMBOL') we don't want to miss it.
+    if (   $self->_document->my_own_inspection
+        && $self->_document->my_own_inspection->is_exporter ) {
+        for my $symbol (
+            $self->_document->my_own_inspection->all_export_names ) {
+            if ( $self->_is_importable($symbol) ) {
+                $found{$symbol} = 1;
+            }
         }
     }
 
