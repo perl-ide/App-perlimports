@@ -1,6 +1,7 @@
 package App::perlimports::Document;
 
 use Moo;
+use utf8;
 
 our $VERSION = '0.000001';
 
@@ -507,7 +508,7 @@ sub tidied_document {
     my $self = shift;
 
     foreach my $include ( $self->all_includes ) {
-        $self->logger->notice("Processing include: $include");
+        $self->logger->notice( '📦 ' . "Processing include: $include" );
 
         my $e = App::perlimports::Include->new(
             document         => $self,

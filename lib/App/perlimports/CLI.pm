@@ -1,6 +1,7 @@
 package App::perlimports::CLI;
 
 use Moo;
+use utf8;
 
 our $VERSION = '0.000001';
 
@@ -178,7 +179,7 @@ sub run {
         : Log::Dispatch->new( outputs =>
             [ [ 'Screen', min_level => $opts->log_level, newline => 1, ] ] );
 
-    $logger->info( 'Starting file: ' . $opts->filename );
+    $logger->info( '🚀 Starting file: ' . $opts->filename );
 
     # Capture STDOUT here so that code that 3rd party code printing to STDOUT
     # doesn't get piped back into vim.
