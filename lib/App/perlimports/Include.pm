@@ -701,6 +701,7 @@ sub _is_already_imported {
 
         if ( any { $_ eq $symbol } @imports ) {
             $duplicate = 1;
+            $self->logger->debug("$symbol already imported via $module");
             last;
         }
     }

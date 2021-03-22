@@ -112,6 +112,7 @@ if ( $ei->has_default_exports ) {
     }
     print $t->draw;
     printf( "%i symbols\n", scalar $inspection->all_export_names );
+    $logger->debug( np $inspection );
 }
 
 if ( $ei->has_export_fail ) {
