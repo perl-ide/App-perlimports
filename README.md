@@ -1,6 +1,6 @@
 [![Actions Status](https://github.com/oalders/App-perlimports/workflows/dzil-build-and-test/badge.svg)](https://github.com/oalders/App-perlimports/actions)
 [![codecov](https://codecov.io/gh/oalders/App-perlimports/branch/master/graph/badge.svg)](https://codecov.io/gh/oalders/App-perlimports)
-[![Kwalitee status](http://cpants.cpanauthors.org/dist/App-perlimports.png)](https://cpants.cpanauthors.org/dist/App-perlimports)
+[![Kwalitee status](https://cpants.cpanauthors.org/dist/App-perlimports.png)](https://cpants.cpanauthors.org/dist/App-perlimports)
 [![GitHub tag](https://img.shields.io/github/tag/oalders/App-perlimports.svg)]()
 [![Cpan license](https://img.shields.io/cpan/l/App-perlimports.svg)](https://metacpan.org/release/App-perlimports)
 
@@ -226,13 +226,6 @@ some examples.
 
 This distribution provides the [perlimports](https://metacpan.org/pod/perlimports) binary, which aims to automate
 the cleanup and maintenance of Perl import statements.
-
-# METHODS
-
-## formatted\_ppi\_statement
-
-Returns an [PPI::Statement::Include](https://metacpan.org/pod/PPI%3A%3AStatement%3A%3AInclude) object. This can be stringified into an
-import statement or used to replace an existing [PPI::Statement::Include](https://metacpan.org/pod/PPI%3A%3AStatement%3A%3AInclude).
 
 # CAVEATS
 

@@ -16,6 +16,7 @@ use Sub::Exporter -setup => {
             doc
             file2includes
             inc
+            inspector
             logger
             ppi_dump
             source2pi
@@ -103,6 +104,18 @@ sub source2pi {
         include  => $doc->includes->[0],
         logger   => $logger,
         %{$pi_args},
+    );
+}
+
+sub inspector {
+    my $module = shift;
+    my $logs   = [];
+    return (
+        App::perlimports::ExportInspector->new(
+            module_name => $module,
+            logger      => logger($logs),
+        ),
+        $logs
     );
 }
 

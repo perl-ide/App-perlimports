@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.006;
+use 5.008;
 
 use ExtUtils::MakeMaker;
 
@@ -18,19 +18,24 @@ my %WriteMakefileArgs = (
     "script/perlimports"
   ],
   "LICENSE" => "perl",
-  "MIN_PERL_VERSION" => "5.006",
+  "MIN_PERL_VERSION" => "5.008",
   "NAME" => "App::perlimports",
   "PREREQ_PM" => {
+    "Capture::Tiny" => 0,
     "Class::Inspector" => "1.36",
+    "DDP" => 0,
     "Data::Dumper" => 0,
     "Data::Printer" => 0,
+    "File::Basename" => 0,
     "FindBin" => 0,
     "Getopt::Long::Descriptive" => 0,
     "List::Util" => 0,
+    "Log::Dispatch" => 0,
     "Module::Runtime" => 0,
     "Moo" => 0,
+    "Moo::Role" => 0,
     "MooX::StrictConstructor" => 0,
-    "PPI::Document" => "1.270",
+    "PPI" => "1.270",
     "PPIx::QuoteLike" => 0,
     "PPIx::Utils::Classification" => 0,
     "Path::Tiny" => 0,
@@ -39,43 +44,35 @@ my %WriteMakefileArgs = (
     "Ref::Util" => 0,
     "String::InterpolatedVariables" => 0,
     "Sub::HandlesVia" => 0,
-    "Symbol::Get" => 0,
+    "Symbol::Get" => "0.10",
     "Text::SimpleTable::AutoWidth" => 0,
     "Try::Tiny" => 0,
     "Types::Standard" => 0,
     "lib" => 0,
     "strict" => 0,
+    "utf8" => 0,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
-    "Capture::Tiny" => 0,
     "Cpanel::JSON::XS" => 0,
     "Data::Printer" => 0,
-    "Exporter" => 0,
     "ExtUtils::MakeMaker" => 0,
     "File::Spec" => 0,
     "Geo::IP" => 0,
     "Getopt::Long" => "2.40",
-    "Import::Into" => 0,
     "LWP::UserAgent" => "6.49",
-    "Moose" => 0,
-    "MooseX::Types::Combine" => 0,
-    "MooseX::Types::Moose" => 0,
-    "MooseX::Types::Path::Class" => 0,
-    "PPI::Dumper" => 0,
-    "Path::Class" => 0,
+    "Log::Dispatch::Array" => 0,
     "Sub::Exporter" => 0,
     "Test::Fatal" => 0,
     "Test::More" => 0,
     "Test::Most" => 0,
     "Test::Needs" => 0,
     "Test::RequiresInternet" => 0,
-    "Test::Warnings" => 0,
-    "parent" => 0
+    "Test::Warnings" => 0
   },
   "VERSION" => "0.000001",
   "test" => {
-    "TESTS" => "t/*.t t/ExportInspector/*.t t/Importer/*.t t/cpan-modules/*.t"
+    "TESTS" => "t/*.t t/ExportInspector/*.t t/cpan-modules/*.t"
   }
 );
 
@@ -84,30 +81,27 @@ my %FallbackPrereqs = (
   "Capture::Tiny" => 0,
   "Class::Inspector" => "1.36",
   "Cpanel::JSON::XS" => 0,
+  "DDP" => 0,
   "Data::Dumper" => 0,
   "Data::Printer" => 0,
-  "Exporter" => 0,
   "ExtUtils::MakeMaker" => 0,
+  "File::Basename" => 0,
   "File::Spec" => 0,
   "FindBin" => 0,
   "Geo::IP" => 0,
   "Getopt::Long" => "2.40",
   "Getopt::Long::Descriptive" => 0,
-  "Import::Into" => 0,
   "LWP::UserAgent" => "6.49",
   "List::Util" => 0,
+  "Log::Dispatch" => 0,
+  "Log::Dispatch::Array" => 0,
   "Module::Runtime" => 0,
   "Moo" => 0,
+  "Moo::Role" => 0,
   "MooX::StrictConstructor" => 0,
-  "Moose" => 0,
-  "MooseX::Types::Combine" => 0,
-  "MooseX::Types::Moose" => 0,
-  "MooseX::Types::Path::Class" => 0,
-  "PPI::Document" => "1.270",
-  "PPI::Dumper" => 0,
+  "PPI" => "1.270",
   "PPIx::QuoteLike" => 0,
   "PPIx::Utils::Classification" => 0,
-  "Path::Class" => 0,
   "Path::Tiny" => 0,
   "Perl::Tidy" => 20210111,
   "Pod::Usage" => 0,
@@ -115,7 +109,7 @@ my %FallbackPrereqs = (
   "String::InterpolatedVariables" => 0,
   "Sub::Exporter" => 0,
   "Sub::HandlesVia" => 0,
-  "Symbol::Get" => 0,
+  "Symbol::Get" => "0.10",
   "Test::Fatal" => 0,
   "Test::More" => 0,
   "Test::Most" => 0,
@@ -126,8 +120,8 @@ my %FallbackPrereqs = (
   "Try::Tiny" => 0,
   "Types::Standard" => 0,
   "lib" => 0,
-  "parent" => 0,
   "strict" => 0,
+  "utf8" => 0,
   "warnings" => 0
 );
 

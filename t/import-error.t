@@ -5,21 +5,22 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
-use TestHelper qw( source2pi );
+use TestHelper qw( doc );
 use Test::Fatal qw( exception );
-use Test::More import => [ 'done_testing', 'like' ];
+use Test::More import => [ 'done_testing', 'ok' ];
 
 my $source_text = 'use Local::Module::Does::Not::Exist::At::All;';
 
-my $e = source2pi(
-    'test-data/geo-ip.pl',
-    $source_text,
+my ( $doc, $log ) = doc(
+    filename  => 'test-data/geo-ip.pl',
+    selection => $source_text,
 );
 
-like(
-    exception { $e->formatted_ppi_statement },
-    qr{Can't locate Local/Module},
+$doc->tidied_document;
+
+my $found = grep { qr{Can't locate Local/Module} } @{$log};
+ok(
+    $found,
     'exception on module not found'
 );
 

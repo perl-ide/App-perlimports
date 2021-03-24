@@ -24,7 +24,7 @@
       "configure" : {
          "requires" : {
             "ExtUtils::MakeMaker" : "0",
-            "perl" : "5.006"
+            "perl" : "5.008"
          }
       },
       "develop" : {
@@ -56,16 +56,21 @@
       },
       "runtime" : {
          "requires" : {
+            "Capture::Tiny" : "0",
             "Class::Inspector" : "1.36",
+            "DDP" : "0",
             "Data::Dumper" : "0",
             "Data::Printer" : "0",
+            "File::Basename" : "0",
             "FindBin" : "0",
             "Getopt::Long::Descriptive" : "0",
             "List::Util" : "0",
+            "Log::Dispatch" : "0",
             "Module::Runtime" : "0",
             "Moo" : "0",
+            "Moo::Role" : "0",
             "MooX::StrictConstructor" : "0",
-            "PPI::Document" : "1.270",
+            "PPI" : "1.270",
             "PPIx::QuoteLike" : "0",
             "PPIx::Utils::Classification" : "0",
             "Path::Tiny" : "0",
@@ -74,13 +79,14 @@
             "Ref::Util" : "0",
             "String::InterpolatedVariables" : "0",
             "Sub::HandlesVia" : "0",
-            "Symbol::Get" : "0",
+            "Symbol::Get" : "0.10",
             "Text::SimpleTable::AutoWidth" : "0",
             "Try::Tiny" : "0",
             "Types::Standard" : "0",
             "lib" : "0",
-            "perl" : "5.006",
+            "perl" : "5.008",
             "strict" : "0",
+            "utf8" : "0",
             "warnings" : "0"
          }
       },
@@ -89,22 +95,14 @@
             "CPAN::Meta" : "2.120900"
          },
          "requires" : {
-            "Capture::Tiny" : "0",
             "Cpanel::JSON::XS" : "0",
             "Data::Printer" : "0",
-            "Exporter" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Spec" : "0",
             "Geo::IP" : "0",
             "Getopt::Long" : "2.40",
-            "Import::Into" : "0",
             "LWP::UserAgent" : "6.49",
-            "Moose" : "0",
-            "MooseX::Types::Combine" : "0",
-            "MooseX::Types::Moose" : "0",
-            "MooseX::Types::Path::Class" : "0",
-            "PPI::Dumper" : "0",
-            "Path::Class" : "0",
+            "Log::Dispatch::Array" : "0",
             "Sub::Exporter" : "0",
             "Test::Fatal" : "0",
             "Test::More" : "0",
@@ -112,8 +110,7 @@
             "Test::Needs" : "0",
             "Test::RequiresInternet" : "0",
             "Test::Warnings" : "0",
-            "parent" : "0",
-            "perl" : "5.006"
+            "perl" : "5.008"
          }
       }
    },
@@ -186,7 +183,7 @@
             "class" : "Dist::Zilla::Plugin::MakeMaker",
             "config" : {
                "Dist::Zilla::Role::TestRunner" : {
-                  "default_jobs" : "4"
+                  "default_jobs" : 1
                }
             },
             "name" : "@Author::OALDERS/MakeMaker",
@@ -360,7 +357,7 @@
             "class" : "Dist::Zilla::Plugin::RunExtraTests",
             "config" : {
                "Dist::Zilla::Role::TestRunner" : {
-                  "default_jobs" : "4"
+                  "default_jobs" : 1
                }
             },
             "name" : "@Author::OALDERS/RunExtraTests",
@@ -541,7 +538,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "repo_root" : "."
                }
             },
@@ -552,7 +549,7 @@
             "class" : "Dist::Zilla::Plugin::Git::Contributors",
             "config" : {
                "Dist::Zilla::Plugin::Git::Contributors" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "include_authors" : 0,
                   "include_releaser" : 1,
                   "order_by" : "name",
@@ -672,7 +669,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -694,7 +691,7 @@
                   "tag_message" : "v%V"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -745,7 +742,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -765,7 +762,7 @@
                   "remotes_must_exist" : 1
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.28.0",
+                  "git_version" : "2.30.1",
                   "repo_root" : "."
                }
             },
@@ -773,9 +770,14 @@
             "version" : "2.047"
          },
          {
+            "class" : "Dist::Zilla::Plugin::PruneFiles",
+            "name" : "PruneFiles",
+            "version" : "6.017"
+         },
+         {
             "class" : "Dist::Zilla::Plugin::GitHubREADME::Badge",
             "name" : "GitHubREADME::Badge",
-            "version" : "0.32"
+            "version" : "0.33"
          },
          {
             "class" : "Dist::Zilla::Plugin::Prereqs",

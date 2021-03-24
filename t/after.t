@@ -7,7 +7,7 @@ use TestHelper qw( doc );
 use Test::More;
 use Test::Needs qw( List::AllUtils );
 
-my ($doc) = doc(
+my ( $doc, $logs ) = doc(
     filename => 'test-data/lib/Local/After.pm',
 );
 

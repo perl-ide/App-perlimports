@@ -156,9 +156,13 @@ sub _build_export_inspector {
     );
 }
 
+# If we have implicit (but not explicit) exports,  we will make a best guess at
+# what gets exported by using the implicit list.
 sub _build_explicit_exports {
     my $self = shift;
-    return $self->_export_inspector->explicit_exports;
+    return $self->_export_inspector->has_explicit_exports
+        ? $self->_export_inspector->explicit_exports
+        : $self->_export_inspector->implicit_exports;
 }
 
 sub _build_isa_test_builder_module {
@@ -332,10 +336,14 @@ sub _build_imports {
 
     #  A used import might be just be a symbol that just gets exported.  ie. If
     #  it appears as @EXPORT = ( 'SOME_SYMBOL') we don't want to miss it.
-    if (   $self->_document->my_own_inspection
-        && $self->_document->my_own_inspection->is_exporter ) {
+    if (   $self->_document->my_own_inspector
+        && $self->_document->my_own_inspector->is_exporter ) {
         for my $symbol (
-            $self->_document->my_own_inspection->all_export_names ) {
+            uniq(
+                $self->_document->my_own_inspector->implicit_export_names,
+                $self->_document->my_own_inspector->explicit_export_names
+            )
+        ) {
             if ( $self->_is_importable($symbol) ) {
                 $found{$symbol} = 1;
             }
@@ -380,8 +388,7 @@ sub _build_is_ignored {
 
     return 0 if $self->_export_inspector->is_oo_class;
 
-    if (  !$self->_export_inspector->module_is_exporter
-        && $self->_export_inspector->is_moose_class ) {
+    if ( $self->_export_inspector->is_moose_class ) {
         return 1;
     }
 
@@ -684,6 +691,8 @@ sub _is_already_imported {
         grep { $_ ne $self->_module_name }
         keys %{ $self->_document->original_imports }
     ) {
+        $self->logger->debug(
+            "checking $module for previous imports of $symbol");
         my @imports;
         if (
             is_plain_arrayref(
@@ -691,11 +700,14 @@ sub _is_already_imported {
             )
         ) {
             @imports = @{ $self->_document->original_imports->{$module} };
+            $self->logger->debug(
+                'Explicit imports found: ' . Dumper(@imports) );
         }
         else {
-            # Implicit import?
             if ( my $inspector = $self->_document->inspector_for($module) ) {
-                @imports = $inspector->default_export_names;
+                @imports = $inspector->implicit_export_names;
+                $self->logger->debug(
+                    'Implicit imports found: ' . Dumper(@imports) );
             }
         }
 

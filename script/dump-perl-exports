@@ -22,9 +22,16 @@ if ( $opts->verbose_help ) {
     exit;
 }
 
-my $logger
-    = Log::Dispatch->new(
-    outputs => [ [ 'Screen', min_level => $opts->log_level ] ] );
+my $logger = Log::Dispatch->new(
+    outputs => [
+        [
+            'Screen',
+            min_level => $opts->log_level,
+            newline   => 1,
+            stderr    => 1
+        ]
+    ]
+);
 
 my $ei = App::perlimports::ExportInspector->new(
     logger      => $logger,
@@ -42,19 +49,17 @@ if ( !keys %{$exports} ) {
     exit(0);
 }
 
-my $inspection = $ei->inspection;
-
-if ( $inspection->has_class_isa ) {
+if ( @{ $ei->class_isa } ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     $t->captions( ['ISA'] );
-    for my $class ( @{ $inspection->class_isa } ) {
+    for my $class ( @{ $ei->class_isa } ) {
         $t->row($class);
     }
     print $t->draw;
 }
 
-if ( $ei->has_export_tags ) {
-    my %tags = %{ $ei->export_tags };
+if ( @{ $ei->at_export_tags } ) {
+    my %tags = %{ $ei->at_export_tags };
     my @keys = keys %tags;
 
     my @headings = ( 'Export Tag', 'Exported Symbols' );
@@ -77,48 +82,48 @@ if ( $ei->has_export_tags ) {
     print $t->draw;
 }
 
-if ( $ei->has_default_exports ) {
+if ( $ei->has_implicit_exports ) {
     my $t = Text::SimpleTable::AutoWidth->new();
-    if ( $inspection->default_imports_match_exports ) {
+    if ( $ei->implicit_export_names_match_values ) {
         $t->captions( ['Default Exported Symbols'] );
-        for my $symbol ( sort $inspection->default_export_names ) {
+        for my $symbol ( sort $ei->implicit_export_names ) {
             $t->row($symbol);
         }
     }
     else {
         $t->captions( [ 'Default Export Symbol', 'Import Name' ] );
-        for my $key ( sort $inspection->default_export_names ) {
-            $t->row( $key, $inspection->default_exports->{$key} );
+        for my $key ( sort $ei->implicit_export_names ) {
+            $t->row( $key, $ei->implicit_exports->{$key} );
         }
     }
     print $t->draw;
-    printf( "%i symbols\n", scalar $inspection->default_export_names );
+    printf( "%i symbols\n", scalar $ei->implicit_export_names );
 }
 
 {
     my $t = Text::SimpleTable::AutoWidth->new();
 
-    if ( $inspection->all_imports_match_exports ) {
+    if ( $ei->explicit_export_names_match_values ) {
         $t->captions( ['All Exportable Symbols'] );
-        for my $symbol ( sort $inspection->all_export_names ) {
+        for my $symbol ( sort $ei->explicit_export_names ) {
             $t->row($symbol);
         }
     }
     else {
         $t->captions( [ 'Explicit Export Symbol', 'Import Name' ] );
-        for my $key ( sort $inspection->all_export_names ) {
+        for my $key ( sort $ei->explicit_export_names ) {
             $t->row( $key, $exports->{$key} );
         }
     }
     print $t->draw;
-    printf( "%i symbols\n", scalar $inspection->all_export_names );
-    $logger->debug( np $inspection );
+    printf( "%i symbols\n", scalar $ei->explicit_export_names );
+    $logger->debug( np $ei );
 }
 
-if ( $ei->has_export_fail ) {
+if ( @{ $ei->at_export_fail } ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     $t->captions( ['@EXPORT_FAIL'] );
-    for my $val ( sort @{ $ei->export_fail } ) {
+    for my $val ( sort @{ $ei->at_export_fail } ) {
         $t->row($val);
     }
     print $t->draw;
@@ -135,7 +140,7 @@ sub _options {
         [ 'version', 'Print installed version', { shortcircuit => 1 } ],
         [
             'log-level|l=s', 'Print messages to STDERR',
-            { default => 'error' }
+            { default => 'warning' }
         ],
         [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
         [

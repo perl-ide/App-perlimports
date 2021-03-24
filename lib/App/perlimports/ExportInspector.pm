@@ -2,19 +2,90 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
+## no critic (TestingAndDebugging::ProhibitNoStrict)
+
 our $VERSION = '0.000001';
 
-use App::perlimports::Importer::Exporter    ();
-use App::perlimports::Importer::Other       ();
-use App::perlimports::Importer::SubExporter ();
-use Class::Inspector                        ();
+use Class::Inspector ();
 use List::Util qw( any );
-use Module::Runtime qw( require_module );
-use PPI::Document ();
 use Sub::HandlesVia;
-use Types::Standard qw(ArrayRef Bool InstanceOf Str);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';
+
+sub BUILD {
+    my ( $self, $args ) = @_;
+    $self->implicit_exports;
+}
+
+has at_export => (
+    is          => 'ro',
+    isa         => ArrayRef [Str],
+    lazy        => 1,
+    handles_via => 'Array',
+    handles     => {
+        has_at_export => 'count',
+    },
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_module_name . '::EXPORT' } ];
+    },
+);
+
+has at_export_ok => (
+    is          => 'ro',
+    isa         => ArrayRef [Str],
+    lazy        => 1,
+    handles_via => 'Array',
+    handles     => {
+        all_at_export_ok => 'elements',
+        has_at_export_ok => 'count',
+    },
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_module_name . '::EXPORT_OK' } ];
+    },
+);
+
+has at_export_fail => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    lazy    => 1,
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_module_name . '::EXPORT_FAIL' } ];
+    },
+);
+
+has at_export_tags => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    lazy    => 1,
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_module_name . '::EXPORT_TAGS' } ];
+    },
+);
+
+has class_isa => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    lazy    => 1,
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_module_name . '::ISA' } ];
+    },
+);
+
+has pkg_isa => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    lazy    => 1,
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_pkg_for('implicit') . '::ISA' } ];
+    },
+);
 
 has import_flags => (
     is          => 'ro',
@@ -27,26 +98,51 @@ has import_flags => (
     builder => '_build_import_flags',
 );
 
-has inspection => (
-    is  => 'ro',
-    isa => InstanceOf ['App::perlimports::ExportInspector::Inspection'],
-    handles_via => ['Object'],
-    handles     => {
-        class_isa            => 'class_isa',
-        explicit_exports     => 'all_exports',
-        default_exports      => 'default_exports',
-        default_export_names => 'default_export_names',
-        export_fail          => 'export_fail',
-        export_tags          => 'export_tags',
-        has_explicit_exports => 'has_all_exports',
-        has_default_exports  => 'has_default_exports',
-        has_export_fail      => 'has_export_fail',
-        has_export_tags      => 'has_export_tags',
-        is_moose_class       => 'is_moose_class',
-        module_is_exporter   => 'is_exporter',
-    },
+has is_exporter => (
+    is      => 'ro',
+    isa     => Bool,
     lazy    => 1,
-    builder => '_build_inspection',
+    builder => '_build_is_exporter',
+);
+
+has explicit_exports => (
+    is          => 'ro',
+    isa         => HashRef,
+    lazy        => 1,
+    handles_via => 'Hash',
+    handles     => {
+        has_explicit_exports   => 'count',
+        explicit_export_names  => 'keys',
+        explicit_export_values => 'values',
+    },
+    builder => '_build_explicit_exports',
+);
+
+has implicit_exports => (
+    is          => 'ro',
+    isa         => HashRef,
+    lazy        => 1,
+    handles_via => 'Hash',
+    handles     => {
+        has_implicit_exports   => 'count',
+        implicit_export_names  => 'keys',
+        implicit_export_values => 'values',
+    },
+    builder => '_build_implicit_exports',
+);
+
+has is_moose_class => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_is_moose_class',
+);
+
+has is_moose_type_class => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_is_moose_type_class',
 );
 
 has is_oo_class => (
@@ -63,27 +159,32 @@ has _module_name => (
     required => 1,
 );
 
-has warnings => (
-    is          => 'rw',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        _add_warning => 'push',
-        has_warnings => 'count',
-    },
-    init_arg => undef,
-    default  => sub { [] },
-);
+sub _build_explicit_exports {
+    my $self = shift;
 
-around BUILDARGS => sub {
-    my ( $orig, $class, @args ) = @_;
-
-    my %args = @args;
-    if ( $args{module_name} ) {
-        require_module( $args{module_name} );
+    # If this is Exporter, then the exportable symbols will be listed in either
+    # @EXPORT or @EXPORT_OK. Maybe in both?
+    if ( $self->has_at_export_ok || $self->has_at_export ) {
+        return $self->_list_to_hash(
+            $self->_pkg_for('implicit'),    # reuse package name
+            [ @{ $self->at_export }, @{ $self->at_export_ok } ]
+        );
     }
-    return $class->$orig(@args);
-};
+
+    # If this is Sub::Exporter, we can cheat and see what's in the :all tag
+    my $pkg           = $self->_pkg_for('all');
+    my $use_statement = sprintf( 'use %s qw(:all);', $self->_module_name );
+    return $self->_list_to_hash(
+        $pkg,
+        $self->_exports_for_include( $pkg, $use_statement )
+    );
+
+    # If this module uses ssomething other than Exporter or Sub::Exporter, we
+    # probably returned an empty hash above.  We could guess and say it's the
+    # default exports + possibly something else.  It's probably less confusing
+    # to leave it up to the code which uses this object to decide how to handle
+    # it.
+}
 
 sub _build_import_flags {
     my $self = shift;
@@ -99,37 +200,16 @@ sub _build_import_flags {
         : [];
 }
 
-sub _build_inspection {
+sub _build_is_exporter {
     my $self = shift;
-
-    my $exporter = App::perlimports::Importer::Exporter::maybe_get_exports(
-        $self->_module_name,
-        $self->logger,
-    );
-
-    return $exporter if $exporter->is_exporter;
-
-    my $sub_exporter
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        $self->_module_name,
-        $self->logger,
-        );
-
-    # It may not actually be a Sub::Exporter, but if exports are found that
-    # should generally be good enough.
-    return $sub_exporter if $sub_exporter->has_all_exports;
-
-    # If it's neither, fall back to a generic attempt at getting some information.
-    return App::perlimports::Importer::Other::maybe_get_exports(
-        $self->_module_name,
-        $self->logger,
-    );
+    return 1 if any { $_ eq 'Exporter' } @{ $self->class_isa };
+    return $self->has_at_export || $self->has_at_export_ok ? 1 : 0;
 }
 
 sub _build_is_oo_class {
     my $self = shift;
 
-    return 0 if $self->inspection->has_all_exports;
+    return 0 if $self->has_implicit_exports || $self->has_explicit_exports;
 
     my $methods
         = Class::Inspector->methods( $self->_module_name, 'full', 'public' );
@@ -138,6 +218,173 @@ sub _build_is_oo_class {
         $_ eq 'Moose::Object::BUILDALL' || $_ eq 'Moo::Object::BUILDALL'
     }
     @{$methods};
+}
+
+sub _list_to_hash {
+    my $self = shift;
+    my $pkg  = shift;
+    my $list = shift;
+
+    use DDP;
+    $self->logger->debug( np($list) );
+
+    my %hash;
+    for my $item ( @{$list} ) {
+        my $value = $item;
+        $value =~ s{^&}{};
+        $hash{$item} = $value;
+    }
+
+    # Specifically for File::chdir, which exports a typeglob, but doesn't
+    # implement eery possibility.
+    for my $key ( keys %hash ) {
+        if ( substr( $key, 0, 1 ) eq '*' ) {
+            my $thing = substr( $key, 1 );
+            for my $sigil ( '&', '$', '@', '%' ) {
+                my $symbol_name = $sigil . $pkg . '::' . $thing;
+                if ( Symbol::Get::get($symbol_name) ) {
+                    $hash{ $sigil . $thing } = $key;
+                }
+            }
+        }
+    }
+
+    # Treat Moose type libraries a bit differently. Importing ArrayRef, for
+    # instance, also imports is_ArrayRef and to_ArrayRef (if a coercion)
+    # exists. So, let's deal with that here.
+    if ( $self->is_moose_type_class ) {
+        for my $key ( keys %hash ) {
+            if ( $key =~ m{^(is_|to_)} ) {
+                $hash{$key} = substr( $key, 3 );
+            }
+        }
+    }
+
+    return \%hash;
+}
+
+sub _build_implicit_exports {
+    my $self = shift;
+    my $pkg  = $self->_pkg_for('implicit');
+
+    my $module_name   = $self->_module_name;
+    my $use_statement = "use $module_name;";
+    my $maybe_exports = $self->_exports_for_include( $pkg, $use_statement );
+
+    if ( $self->is_exporter ) {
+        return $self->_list_to_hash( $pkg, $self->at_export );
+    }
+
+    return $self->_list_to_hash( $pkg, $maybe_exports );
+}
+
+sub _exports_for_include {
+    my $self          = shift;
+    my $pkg           = shift;
+    my $use_statement = shift;
+
+    my $logger = $self->logger;
+
+    # If you're importing Moose into a namespace and following that with an
+    # import of namespace::autoclean, you may find that symbols like "after"
+    # and "around" are no longer found.
+    #
+    # We log available symbols inside the BEGIN block in order to defeat
+    # namespace::autoclean, which removes symbols from the stash after
+    # compilation but before runtime. Thanks to Florian Ragwitz for the tip and
+    # the preceding explanation.
+
+    my $to_eval = <<"EOF";
+package $pkg;
+
+use Symbol::Get;
+$use_statement
+our \@__EXPORTABLES;
+
+BEGIN {
+    \@__EXPORTABLES = Symbol::Get::get_names();
+}
+1;
+EOF
+
+    $self->logger->debug($to_eval);
+
+    my $logger_cb = sub {
+        my $msg   = shift;
+        my $level = 'info';
+        if ( $msg =~ qr{Can't locate} ) {
+            $level = 'warning';
+        }
+
+        print 'level: ' . $level . "\n\n";
+        $logger->log(
+            level   => $level,
+            message => sprintf(
+                "Problem trying to eval %s:\n%s",
+                $pkg,
+                $msg,
+            ),
+        );
+    };
+
+    local $SIG{__WARN__} = $logger_cb;
+
+    local $@;
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval $to_eval;
+
+    if ($@) {
+        $logger_cb->($@);
+    }
+
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    my @export
+        = grep { $_ !~ m{(?:BEGIN|ISA|__EXPORTABLES)} && $_ !~ m{^__ANON__} }
+        @{ $pkg . '::__EXPORTABLES' };
+    use strict;
+    ## use critic
+
+    return \@export;
+}
+
+sub _pkg_for {
+    my $self   = shift;
+    my $suffix = shift;
+
+    return sprintf(
+        'Local::%s::%s::%s::%s', __PACKAGE__, 'imported', $self->_module_name,
+        'implicit'
+    );
+}
+
+sub _build_is_moose_class {
+    my $self = shift;
+
+    return any { $_ eq 'Moose::Object' || $_ eq 'Test::Class::Moose' }
+    @{ $self->pkg_isa };
+}
+
+sub _build_is_moose_type_class {
+    my $self = shift;
+
+    return
+        any { $_ eq 'MooseX::Types::Base' || $_ eq 'MooseX::Types::Combine' }
+    @{ $self->class_isa };
+}
+
+sub explicit_export_names_match_values {
+    my $self = shift;
+    return
+        join( q{}, sort $self->explicit_export_names ) eq
+        join( q{}, sort $self->explicit_export_values );
+}
+
+sub implicit_export_names_match_values {
+    my $self = shift;
+    return
+        join( q{}, sort $self->implicit_export_names ) eq
+        join( q{}, sort $self->implicit_export_values );
 }
 
 1;
@@ -172,11 +419,34 @@ it a little bit by not doing it in L<App::perlimports> directly.
 
 The following methods are available.
 
+=head2 implicit_exports
+
+A HashRef with keys representing symbols which a module implicitly exports
+(i.e.  via C<use Module::Name;>. The values represent the import value which
+you would need in order to explicitly import the symbol. Often these will be
+the same, but there are exceptions. For example, a type library may export
+C<is_ArrayRef>, but you import it via C<use My::Type::Library qw( ArrayRef );>.
+
 =head2 explicit_exports
 
-HashRef which combines the unique contents of C<export> and C<export_ok>. If
-this is a Moose type library, the exported types will exist in this list, but
-not in C<export> or C<export_ok>.
+A HashRef with keys representing symbols which a module explicitly exports
+(i.e.  via C<use Module::Name qw( foo bar );>. The values represent the import
+value which you would need in order to explicitly import the symbol. Often
+these will be the same, but there are exceptions. For example, a type library
+may export C<is_ArrayRef>, but you import it via C<use My::Type::Library qw(
+ArrayRef );>.
+
+In cases where we cannot be certain about the explicit exports, you can try to
+fall back to the implicit exports to get an idea of what this module can
+export.
+
+=head2 implicit_export_names_match_values
+
+Returns true if the keys and values in C<implicit_exports> match.
+
+=head2 explicit_export_names_match_values
+
+Returns true if the keys and values in C<explicit_exports> match.
 
 =head1 CAVEATS
 

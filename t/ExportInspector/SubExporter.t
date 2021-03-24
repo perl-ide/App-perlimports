@@ -3,10 +3,9 @@ use warnings;
 
 use lib 't/lib', 'test-data/lib';
 
-use App::perlimports::Importer::SubExporter ();
 use Test::More import =>
     [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
-use TestHelper qw( logger );
+use TestHelper qw( inspector );
 use Test::Needs qw(
     Import::Into
     MetaCPAN::Moose
@@ -17,16 +16,14 @@ use Test::Needs qw(
 );
 
 subtest 'Moose Type Library' => sub {
-    my $log = [];
-    my ($inspection)
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::MooseTypeLibrary', logger($log) );
+    my $log         = [];
+    my ($inspector) = inspector('Local::MooseTypeLibrary');
+    my $exports     = $inspector->explicit_exports;
 
-    ok( $inspection->has_all_exports, 'exports' );
-    is( $inspection->all_exports->{is_Bool}, 'Bool', 'is_ aliased' );
-    is( $inspection->all_exports->{to_File}, 'File', 'to_ aliased' );
+    is( $exports->{is_Bool}, 'Bool', 'is_ aliased' );
+    is( $exports->{to_File}, 'File', 'to_ aliased' );
     ok(
-        !exists $inspection->all_exports->{to_Str},
+        !exists $exports->{to_Str},
         'Coercion does not exist'
     );
 };
@@ -34,17 +31,10 @@ subtest 'Moose Type Library' => sub {
 subtest 'Moo' => sub {
     my $module = 'Moo';
 
-    my @errors;
-    my $logger = logger( \@errors );
-
-    my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        $module,
-        $logger,
-        );
+    my ($inspection) = inspector('Moo');
 
     is_deeply(
-        $inspection->default_exports,
+        $inspection->implicit_exports,
         {
             after   => 'after',
             around  => 'around',
@@ -55,37 +45,25 @@ subtest 'Moo' => sub {
         },
         'exports'
     );
-
-    is_deeply( \@errors, [] );
 };
 
 subtest 'ViaSubExporter' => sub {
-    my @errors;
-    my $logger = logger( \@errors );
-    my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::ViaSubExporter', $logger );
-
+    my ($inspector) = inspector('Local::ViaSubExporter');
     is_deeply(
-        $inspection->all_exports,
+        $inspector->explicit_exports,
         {
             bar => 'bar',
             foo => 'foo',
         },
         'exports'
     );
-    is_deeply( \@errors, [] );
 };
 
 subtest 'MyOwnMoose' => sub {
-    my @errors;
-    my $logger = logger( \@errors );
-    my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'Local::MyOwnMoose', $logger );
+    my ($inspector) = inspector('Local::MyOwnMoose');
 
     is_deeply(
-        $inspection->all_exports,
+        $inspector->implicit_exports,
         {
             after    => 'after',
             around   => 'around',
@@ -104,18 +82,13 @@ subtest 'MyOwnMoose' => sub {
         },
         'exports'
     );
-    is_deeply( \@errors, [] );
 };
 
 subtest 'MetaCPAN::Moose' => sub {
-    my @errors;
-    my $logger = logger( \@errors );
-    my $inspection
-        = App::perlimports::Importer::SubExporter::maybe_get_exports(
-        'MetaCPAN::Moose', $logger );
+    my ($inspector) = inspector('MetaCPAN::Moose');
 
     is_deeply(
-        $inspection->all_exports,
+        $inspector->implicit_exports,
         {
             after    => 'after',
             around   => 'around',
@@ -134,7 +107,6 @@ subtest 'MetaCPAN::Moose' => sub {
         },
         'exports'
     );
-    is_deeply( \@errors, [] );
 };
 
 done_testing();

@@ -70,12 +70,11 @@ has _inspectors => (
     default => sub { +{} },
 );
 
-has my_own_inspection => (
-    is  => 'ro',
-    isa => Maybe [
-        InstanceOf ['App::perlimports::ExportInspector::Inspection'] ],
+has my_own_inspector => (
+    is      => 'ro',
+    isa     => Maybe [ InstanceOf ['App::perlimports::ExportInspector'] ],
     lazy    => 1,
-    builder => '_build_my_own_inspection',
+    builder => '_build_my_own_inspector',
 );
 
 has never_exports => (
@@ -192,7 +191,7 @@ my %default_ignore = (
 );
 
 # Funky stuff could happen with inner packages.
-sub _build_my_own_inspection {
+sub _build_my_own_inspector {
     my $self = shift;
     my $pkgs
         = $self->ppi_document->find(
@@ -212,16 +211,15 @@ sub _build_my_own_inspection {
     my $provided_file = fileparse( $self->_filename );
     return unless $notional_file eq $provided_file;
 
-    my $inspector = App::perlimports::ExportInspector->new(
+    return App::perlimports::ExportInspector->new(
         logger      => $self->logger,
         module_name => $pkg->namespace,
     );
-    return $inspector ? $inspector->inspection : undef;
 }
 
 sub _build_export_list {
     my $self = shift;
-    my $i    = $self->my_own_inspection;
+    my $i    = $self->my_own_inspector;
 
     return [
         uniq values %{ $i->all_exports },

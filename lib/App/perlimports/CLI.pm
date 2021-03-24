@@ -181,8 +181,8 @@ sub run {
 
     $logger->info( '🚀 Starting file: ' . $opts->filename );
 
-    # Capture STDOUT here so that code that 3rd party code printing to STDOUT
-    # doesn't get piped back into vim.
+    # Capture STDOUT here so that 3rd party code printing to STDOUT doesn't get
+    # piped back into vim.
     my ( $stdout, $tidied ) = capture_stdout(
         sub {
             my $pi_doc = App::perlimports::Document->new(
