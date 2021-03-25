@@ -62,7 +62,7 @@ jobs:
       - name: run Mojo tests
         run: cd mojo && prove -lr t
       - name: Run perlimports on test suite
-        run: cd mojo && find t -type f | grep "\.t\$" | grep -v t/mojolicious/commands.t | xargs -L 1 perl -I../lib ../script/perlimports --libs lib,t/mojo/lib -i --no-padding --ignore-modules Test::More -f
+        run: cd mojo && find t -type f | grep "\.t\$" | grep -v t/mojolicious/commands.t | xargs -L 1 perl -I../lib ../script/perlimports --libs lib,t/mojo/lib -i --no-padding --ignore-modules Test::More,Mojo::Base -f
       - name: run Mojo tests after tidying tests
         run: cd mojo && prove -lr t
       - name: Hard reset on Mojo checkout
