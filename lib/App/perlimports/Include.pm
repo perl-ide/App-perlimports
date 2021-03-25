@@ -7,6 +7,7 @@ our $VERSION = '0.000001';
 use App::perlimports::ExportInspector ();
 use Class::Inspector                  ();
 use Data::Dumper qw( Dumper );
+use Data::Printer;
 use List::Util qw( any none uniq );
 use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
