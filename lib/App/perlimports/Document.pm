@@ -505,7 +505,22 @@ sub inspector_for {
 sub tidied_document {
     my $self = shift;
 
+    my %processed;
+
     foreach my $include ( $self->all_includes ) {
+
+        # If a module is used more than once, that's usually a mistake.
+        if ( exists $processed{ $include->module } ) {
+            $self->logger->info( $include->module
+                    . ' has already been used. Removing at line '
+                    . $include->line_number );
+            if ( $include->next_sibling eq "\n" ) {
+                $include->next_sibling->remove;
+            }
+            $include->remove;
+            next;
+        }
+
         $self->logger->notice( '📦 ' . "Processing include: $include" );
 
         my $e = App::perlimports::Include->new(
@@ -534,6 +549,7 @@ sub tidied_document {
         }
         else {
             $include->remove;
+            $processed{ $include->module } = 1;
         }
     }
 
