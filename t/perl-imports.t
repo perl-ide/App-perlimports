@@ -15,8 +15,8 @@ subtest 'Getopt::Long' => sub {
         'use Getopt::Long;',
     );
     is(
-        $e->_module_name(), 'Getopt::Long',
-        '_module_name'
+        $e->module_name(), 'Getopt::Long',
+        'module_name'
     );
 
     ok( $e->_has_explicit_exports,     'Found some _explicit_exports' );
@@ -35,8 +35,8 @@ subtest 'Test::More' => sub {
         'use Test::More;',
     );
     is(
-        $e->_module_name(), 'Test::More',
-        '_module_name'
+        $e->module_name(), 'Test::More',
+        'module_name'
     );
 
     ok( $e->_has_explicit_exports,    'Found some _explicit_exports' );
@@ -68,8 +68,8 @@ subtest 'ViaExporter' => sub {
         'use Local::ViaExporter qw( foo $foo @foo %foo );',
     );
     is(
-        $e->_module_name(), 'Local::ViaExporter',
-        '_module_name'
+        $e->module_name(), 'Local::ViaExporter',
+        'module_name'
     );
 
     is_deeply(

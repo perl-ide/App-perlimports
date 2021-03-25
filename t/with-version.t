@@ -11,8 +11,8 @@ my $e = source2pi(
     'use Getopt::Long 2.40 qw();',
 );
 is(
-    $e->_module_name(), 'Getopt::Long',
-    '_module_name'
+    $e->module_name(), 'Getopt::Long',
+    'module_name'
 );
 
 ok( !$e->_is_ignored, '_is_ignored' );

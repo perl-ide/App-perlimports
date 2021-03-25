@@ -14,8 +14,8 @@ my $e = source2pi(
     'use FindBin qw( $Bin );',
 );
 is(
-    $e->_module_name(), 'FindBin',
-    '_module_name'
+    $e->module_name(), 'FindBin',
+    'module_name'
 );
 
 ok( !$e->_is_ignored, 'no longer ignored' );

@@ -106,7 +106,7 @@ has _is_translatable => (
     documentation => 'Is this a require which can be converted to a use?',
 );
 
-has _module_name => (
+has module_name => (
     is      => 'ro',
     isa     => Maybe [Str],
     lazy    => 1,
@@ -144,7 +144,7 @@ has _will_never_export => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return exists $self->_document->never_exports->{ $self->_module_name }
+        return exists $self->_document->never_exports->{ $self->module_name }
             || $self->_export_inspector->is_oo_class;
     },
 );
@@ -153,7 +153,7 @@ sub _build_export_inspector {
     my $self = shift;
     return App::perlimports::ExportInspector->new(
         logger      => $self->logger,
-        module_name => $self->_module_name,
+        module_name => $self->module_name,
     );
 }
 
@@ -168,12 +168,12 @@ sub _build_explicit_exports {
 
 sub _build_isa_test_builder_module {
     my $self = shift;
-    $self->_maybe_require_module( $self->_module_name );
+    $self->_maybe_require_module( $self->module_name );
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
     my $isa_test_builder = any { $_ eq 'Test::Builder::Module' }
-    @{ $self->_module_name . '::ISA' };
+    @{ $self->module_name . '::ISA' };
     use strict;
 ## use critic
 
@@ -185,7 +185,7 @@ sub _build_imports {
 
     # This is not a real symbol, so we should never be looking for it to appear
     # in the code.
-    $self->_delete_export('verbose') if $self->_module_name eq 'Carp';
+    $self->_delete_export('verbose') if $self->module_name eq 'Carp';
 
     my %found;
 
@@ -395,7 +395,7 @@ sub _build_is_ignored {
 
     # This should catch Moose classes
     if ( $self->_maybe_require_module('Moose::Util')
-        && Moose::Util::find_meta( $self->_module_name ) ) {
+        && Moose::Util::find_meta( $self->module_name ) ) {
         return 1;
     }
 
@@ -403,11 +403,8 @@ sub _build_is_ignored {
     if ( $self->_maybe_require_module('Class::Inspector') ) {
         return 1
             if any { $_ eq 'Moo::is_class' }
-        @{ Class::Inspector->methods(
-                $self->_module_name, 'full', 'public'
-                )
-                || []
-        };
+        @{ Class::Inspector->methods( $self->module_name, 'full', 'public' )
+                || [] };
     }
 
     # It's really hard to know how to handle these.
@@ -421,7 +418,7 @@ sub _build_is_translatable {
 
     return 0 if !$self->_include->type;
     return 0 if $self->_include->type ne 'require';
-    return 0 if $self->_module_name eq 'Exporter';
+    return 0 if $self->module_name eq 'Exporter';
 
     # We can deal with a top level require.
     # require Foo; can be changed to use Foo ();
@@ -441,7 +438,7 @@ sub _build_is_translatable {
     my @children = $self->_include->schildren;
 
     my $statement = join q{ }, @children[ 0 .. 2 ];
-    if ( $statement ne 'require ' . $self->_module_name . ' ;' ) {
+    if ( $statement ne 'require ' . $self->module_name . ' ;' ) {
         return 0;
     }
 
@@ -469,7 +466,7 @@ sub _build_formatted_ppi_statement {
         || ( $self->_has_explicit_exports && !@{ $self->_imports } ) ) {
         return $self->_maybe_get_new_include(
             sprintf(
-                'use %s %s();', $self->_module_name,
+                'use %s %s();', $self->module_name,
                 $self->_include->module_version
                 ? $self->_include->module_version . q{ }
                 : q{}
@@ -557,7 +554,7 @@ sub _build_formatted_ppi_statement {
 
         $statement = sprintf(
             keys %$args > 1 ? 'use %s%s( %s );' : 'use %s%s %s;',
-            $self->_module_name,
+            $self->module_name,
             $self->_include->module_version
             ? q{ } . $self->_include->module_version . q{ }
             : q{ },
@@ -579,7 +576,7 @@ sub _build_formatted_ppi_statement {
             : 'use %s%s qw(%s%s%s);';
 
         $statement = sprintf(
-            $template, $self->_module_name,
+            $template, $self->module_name,
             (
                 $self->_include->module_version
                 ? q{ } . $self->_include->module_version
@@ -596,7 +593,7 @@ sub _build_formatted_ppi_statement {
 
     # Don't deal with Test::Builder classes here to keep is simple for now
     if ( length($statement) > 78 && !$self->_isa_test_builder_module ) {
-        $statement = sprintf( "use %s qw(\n", $self->_module_name );
+        $statement = sprintf( "use %s qw(\n", $self->module_name );
         for ( @{ $self->_imports } ) {
             $statement .= "    $_\n";
         }
@@ -613,13 +610,13 @@ sub _build_uses_import_into {
 
     # We may not have already required the module
     try {
-        require_module( $self->_module_name );
+        require_module( $self->module_name );
     }
     catch {
         $self->logger->info(
             sprintf(
                 q{Can't locate %s in Import::Into check},
-                $self->_module_name
+                $self->module_name
             )
         );
         $error = 1;
@@ -627,7 +624,7 @@ sub _build_uses_import_into {
 
     return 0 if $error;
 
-    my $filename = Class::Inspector->loaded_filename( $self->_module_name );
+    my $filename = Class::Inspector->loaded_filename( $self->module_name );
     my $content  = path($filename)->slurp;
     my $doc      = PPI::Document->new( \$content );
 
@@ -689,7 +686,7 @@ sub _is_already_imported {
     my $duplicate = 0;
 
     foreach my $module (
-        grep { $_ ne $self->_module_name }
+        grep { $_ ne $self->module_name }
         keys %{ $self->_document->original_imports }
     ) {
         $self->logger->debug(
