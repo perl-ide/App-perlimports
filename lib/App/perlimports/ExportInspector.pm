@@ -354,7 +354,7 @@ sub _pkg_for {
 
     return sprintf(
         'Local::%s::%s::%s::%s', __PACKAGE__, 'imported', $self->_module_name,
-        'implicit'
+        $suffix
     );
 }
 
