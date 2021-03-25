@@ -698,14 +698,13 @@ sub _is_already_imported {
             )
         ) {
             @imports = @{ $self->_document->original_imports->{$module} };
-            $self->logger->debug(
-                'Explicit imports found: ' . Dumper(@imports) );
+            $self->logger->debug( 'Explicit imports found: ' . np(@imports) );
         }
         else {
             if ( my $inspector = $self->_document->inspector_for($module) ) {
                 @imports = $inspector->implicit_export_names;
                 $self->logger->debug(
-                    'Implicit imports found: ' . Dumper(@imports) );
+                    'Implicit imports found: ' . np(@imports) );
             }
         }
 
