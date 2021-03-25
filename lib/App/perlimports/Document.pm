@@ -92,8 +92,12 @@ has _never_export_modules => (
 );
 
 has original_imports => (
-    is      => 'ro',
-    isa     => HashRef,
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        _reset_original_import => 'set',
+    },
     lazy    => 1,
     builder => '_build_original_imports',
 );
@@ -268,6 +272,11 @@ sub _build_ppi_document {
 #     'Data::Dumper' => ['Dumper'],
 #     POSIX => [],
 # }
+#
+# The name is a bit of a misnomer. It starts out as a list of original imports,
+# but with each include that gets processed, this list also gets updated. We do
+# this so that we can keep track of what previous modules are really importing.
+# Might not be bad to rename this.
 
 sub _build_original_imports {
     my $self = shift;
@@ -289,28 +298,49 @@ sub _build_original_imports {
         my $pkg = $include->module;
         $imports{$pkg} = undef unless exists $imports{$pkg};
 
-        next if $self->_is_ignored($pkg);
+        # this is probably wrong
+        #next if $self->_is_ignored($pkg);
 
-        for my $child ( $include->schildren ) {
-            if ( $child->isa('PPI::Structure::List')
-                && !$imports{$pkg} ) {
-                $imports{$pkg} = [];
-            }
-            if (   !$child->isa('PPI::Token::QuoteLike::Words')
-                && !$child->isa('PPI::Token::Quote::Single') ) {
-                next;
-            }
-            my @imports = $child->literal;
-            if ( exists $imports{$pkg} ) {
-                push( @{ $imports{$pkg} }, $child->literal );
+        # If a module has been included multiple times, we want to have a
+        # cumulative tally of what has been explicitly imported.
+        my $found = $self->_imports_for_include($include);
+        if ($found) {
+            if ( $imports{$pkg} ) {
+                push @{ $imports{$pkg} }, @{$found};
             }
             else {
-                $imports{$pkg} = [ $child->literal ];
+                $imports{$pkg} = $found;
             }
         }
     }
 
     return \%imports;
+}
+
+sub _imports_for_include {
+    my $self    = shift;
+    my $include = shift;
+
+    my $imports = undef;
+
+    for my $child ( $include->schildren ) {
+        if ( $child->isa('PPI::Structure::List')
+            && !defined $imports ) {
+            $imports = [];
+        }
+        if (   !$child->isa('PPI::Token::QuoteLike::Words')
+            && !$child->isa('PPI::Token::Quote::Single') ) {
+            next;
+        }
+        my @imports = $child->literal;
+        if ( defined $imports ) {
+            push( @{$imports}, $child->literal );
+        }
+        else {
+            $imports = [ $child->literal ];
+        }
+    }
+    return $imports;
 }
 
 sub _build_interpolated_symbols {
@@ -550,6 +580,26 @@ sub tidied_document {
         else {
             $include->remove;
             $processed{ $include->module } = 1;
+
+            $self->logger->info("resetting imports for |$elem|");
+
+            # Now reset original_imports so that we can account for any changes
+            # when processing includes further down the list.
+            my $doc = PPI::Document->new( \"$elem" );
+
+            if ( !$doc ) {
+                $self->logger->error("PPI could not parse $elem");
+            }
+            else {
+                my $new_include
+                    = $doc->find(
+                    sub { $_[1]->isa('PPI::Statement::Include') } );
+
+                $self->_reset_original_import(
+                    $include->module,
+                    $self->_imports_for_include( $new_include->[0] )
+                );
+            }
         }
     }
 

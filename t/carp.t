@@ -58,6 +58,12 @@ use Carp qw( croak );
 croak('oof');
 EOF
 
+    is_deeply(
+        $doc->original_imports->{Carp},
+        undef,
+        'original imports'
+    );
+
     is(
         $doc->tidied_document,
         $expected,
@@ -65,9 +71,9 @@ EOF
     );
 
     is_deeply(
-        $doc->original_imports->{Carp},
-        undef,
-        'original imports'
+        $doc->original_imports,
+        { Carp => ['croak'] },
+        'original imports updated'
     );
 };
 
