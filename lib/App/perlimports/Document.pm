@@ -131,6 +131,13 @@ has _preserve_duplicates => (
     default  => 1,
 );
 
+has _preserve_unused => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'preserve_unused',
+    default  => 1,
+);
+
 has _sub_names => (
     is          => 'ro',
     isa         => HashRef,
@@ -503,6 +510,24 @@ sub _has_import_switches {
     return 0;
 }
 
+sub _is_used_fully_qualified {
+    my $self        = shift;
+    my $module_name = shift;
+
+    # We could tighten this up and check that the word following "::" is a sub
+    # which exists in that package.
+    return !!$self->ppi_document->find(
+        sub {
+            $_[1]->isa('PPI::Token::Word')
+                && (
+                $_[1]->content =~ m{\A${module_name}::[a-zA-Z_]}
+                || (   $_[1]->content eq ${module_name}
+                    && $_[1]->snext_sibling eq '->' )
+                );
+        }
+    );
+}
+
 sub _is_ignored {
     my $self   = shift;
     my $module = shift;
@@ -577,6 +602,25 @@ sub tidied_document {
             $self->logger->error($include);
             $self->logger->error($_);
         };
+
+        # If this is a module with bare imports which is not used anywhere,
+        # maybe we can just remove it.
+        if ( !$self->_preserve_unused ) {
+            my @args = $elem->arguments;
+
+            if (   $args[0]
+                && $args[0] eq '()'
+                && !$self->_is_used_fully_qualified( $include->module ) ) {
+                $self->logger->info( 'Removing '
+                        . $include->module
+                        . ' as it appears to be unused' );
+                if ( $include->next_sibling eq "\n" ) {
+                    $include->next_sibling->remove;
+                }
+                $include->remove;
+                next;
+            }
+        }
 
         next unless $elem;
 

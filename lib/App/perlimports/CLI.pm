@@ -106,6 +106,12 @@ sub _build_args {
             { default => 1 },
         ],
         [],
+        [
+            'preserve-unused!',
+            'preserve use statements for modules which appear to be unused',
+            { default => 1 },
+        ],
+        [],
         [],
         [ 'version', 'Print installed version', { shortcircuit => 1 } ],
         [
@@ -209,6 +215,7 @@ sub run {
                 logger              => $logger,
                 padding             => $opts->padding,
                 preserve_duplicates => $opts->preserve_duplicates,
+                preserve_unused     => $opts->preserve_unused,
                 $input ? ( selection => $input ) : (),
             );
 
