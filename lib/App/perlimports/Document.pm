@@ -124,6 +124,13 @@ has _ppi_selection => (
     default  => sub { $_[0]->ppi_document },
 );
 
+has _preserve_duplicates => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'preserve_duplicates',
+    default  => 1,
+);
+
 has _sub_names => (
     is          => 'ro',
     isa         => HashRef,
@@ -540,7 +547,8 @@ sub tidied_document {
     foreach my $include ( $self->all_includes ) {
 
         # If a module is used more than once, that's usually a mistake.
-        if ( exists $processed{ $include->module } ) {
+        if ( !$self->_preserve_duplicates
+            && exists $processed{ $include->module } ) {
             $self->logger->info( $include->module
                     . ' has already been used. Removing at line '
                     . $include->line_number );

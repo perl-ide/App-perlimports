@@ -93,12 +93,17 @@ sub _build_args {
             'padding!',
             'pad imports: qw( foo bar ) vs qw(foo bar). Defaults to true',
             { default => 1 },
-
         ],
         [],
         [
             'read-stdin',
             'Read statements to process from STDIN rather than the supplied file',
+        ],
+        [],
+        [
+            'preserve-duplicates!',
+            'preserve duplicate use statements for the same module',
+            { default => 1 },
         ],
         [],
         [],
@@ -201,8 +206,9 @@ sub run {
                 @{ $self->_never_exports }
                 ? ( never_export_modules => $self->_never_exports )
                 : (),
-                logger  => $logger,
-                padding => $opts->padding,
+                logger              => $logger,
+                padding             => $opts->padding,
+                preserve_duplicates => $opts->preserve_duplicates,
                 $input ? ( selection => $input ) : (),
             );
 

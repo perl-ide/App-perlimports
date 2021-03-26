@@ -6,11 +6,40 @@ use lib 't/lib';
 use TestHelper qw( doc );
 use Test::More;
 
-my ($doc) = doc(
-    filename => 'test-data/dupes.pl',
-);
+subtest 'preserve duplicates' => sub {
+    my ($doc) = doc(
+        filename => 'test-data/dupes.pl',
+    );
 
-my $expected = <<'EOF';
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use File::Temp qw( tempdir tempfile );
+use List::Util qw( any );
+use File::Temp qw( tempdir tempfile );
+
+sub foo {
+    my $dir  = tempdir();
+    my $file = tempfile();
+    return any { $_ > 1 } ( 0 .. 2 );
+}
+EOF
+
+    is(
+        $doc->tidied_document,
+        $expected,
+        'duplicate use statement removed'
+    );
+};
+
+subtest 'strip duplicates' => sub {
+    my ($doc) = doc(
+        filename            => 'test-data/dupes.pl',
+        preserve_duplicates => 0,
+    );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -24,10 +53,11 @@ sub foo {
 }
 EOF
 
-is(
-    $doc->tidied_document,
-    $expected,
-    'duplicate use statement removed'
-);
+    is(
+        $doc->tidied_document,
+        $expected,
+        'duplicate use statement removed'
+    );
+};
 
 done_testing;
