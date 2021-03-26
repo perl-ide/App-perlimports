@@ -187,7 +187,7 @@ sub run {
         ]
         );
 
-    $logger->info( '🚀 Starting file: ' . $opts->filename );
+    $logger->notice( '🚀 Starting file: ' . $opts->filename );
 
     # Capture STDOUT here so that 3rd party code printing to STDOUT doesn't get
     # piped back into vim.
