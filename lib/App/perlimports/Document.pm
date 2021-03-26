@@ -573,9 +573,9 @@ sub tidied_document {
             $elem = $e->formatted_ppi_statement;
         }
         catch {
-            print STDERR 'Error: ' . $self->_filename . "\n";
-            print STDERR $include;
-            print STDERR $_;
+            $self->logger->error( $self->_filename );
+            $self->logger->error($include);
+            $self->logger->error($_);
         };
 
         next unless $elem;
@@ -583,7 +583,7 @@ sub tidied_document {
         # https://github.com/adamkennedy/PPI/issues/189
         my $inserted = $include->insert_before($elem);
         if ( !$inserted ) {
-            print STDERR 'Could not insert ' . $elem;
+            $self->logger->error( 'Could not insert ' . $elem );
         }
         else {
             $include->remove;
