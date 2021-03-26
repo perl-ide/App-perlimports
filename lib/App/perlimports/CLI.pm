@@ -176,8 +176,16 @@ sub run {
     my $logger
         = $self->_has_logger
         ? $self->logger
-        : Log::Dispatch->new( outputs =>
-            [ [ 'Screen', min_level => $opts->log_level, newline => 1, ] ] );
+        : Log::Dispatch->new(
+        outputs => [
+            [
+                'Screen',
+                min_level => $opts->log_level,
+                newline   => 1,
+                utf8      => 1,
+            ]
+        ]
+        );
 
     $logger->info( '🚀 Starting file: ' . $opts->filename );
 
