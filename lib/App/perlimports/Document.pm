@@ -581,10 +581,7 @@ sub tidied_document {
             $self->logger->info( $include->module
                     . ' has already been used. Removing at line '
                     . $include->line_number );
-            if ( $include->next_sibling eq "\n" ) {
-                $include->next_sibling->remove;
-            }
-            $include->remove;
+            $self->_remove_with_trailing_characters($include);
             next;
         }
 
@@ -618,8 +615,7 @@ sub tidied_document {
                 $self->logger->info( 'Removing '
                         . $include->module
                         . ' as it appears to be unused' );
-                $self->_remove_trailing_characters($include);
-                $include->remove;
+                $self->_remove_with_trailing_characters($include);
                 next;
             }
         }
@@ -662,7 +658,7 @@ sub tidied_document {
     return $self->_ppi_selection->serialize;
 }
 
-sub _remove_trailing_characters {
+sub _remove_with_trailing_characters {
     my $self    = shift;
     my $include = shift;
 
@@ -674,6 +670,8 @@ sub _remove_trailing_characters {
         $next->remove;
         last if $next eq "\n";
     }
+    $include->remove;
+    return;
 }
 
 1;

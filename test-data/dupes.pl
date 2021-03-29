@@ -3,7 +3,7 @@ use warnings;
 
 use File::Temp qw(tempfile);
 use List::Util qw( any );
-use File::Temp qw(tempdir);
+use File::Temp qw(tempdir); # some comments
 
 sub foo {
     my $dir  = tempdir();

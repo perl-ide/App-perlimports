@@ -17,7 +17,7 @@ use warnings;
 
 use File::Temp qw( tempdir tempfile );
 use List::Util qw( any );
-use File::Temp qw( tempdir tempfile );
+use File::Temp qw( tempdir tempfile ); # some comments
 
 sub foo {
     my $dir  = tempdir();
@@ -26,8 +26,10 @@ sub foo {
 }
 EOF
 
+    my $got = $doc->tidied_document;
+
     is(
-        $doc->tidied_document,
+        $got,
         $expected,
         'duplicate use statement removed'
     );
