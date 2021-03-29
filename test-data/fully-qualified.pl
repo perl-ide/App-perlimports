@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Encode;
+use Encode;     ## no critic (Some::Policy)
 use List::Util;
 use Carp qw( croak );
 use HTTP::Tiny;

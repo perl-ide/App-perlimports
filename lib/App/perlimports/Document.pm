@@ -618,9 +618,7 @@ sub tidied_document {
                 $self->logger->info( 'Removing '
                         . $include->module
                         . ' as it appears to be unused' );
-                if ( $include->next_sibling eq "\n" ) {
-                    $include->next_sibling->remove;
-                }
+                $self->_remove_trailing_characters($include);
                 $include->remove;
                 next;
             }
@@ -662,6 +660,20 @@ sub tidied_document {
     # We need to do this in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
     return $self->_ppi_selection->serialize;
+}
+
+sub _remove_trailing_characters {
+    my $self    = shift;
+    my $include = shift;
+
+    while ( my $next = $include->next_sibling ) {
+        if (   !$next->isa('PPI::Token::Whitespace')
+            && !$next->isa('PPI::Token::Comment') ) {
+            last;
+        }
+        $next->remove;
+        last if $next eq "\n";
+    }
 }
 
 1;
