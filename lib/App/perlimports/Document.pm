@@ -70,6 +70,13 @@ has _inspectors => (
     default => sub { +{} },
 );
 
+has interpolated_symbols => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    builder => '_build_interpolated_symbols',
+);
+
 has my_own_inspector => (
     is      => 'ro',
     isa     => Maybe [ InstanceOf ['App::perlimports::ExportInspector'] ],
@@ -149,11 +156,10 @@ has _sub_names => (
     builder => '_build_sub_names',
 );
 
-has interpolated_symbols => (
+has tidied_document => (
     is      => 'ro',
-    isa     => HashRef,
     lazy    => 1,
-    builder => '_build_interpolated_symbols',
+    builder => '_build_tidied_document',
 );
 
 has _verbose => (
@@ -568,7 +574,7 @@ sub inspector_for {
     return $self->_get_inspector_for($module);
 }
 
-sub tidied_document {
+sub _build_tidied_document {
     my $self = shift;
 
     my %processed;
