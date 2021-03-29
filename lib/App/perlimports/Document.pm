@@ -518,12 +518,16 @@ sub _is_used_fully_qualified {
     # which exists in that package.
     return !!$self->ppi_document->find(
         sub {
-            $_[1]->isa('PPI::Token::Word')
-                && (
-                $_[1]->content =~ m{\A${module_name}::[a-zA-Z_]}
-                || (   $_[1]->content eq ${module_name}
-                    && $_[1]->snext_sibling eq '->' )
-                );
+            (
+                $_[1]->isa('PPI::Token::Word')
+                    && (
+                    $_[1]->content =~ m{\A${module_name}::[a-zA-Z_]}
+                    || (   $_[1]->content eq ${module_name}
+                        && $_[1]->snext_sibling eq '->' )
+                    )
+                )
+                || ( $_[1]->isa('PPI::Token::Symbol')
+                && $_[1] =~ m{\A[*]+${module_name}::[a-zA-Z_]} );
         }
     );
 }
