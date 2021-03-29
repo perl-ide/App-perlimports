@@ -316,7 +316,6 @@ EOF
             $level = 'warning';
         }
 
-        print 'level: ' . $level . "\n\n";
         $logger->log(
             level   => $level,
             message => sprintf(
