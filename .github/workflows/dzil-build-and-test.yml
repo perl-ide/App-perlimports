@@ -36,6 +36,7 @@ jobs:
   integration-job:
     needs: build-job
     runs-on: ubuntu-20.04
+    timeout-minutes: 15
     container:
       image: perldocker/perl-tester:5.32
     strategy:
