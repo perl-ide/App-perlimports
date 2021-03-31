@@ -58,6 +58,15 @@ if ( @{ $ei->class_isa } ) {
     print $t->draw;
 }
 
+if ( @{ $ei->pkg_isa } ) {
+    my $t = Text::SimpleTable::AutoWidth->new();
+    $t->captions( ['Package ISA'] );
+    for my $class ( @{ $ei->pkg_isa } ) {
+        $t->row($class);
+    }
+    print $t->draw;
+}
+
 if ( @{ $ei->at_export_tags } ) {
     my %tags = %{ $ei->at_export_tags };
     my @keys = keys %tags;
