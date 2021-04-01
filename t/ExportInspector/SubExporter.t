@@ -60,7 +60,7 @@ subtest 'ViaSubExporter' => sub {
 };
 
 subtest 'MyOwnMoose' => sub {
-    my ($inspector) = inspector('Local::MyOwnMoose');
+    my ( $inspector, $log ) = inspector('Local::MyOwnMoose');
 
     is_deeply(
         $inspector->implicit_exports,
@@ -85,26 +85,39 @@ subtest 'MyOwnMoose' => sub {
 };
 
 subtest 'MetaCPAN::Moose' => sub {
-    my ($inspector) = inspector('MetaCPAN::Moose');
+    my ( $inspector, $log ) = inspector('MetaCPAN::Moose');
+    my $expected_export_list = {
+        after    => 'after',
+        around   => 'around',
+        augment  => 'augment',
+        before   => 'before',
+        blessed  => 'blessed',
+        confess  => 'confess',
+        extends  => 'extends',
+        has      => 'has',
+        inner    => 'inner',
+        isa      => 'isa',
+        meta     => 'meta',
+        override => 'override',
+        super    => 'super',
+        with     => 'with',
+    };
 
     is_deeply(
         $inspector->implicit_exports,
-        {
-            after    => 'after',
-            around   => 'around',
-            augment  => 'augment',
-            before   => 'before',
-            blessed  => 'blessed',
-            confess  => 'confess',
-            extends  => 'extends',
-            has      => 'has',
-            inner    => 'inner',
-            isa      => 'isa',
-            meta     => 'meta',
-            override => 'override',
-            super    => 'super',
-            with     => 'with',
-        },
+        $expected_export_list,
+        'exports'
+    );
+
+    ok( $inspector->uses_import_into, 'uses_import_into' );
+
+    ( $inspector, $log ) = inspector('MetaCPAN::Moose');
+
+    # Test again to ensure code can still run after removing and re-importing
+    # Import::Into.
+    is_deeply(
+        $inspector->implicit_exports,
+        $expected_export_list,
         'exports'
     );
 };

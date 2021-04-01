@@ -61,8 +61,16 @@ subtest 'Test::Most' => sub {
 
 subtest 'List::Util' => sub {
     my ( $ei, $log ) = ei('List::Util');
-    ok( !$ei->has_implicit_exports, 'found no export' );
-    ok( $ei->has_explicit_exports,  'found explicit_exports' );
+
+    # It does override $a and $b, but I'm not sure if that's helpful for our
+    # purposes.
+    is_deeply(
+        $ei->implicit_exports,
+        {},
+        'no implicit exports'
+    );
+
+    ok( $ei->has_explicit_exports, 'found explicit_exports' );
 };
 
 # UsesMoose.pm literally just includes a "use Moose;"

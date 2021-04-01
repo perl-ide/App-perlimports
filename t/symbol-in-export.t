@@ -4,10 +4,10 @@ use warnings;
 use lib 'test-data/lib', 't/lib';
 
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is', 'is_deeply' ];
+use Test::More import => [ 'diag', 'done_testing', 'is' ];
 use Test::Needs qw( HTTP::Status );
 
-my ($doc) = doc(
+my ( $doc, $log ) = doc(
     filename  => 'test-data/lib/Local/SymbolInExport.pm',
     selection => 'use HTTP::Request::Common;',
 );
