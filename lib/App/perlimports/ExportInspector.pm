@@ -7,16 +7,15 @@ use Moo;
 our $VERSION = '0.000001';
 
 use Class::Inspector ();
+use Class::Unload    ();
+use Data::Printer;
 use List::Util qw( any );
+use Log::Dispatch::Array ();
+use Module::Runtime qw( require_module );
 use Sub::HandlesVia;
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';
-
-sub BUILD {
-    my ( $self, $args ) = @_;
-    $self->implicit_exports;
-}
 
 has at_export => (
     is          => 'ro',
@@ -26,10 +25,7 @@ has at_export => (
     handles     => {
         has_at_export => 'count',
     },
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_module_name . '::EXPORT' } ];
-    },
+    default => sub { shift->_implicit->{export} },
 );
 
 has at_export_ok => (
@@ -41,50 +37,35 @@ has at_export_ok => (
         all_at_export_ok => 'elements',
         has_at_export_ok => 'count',
     },
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_module_name . '::EXPORT_OK' } ];
-    },
+    default => sub { shift->_implicit->{export_ok} },
 );
 
 has at_export_fail => (
     is      => 'ro',
     isa     => ArrayRef [Str],
     lazy    => 1,
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_module_name . '::EXPORT_FAIL' } ];
-    },
+    default => sub { shift->_implicit->{export_fail} },
 );
 
 has at_export_tags => (
     is      => 'ro',
     isa     => ArrayRef [Str],
     lazy    => 1,
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_module_name . '::EXPORT_TAGS' } ];
-    },
+    default => sub { shift->_implicit->{export_tags} },
 );
 
 has class_isa => (
     is      => 'ro',
     isa     => ArrayRef [Str],
     lazy    => 1,
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_module_name . '::ISA' } ];
-    },
+    default => sub { shift->_implicit->{class_isa} },
 );
 
-has pkg_isa => (
+has _implicit => (
     is      => 'ro',
-    isa     => ArrayRef [Str],
+    isa     => HashRef,
     lazy    => 1,
-    default => sub {
-        no strict 'refs';
-        return [ @{ shift->_pkg_for('implicit') . '::ISA' } ];
-    },
+    builder => '_build_implicit',
 );
 
 has import_flags => (
@@ -131,6 +112,14 @@ has implicit_exports => (
     builder => '_build_implicit_exports',
 );
 
+sub _build_implicit_exports {
+    my $self = shift;
+    my $pkg  = $self->_pkg_for('implicit');
+    return $self->is_exporter
+        ? $self->_list_to_hash( $pkg, $self->at_export )
+        : $self->_list_to_hash( $pkg, $self->_implicit->{_maybe_exports} );
+}
+
 has is_moose_class => (
     is      => 'ro',
     isa     => Bool,
@@ -159,6 +148,23 @@ has _module_name => (
     required => 1,
 );
 
+has pkg_isa => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    lazy    => 1,
+    default => sub {
+        no strict 'refs';
+        return [ @{ shift->_pkg_for('implicit') . '::ISA' } ];
+    },
+);
+
+has uses_import_into => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_uses_import_into',
+);
+
 sub _build_explicit_exports {
     my $self = shift;
 
@@ -179,7 +185,7 @@ sub _build_explicit_exports {
         $self->_exports_for_include( $pkg, $use_statement )
     );
 
-    # If this module uses ssomething other than Exporter or Sub::Exporter, we
+    # If this module uses something other than Exporter or Sub::Exporter, we
     # probably returned an empty hash above.  We could guess and say it's the
     # default exports + possibly something else.  It's probably less confusing
     # to leave it up to the code which uses this object to decide how to handle
@@ -202,6 +208,7 @@ sub _build_import_flags {
 
 sub _build_is_exporter {
     my $self = shift;
+
     return 1 if any { $_ eq 'Exporter' } @{ $self->class_isa };
     return $self->has_at_export || $self->has_at_export_ok ? 1 : 0;
 }
@@ -225,8 +232,7 @@ sub _list_to_hash {
     my $pkg  = shift;
     my $list = shift;
 
-    use DDP;
-    $self->logger->debug( np($list) );
+    $self->logger->debug( 'list to hash: ' . $pkg . "\n" . np($list) );
 
     my %hash;
     for my $item ( @{$list} ) {
@@ -263,19 +269,59 @@ sub _list_to_hash {
     return \%hash;
 }
 
-sub _build_implicit_exports {
+sub _build_implicit {
     my $self = shift;
     my $pkg  = $self->_pkg_for('implicit');
 
     my $module_name   = $self->_module_name;
     my $use_statement = "use $module_name;";
+
     my $maybe_exports = $self->_exports_for_include( $pkg, $use_statement );
 
-    if ( $self->is_exporter ) {
-        return $self->_list_to_hash( $pkg, $self->at_export );
-    }
+    no strict 'refs';
+    my $aggregated = {
+        class_isa      => [ @{ $self->_module_name . '::ISA' } ],
+        export         => [ @{ $self->_module_name . '::EXPORT' } ],
+        export_fail    => [ @{ $self->_module_name . '::EXPORT_FAIL' } ],
+        export_ok      => [ @{ $self->_module_name . '::EXPORT_OK' } ],
+        export_tags    => [ @{ $self->_module_name . '::EXPORT_TAGS' } ],
+        _maybe_exports => $maybe_exports,
+    };
 
-    return $self->_list_to_hash( $pkg, $maybe_exports );
+    return $aggregated;
+}
+
+sub _build_uses_import_into {
+    my $self           = shift;
+    my $already_loaded = Class::Inspector->loaded('Import::Into');
+    if ($already_loaded) {
+
+        #Class::Unload->unload ($self->_module_name );
+        Class::Unload->unload('Import::Into');
+        delete $import::{into};
+        delete $unimport::{out_of};
+    }
+    my $pkg           = $self->_pkg_for('uses::import::into');
+    my $use_statement = sprintf( 'use %s;', $self->_module_name );
+
+    my @log;
+    $self->logger->add(
+        Log::Dispatch::Array->new(
+            name      => 'import_into_logger',
+            min_level => 'warning',
+            array     => \@log,
+        )
+    );
+    $self->_exports_for_include( $pkg, $use_statement );
+
+    my $uses_import_into = Class::Inspector->loaded('Import::Into')
+        || any { $_->{message} =~ q{"into" via package "import"} } @log;
+
+    if ( $already_loaded && !$uses_import_into ) {
+        require_module('Import::Into');
+        Import::Into->import;
+    }
+    return $uses_import_into;
 }
 
 sub _exports_for_include {
