@@ -400,7 +400,10 @@ sub _build_is_ignored {
                 || [] };
     }
 
-    return any { $_ eq 'Moo::Object' } @{ $self->_export_inspector->pkg_isa };
+    return 1
+        if any { $_ eq 'Moo::Object' } @{ $self->_export_inspector->pkg_isa };
+
+    return $self->_export_inspector->uses_import_into ? 1 : 0;
 }
 
 sub _build_is_translatable {
