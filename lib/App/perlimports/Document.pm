@@ -6,6 +6,7 @@ use utf8;
 our $VERSION = '0.000001';
 
 use App::perlimports::Include ();
+use Data::Printer;
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
 use Module::Runtime qw( module_notional_filename );
@@ -605,9 +606,10 @@ sub _build_tidied_document {
             $elem = $e->formatted_ppi_statement;
         }
         catch {
-            $self->logger->error( $self->_filename );
-            $self->logger->error($include);
-            $self->logger->error($_);
+            my $error = $_;
+            $self->logger->error( 'Error in ' . $self->_filename );
+            $self->logger->error( 'Trying to format: ' . $include );
+            $self->logger->error( 'Error is: ' . np($error) );
         };
 
         # If this is a module with bare imports which is not used anywhere,
