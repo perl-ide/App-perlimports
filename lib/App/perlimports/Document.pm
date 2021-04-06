@@ -204,6 +204,7 @@ my %default_ignore = (
     'namespace::autoclean'           => 1,
     'Regexp::Common'                 => 1,
     'Sub::Exporter'                  => 1,
+    'Sub::Exporter::Progressive'     => 1,
     'Sub::HandlesVia'                => 1,
     'Test2::Util::HashBase'          => 1,
     'Test::Exception'                => 1,
