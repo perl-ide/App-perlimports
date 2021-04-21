@@ -120,18 +120,17 @@ jobs:
         #os: [ubuntu-20.04, macos-latest, windows-latest]
         os: [ubuntu-20.04]
         perl-version:
-          #- "5.8"
-          #- "5.10"
-          #- "5.12"
-          #- "5.14"
-          #- "5.16"
-          #- "5.18"
-          #- "5.20"
-          #- "5.22"
-          #- "5.24"
-          #- "5.26"
-          #- "5.28"
-          #- "5.30"
+          - "5.10"
+          - "5.12"
+          - "5.14"
+          - "5.16"
+          - "5.18"
+          - "5.20"
+          - "5.22"
+          - "5.24"
+          - "5.26"
+          - "5.28"
+          - "5.30"
           - "5.32"
         exclude:
           - os: windows-latest
@@ -154,15 +153,13 @@ jobs:
           path: .
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
+        continue-on-error: true
       - name: install deps using cpm
         uses: perl-actions/install-with-cpm@v1
         with:
           cpanfile: "cpanfile"
-          args: "--with-suggests --with-recommends --with-test --with-develop"
-      - run: prove -lr t xt
-        env:
-          AUTHOR_TESTING: 1
-          RELEASE_TESTING: 1
+          args: "--with-suggests --with-test --with-develop"
+      - run: prove -lr t
   test-needs-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
