@@ -1,5 +1,6 @@
 /App-perlimports*
 .build
+fatlib
 local/
 .ppi_build/
 *.sw*
