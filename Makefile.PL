@@ -69,7 +69,7 @@ my %WriteMakefileArgs = (
     "Test::RequiresInternet" => 0,
     "Test::Warnings" => 0
   },
-  "VERSION" => "0.000002",
+  "VERSION" => "0.000003",
   "test" => {
     "TESTS" => "t/*.t t/ExportInspector/*.t t/cpan-modules/*.t"
   }
