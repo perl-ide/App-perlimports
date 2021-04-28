@@ -5,7 +5,7 @@ use warnings;
 
 use Capture::Tiny qw( capture );
 use Test::More import => [ 'diag', 'done_testing', 'like', 'ok', 'subtest' ];
-use Test::Needs qw( Moose Moo );
+use Test::Needs qw( Moose );
 
 subtest 'Moose' => sub {
     my ( undef, $stderr ) = capture {
