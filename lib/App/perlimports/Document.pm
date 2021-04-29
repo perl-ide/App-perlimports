@@ -3,7 +3,7 @@ package App::perlimports::Document;
 use Moo;
 use utf8;
 
-our $VERSION = '0.000003';
+our $VERSION = '0.000004';
 
 use App::perlimports::Include ();
 use Data::Printer;
