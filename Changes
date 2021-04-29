@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Fix t/dump-perl-exports.t, which was sometimes testing against the wrong
+      perl.
 
 0.000002  2021-04-22 20:35:47Z
     - Add test-data to no_index directories.
