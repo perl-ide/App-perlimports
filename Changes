@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000004  2021-04-30 21:40:35Z
+    - Be explicit about more module versions in tests.
 
 0.000003  2021-04-29 03:00:10Z
     - Fix t/dump-perl-exports.t, which was sometimes testing against the wrong

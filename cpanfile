@@ -48,7 +48,7 @@ on 'test' => sub {
   requires "Test::Most" => "0";
   requires "Test::Needs" => "0";
   requires "Test::RequiresInternet" => "0";
-  requires "Test::Script" => "0";
+  requires "Test::Script" => "1.27";
   requires "Test::Warnings" => "0";
   requires "perl" => "5.008";
 };
