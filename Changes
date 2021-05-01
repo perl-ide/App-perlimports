@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Require a minimum Data::Printer version of 0.36.
 
 0.000004  2021-04-30 21:40:35Z
     - Be explicit about more module versions in tests.
