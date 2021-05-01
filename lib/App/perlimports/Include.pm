@@ -2,7 +2,7 @@ package App::perlimports::Include;
 
 use Moo;
 
-our $VERSION = '0.000005';
+our $VERSION = '0.000006';
 
 use App::perlimports::ExportInspector ();
 use Class::Inspector                  ();
