@@ -7,7 +7,6 @@ requires "Class::Unload" => "0";
 requires "Data::Dumper" => "0";
 requires "Data::Printer" => "0.36";
 requires "File::Basename" => "0";
-requires "FindBin" => "0";
 requires "Getopt::Long::Descriptive" => "0";
 requires "List::Util" => "0";
 requires "Log::Dispatch" => "0";
@@ -29,7 +28,6 @@ requires "Symbol::Get" => "0.10";
 requires "Text::SimpleTable::AutoWidth" => "0";
 requires "Try::Tiny" => "0";
 requires "Types::Standard" => "0";
-requires "lib" => "0";
 requires "perl" => "5.008";
 requires "strict" => "0";
 requires "utf8" => "0";
@@ -50,6 +48,7 @@ on 'test' => sub {
   requires "Test::RequiresInternet" => "0";
   requires "Test::Script" => "1.27";
   requires "Test::Warnings" => "0";
+  requires "lib" => "0";
   requires "perl" => "5.008";
 };
 

@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000006  2021-05-04 22:28:39Z
     - Support ## no perlimports and ## use perlimports annotations (GH#5) (Olaf
       Alders)
     - Update docs to include --[no-]preserve-duplicates and
