@@ -1,6 +1,12 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Support ## no perlimports and ## use perlimports annotations (GH#5) (Olaf
+      Alders)
+    - Update docs to include --[no-]preserve-duplicates and
+      --[no-]preserve-unused
+    - Update docs on log-level
+    - Remove FindBin as a runtime dependency
 
 0.000005  2021-05-01 16:49:07Z
     - Require a minimum Data::Printer version of 0.36.
