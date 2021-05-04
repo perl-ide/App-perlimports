@@ -18,7 +18,9 @@ use Types::Standard;
 1;
 EOF
 
-ok( $doc->_is_ignored('Types::Standard'), 'is_ignored flag set' );
+my $includes = $doc->ppi_document->find('PPI::Statement::Include');
+is( $includes->[0]->module, 'Types::Standard' );
+ok( $doc->_is_ignored( $includes->[0] ), 'is_ignored flag set' );
 is( $doc->tidied_document, $expected, 'Types::Standard is ignored' );
 
 done_testing();
