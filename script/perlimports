@@ -283,7 +283,7 @@ $fatpacked{"PPI/Token/Pod.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'P
 PPI_TOKEN_POD
 
 $fatpacked{"PPI/Token/Prototype.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'PPI_TOKEN_PROTOTYPE';
-  package PPI::Token::Prototype;use strict;use PPI::Token ();our$VERSION='1.271';our@ISA="PPI::Token";sub __TOKENIZER__on_char {my$class=shift;my$t=shift;pos$t->{line}=$t->{line_cursor};die "regex should always match" if$t->{line}!~ m/\G(.*?(?:\)|$))/gc;$t->{token}->{content}.= $1;$t->{line_cursor}+= length $1;return 0 unless $1 =~ /\)$/;$t->_finalize_token->__TOKENIZER__on_char($t)}sub prototype {my$self=shift;my$proto=$self->content;$proto =~ s/(^\(|\)$|\s+)//g;$proto}1;
+  package PPI::Token::Prototype;use strict;use PPI::Token ();our$VERSION='1.271';our@ISA="PPI::Token";sub __TOKENIZER__on_char {my$class=shift;my$t=shift;pos$t->{line}=$t->{line_cursor};die "regex should always match" if$t->{line}!~ m/\G(.*?\n?(?:\)|$))/gc;$t->{token}->{content}.= $1;$t->{line_cursor}+= length $1;return 0 unless $1 =~ /\)$/;$t->_finalize_token->__TOKENIZER__on_char($t)}sub prototype {my$self=shift;my$proto=$self->content;$proto =~ s/(^\(|\)$|\s+)//g;$proto}1;
 PPI_TOKEN_PROTOTYPE
 
 $fatpacked{"PPI/Token/Quote.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'PPI_TOKEN_QUOTE';
@@ -461,9 +461,6 @@ unshift @INC, bless \%fatpacked, $class;
 
 use strict;
 use warnings;
-
-use FindBin qw( $Bin );
-use lib "$Bin/../lib";
 
 use App::perlimports::CLI ();
 
