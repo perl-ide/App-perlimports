@@ -45,7 +45,9 @@ EOF
         $expected,
         'module ignored'
     );
-    ok( $doc->_is_ignored('Geo::IP'), 'Geo::IP flagged as ignored' );
+    my $includes = $doc->ppi_document->find('PPI::Statement::Include');
+    is( $includes->[2]->module, 'Geo::IP' );
+    ok( $doc->_is_ignored( $includes->[2] ), 'Geo::IP flagged as ignored' );
 }
 
 done_testing();

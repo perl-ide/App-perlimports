@@ -5,7 +5,8 @@ use utf8;
 
 our $VERSION = '0.000006';
 
-use App::perlimports::Include ();
+use App::perlimports::Annotations ();
+use App::perlimports::Include     ();
 use Data::Printer;
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
@@ -20,6 +21,16 @@ use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
 with 'App::perlimports::Role::Logger';
+
+has _annotations => (
+    is      => 'ro',
+    isa     => InstanceOf ['App::perlimports::Annotations'],
+    lazy    => 1,
+    default => sub {
+        return App::perlimports::Annotations->new(
+            ppi_document => shift->ppi_document );
+    },
+);
 
 has _export_list => (
     is          => 'ro',
@@ -272,7 +283,7 @@ sub _build_includes {
                 && $_[1]->type
                 && ( $_[1]->type eq 'use'
                 || $_[1]->type eq 'require' )
-                && !$self->_is_ignored( $_[1]->module )
+                && !$self->_is_ignored( $_[1] )
                 && !$self->_has_import_switches( $_[1]->module );
         }
     ) || [];
@@ -543,11 +554,13 @@ sub _is_used_fully_qualified {
 }
 
 sub _is_ignored {
-    my $self   = shift;
-    my $module = shift;
+    my $self    = shift;
+    my $element = shift;
 
-    return exists $default_ignore{$module}
-        || exists $self->_ignore_modules->{$module};
+    return
+           exists $default_ignore{ $element->module }
+        || exists $self->_ignore_modules->{ $element->module }
+        || $self->_annotations->is_ignored($element);
 }
 
 sub inspector_for {
