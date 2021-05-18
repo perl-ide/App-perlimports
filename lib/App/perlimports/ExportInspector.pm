@@ -365,7 +365,7 @@ EOF
         $logger->log(
             level   => $level,
             message => sprintf(
-                "Problem trying to eval %s:\n%s",
+                "Problem trying to eval %s\n%s",
                 $pkg,
                 $msg,
             ),
