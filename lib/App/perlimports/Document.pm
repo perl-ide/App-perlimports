@@ -227,6 +227,7 @@ my %default_ignore = (
     'Test::Pod::Coverage'            => 1,
     'Test::Requires::Git'            => 1,
     'Test::RequiresInternet'         => 1,
+    'Test::Warnings'                 => 1,
     'Test::XML'                      => 1,
     'Types::Standard'                => 1,
 );
