@@ -228,6 +228,7 @@ my %default_ignore = (
     'Test::Requires::Git'            => 1,
     'Test::RequiresInternet'         => 1,
     'Test::Warnings'                 => 1,
+    'Test::Whitespaces'              => 1,
     'Test::XML'                      => 1,
     'Types::Standard'                => 1,
 );
