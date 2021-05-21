@@ -7,7 +7,6 @@ our $VERSION = '0.000007';
 
 use App::perlimports::Annotations ();
 use App::perlimports::Include     ();
-use Data::Printer;
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
 use Module::Runtime qw( module_notional_filename );
@@ -664,7 +663,7 @@ sub _build_tidied_document {
             my $error = $_;
             $self->logger->error( 'Error in ' . $self->_filename );
             $self->logger->error( 'Trying to format: ' . $include );
-            $self->logger->error( 'Error is: ' . np($error) );
+            $self->logger->error( 'Error is: ' . $error );
         };
 
         # If this is a module with bare imports which is not used anywhere,

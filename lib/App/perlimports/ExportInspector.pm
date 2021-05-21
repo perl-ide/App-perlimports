@@ -8,7 +8,7 @@ our $VERSION = '0.000007';
 
 use Class::Inspector ();
 use Class::Unload    ();
-use Data::Printer;
+use Data::Dumper qw( Dumper );
 use List::Util qw( any );
 use Log::Dispatch::Array ();
 use Module::Runtime qw( require_module );
@@ -232,7 +232,7 @@ sub _list_to_hash {
     my $pkg  = shift;
     my $list = shift;
 
-    $self->logger->debug( 'list to hash: ' . $pkg . "\n" . np($list) );
+    $self->logger->debug( 'list to hash: ' . $pkg . "\n" . Dumper($list) );
 
     my %hash;
     for my $item ( @{$list} ) {
