@@ -308,9 +308,8 @@ sub _build_includes {
 }
 
 sub _build_ppi_document {
-    my $self    = shift;
-    my $content = path( $self->_filename )->slurp;
-    return PPI::Document->new( \$content );
+    my $self = shift;
+    return PPI::Document->new( $self->_filename );
 }
 
 # Create a key for every included module.
