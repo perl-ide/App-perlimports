@@ -8,6 +8,7 @@ use App::perlimports::ExportInspector ();
 use Class::Inspector                  ();
 use Data::Dumper qw( Dumper );
 use List::Util qw( any none uniq );
+use Memoize qw( memoize );
 use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
@@ -19,6 +20,8 @@ use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
 with 'App::perlimports::Role::Logger';
+
+memoize('is_function_call');
 
 has _explicit_exports => (
     is          => 'ro',
