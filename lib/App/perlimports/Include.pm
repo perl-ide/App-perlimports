@@ -142,10 +142,7 @@ has _will_never_export => (
 
 sub _build_export_inspector {
     my $self = shift;
-    return App::perlimports::ExportInspector->new(
-        logger      => $self->logger,
-        module_name => $self->module_name,
-    );
+    return $self->_document->inspector_for( $self->module_name );
 }
 
 # If we have implicit (but not explicit) exports,  we will make a best guess at
