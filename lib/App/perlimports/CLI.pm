@@ -12,7 +12,6 @@ use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( uniq );
 use Log::Dispatch ();
 use Path::Tiny qw( path );
-use Pod::Usage qw( pod2usage );
 use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
 
 has _args => (
@@ -175,7 +174,8 @@ sub run {
 
     if ( $opts->verbose_help ) {
         print $self->_usage->text;
-        print pod2usage();
+        require Pod::Usage;    ## no perlimports
+        print Pod::Usage::pod2usage();
         return;
     }
 
