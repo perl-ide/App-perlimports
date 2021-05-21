@@ -178,18 +178,7 @@ sub _build_imports {
     my %found;
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
-    for my $word (
-        @{
-            $self->_document->ppi_document->find(
-                sub {
-                    $_[1]->isa('PPI::Token::Word')
-                        || $_[1]->isa('PPI::Token::Symbol')
-                        || $_[1]->isa('PPI::Token::Label');
-                }
-                )
-                || []
-        }
-    ) {
+    for my $word ( @{ $self->_document->possible_imports } ) {
         next if exists $found{"$word"};
 
         # Without the sub name check, we accidentally turn

@@ -149,6 +149,13 @@ has ppi_document => (
     builder => '_build_ppi_document',
 );
 
+has possible_imports => (
+    is      => 'ro',
+    isa     => ArrayRef [Object],
+    lazy    => 1,
+    builder => '_build_possible_imports',
+);
+
 has _ppi_selection => (
     is       => 'ro',
     isa      => Object,
@@ -303,6 +310,17 @@ sub _build_includes {
                 || $_[1]->type eq 'require' )
                 && !$self->_is_ignored( $_[1] )
                 && !$self->_has_import_switches( $_[1]->module );
+        }
+    ) || [];
+}
+
+sub _build_possible_imports {
+    my $self = shift;
+    return $self->ppi_document->find(
+        sub {
+            $_[1]->isa('PPI::Token::Word')
+                || $_[1]->isa('PPI::Token::Symbol')
+                || $_[1]->isa('PPI::Token::Label');
         }
     ) || [];
 }
