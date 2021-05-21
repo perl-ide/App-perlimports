@@ -13,7 +13,6 @@ use Module::Runtime qw( module_notional_filename );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
-use PPIx::QuoteLike ();
 use PPIx::Utils::Classification qw( is_hash_key is_method_call );
 use String::InterpolatedVariables ();
 use Sub::HandlesVia;
