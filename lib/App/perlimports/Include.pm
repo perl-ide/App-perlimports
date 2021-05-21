@@ -201,20 +201,21 @@ sub _build_imports {
         # use List::Util qw( any );
         # sub any {}
         next if $self->_document->is_sub_name("$word");
+        my $isa_symbol = $word->isa('PPI::Token::Symbol');
 
         # A hash key might, for example, be a variable.
         if (
-               is_hash_key($word)
-            && !$word->isa('PPI::Token::Symbol')
+            !$isa_symbol
             && !(
                    $word->statement
                 && $word->statement->isa('PPI::Statement::Variable')
             )
+            && is_hash_key($word)
         ) {
             next;
         }
 
-        next if is_method_call($word) && !$word->isa('PPI::Token::Symbol');
+        next if !$isa_symbol && is_method_call($word);
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
@@ -230,10 +231,11 @@ sub _build_imports {
         #
         # use Mojo::File qw( curfile );
         # use lib curfile->sibling('lib')->to_string;
+        my $is_function_call = is_function_call($word);
         if (
                $word->parent
             && $word->parent->isa('PPI::Statement::Include')
-            && (   !is_function_call($word)
+            && (   !$is_function_call
                 && !( $word->snext_sibling && $word->snext_sibling eq '->' ) )
         ) {
             next;
@@ -245,7 +247,7 @@ sub _build_imports {
         # then skip this.
         if (   defined $self->_original_imports
             && ( none { $_ eq $word } @{ $self->_original_imports } )
-            && is_function_call($word)
+            && $is_function_call
             && is_perl_builtin($word) ) {
             next;
         }
@@ -254,13 +256,13 @@ sub _build_imports {
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
-        if (   $word->isa('PPI::Token::Symbol')
+        if (   $isa_symbol
             && $self->_is_importable( $word->symbol ) ) {
             $found_import = $word->symbol;
         }
 
         # Match on \&is_Str as is_Str
-        elsif ($word->isa('PPI::Token::Symbol')
+        elsif ($isa_symbol
             && $word->symbol_type eq '&'
             && $self->_is_importable( substr( $word->symbol, 1 ) ) ) {
             $found_import = substr( $word->symbol, 1 );
@@ -283,7 +285,7 @@ sub _build_imports {
 
         # Maybe a subroutine ref has been exported. For instance,
         # Getopt::Long exports &GetOptions
-        elsif ( is_function_call($word)
+        elsif ($is_function_call
             && $self->_is_importable( '&' . $word ) ) {
             $found_import = '&' . "$word";
         }
@@ -291,7 +293,7 @@ sub _build_imports {
         # Maybe this is an inner package referencing a function in main.  We
         # don't really deal with inner packages otherwise, so this could break
         # some things.
-        elsif (is_function_call($word)
+        elsif ($is_function_call
             && $word =~ m{^::\w+}
             && $self->_is_importable( substr( $word, 2 ) ) ) {
             $found_import = substr( $word, 2 );
