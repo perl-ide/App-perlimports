@@ -67,6 +67,12 @@ sub _build_args {
         ],
         [],
         [
+            'cache!',
+            'cache some objects in order to speed up subsequent runs. Defaults to no cache.',
+            { default => 0 },
+        ],
+        [],
+        [
             'ignore-modules-filename=s',
             'Path to file listing modules to ignore. One per line.'
         ],
@@ -205,6 +211,7 @@ sub run {
     my ( $stdout, $tidied ) = capture_stdout(
         sub {
             my $pi_doc = App::perlimports::Document->new(
+                cache    => $opts->cache,
                 filename => $opts->filename,
                 @{ $self->_ignore_modules }
                 ? ( ignore_modules => $self->_ignore_modules )

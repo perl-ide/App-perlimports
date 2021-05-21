@@ -32,6 +32,21 @@ has _annotations => (
     },
 );
 
+has _cache => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'cache',
+    lazy     => 1,
+    default  => 0,
+);
+
+has _cache_dir => (
+    is      => 'ro',
+    isa     => InstanceOf ['Path::Tiny'],
+    lazy    => 1,
+    builder => '_build_cache_dir',
+);
+
 has _export_list => (
     is          => 'ro',
     isa         => ArrayRef,
@@ -578,6 +593,26 @@ sub inspector_for {
         return $self->_get_inspector_for($module);
     }
 
+    if ( $self->_cache ) {
+        require Sereal::Decoder;    ## no perlimports
+        my $decoder = Sereal::Decoder->new( {} );
+        my $file    = $self->_cache_file_for_module($module);
+        my $inspector;
+        if ( -e $file ) {
+            try {
+                $inspector = $decoder->decode_from_file($file);
+                $self->_set_inspector_for( $module, $inspector );
+            }
+            catch {
+                $self->logger->error($_);
+            };
+            if ($inspector) {
+                $self->logger->info("Using cached version of $module");
+                return $inspector;
+            }
+        }
+    }
+
     try {
         $self->_set_inspector_for(
             $module,
@@ -681,6 +716,8 @@ sub _build_tidied_document {
         }
     }
 
+    $self->_maybe_cache_inspectors;
+
     # We need to do this in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
     return $self->_ppi_selection->serialize;
@@ -699,6 +736,53 @@ sub _remove_with_trailing_characters {
         last if $next eq "\n";
     }
     $include->remove;
+    return;
+}
+
+sub _build_cache_dir {
+    my $self = shift;
+
+    my $cache_dir;
+    my $base_path
+        = defined $ENV{HOME} && -d path( $ENV{HOME}, '.cache' )
+        ? path( $ENV{HOME}, '.cache' )
+        : path('/tmp');
+
+    $cache_dir = $base_path->child( 'perlimports', $VERSION );
+    $cache_dir->mkpath;
+
+    return $cache_dir;
+}
+
+sub _cache_file_for_module {
+    my $self   = shift;
+    my $module = shift;
+
+    return $self->_cache_dir->child($module);
+}
+
+sub _maybe_cache_inspectors {
+    my $self = shift;
+    return unless $self->_cache;
+
+    my @names = sort $self->all_inspector_names;
+    $self->logger->info("maybe cache");
+    return unless @names;
+
+    my $append = 0;
+    require Sereal::Encoder;    ## no perlimports
+    my $encoder = Sereal::Encoder->new(
+        { croak_on_bless => 0, undef_unknown => 1, } );
+
+    for my $name ( $self->all_inspector_names ) {
+        $self->logger->info("I would like to cache $name");
+        my $file = $self->_cache_file_for_module($name);
+        $encoder->encode_to_file(
+            $file,
+            $self->inspector_for($name),
+            $append
+        );
+    }
     return;
 }
 
