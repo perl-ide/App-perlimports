@@ -13,7 +13,8 @@ use Module::Runtime qw( module_notional_filename );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
-use PPIx::QuoteLike               ();
+use PPIx::QuoteLike ();
+use PPIx::Utils::Classification qw( is_hash_key is_method_call );
 use String::InterpolatedVariables ();
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
@@ -315,14 +316,48 @@ sub _build_includes {
 }
 
 sub _build_possible_imports {
-    my $self = shift;
-    return $self->ppi_document->find(
+    my $self   = shift;
+    my $before = $self->ppi_document->find(
         sub {
             $_[1]->isa('PPI::Token::Word')
                 || $_[1]->isa('PPI::Token::Symbol')
                 || $_[1]->isa('PPI::Token::Label');
         }
     ) || [];
+
+    my @after;
+    for my $word ( @{$before} ) {
+
+        # Without the sub name check, we accidentally turn
+        # use List::Util ();
+        # sub any { }
+        #
+        # into
+        #
+        # use List::Util qw( any );
+        # sub any {}
+        next if $self->is_sub_name("$word");
+
+        my $isa_symbol = $word->isa('PPI::Token::Symbol');
+
+        next if !$isa_symbol && is_method_call($word);
+
+        # A hash key might, for example, be a variable.
+        if (
+            !$isa_symbol
+            && !(
+                   $word->statement
+                && $word->statement->isa('PPI::Statement::Variable')
+            )
+            && is_hash_key($word)
+        ) {
+            next;
+        }
+
+        push @after, $word;
+    }
+
+    return \@after;
 }
 
 sub _build_ppi_document {

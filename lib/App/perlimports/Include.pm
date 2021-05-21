@@ -12,12 +12,7 @@ use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
-use PPIx::Utils::Classification qw(
-    is_function_call
-    is_hash_key
-    is_method_call
-    is_perl_builtin
-);
+use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
@@ -181,31 +176,6 @@ sub _build_imports {
     for my $word ( @{ $self->_document->possible_imports } ) {
         next if exists $found{"$word"};
 
-        # Without the sub name check, we accidentally turn
-        # use List::Util ();
-        # sub any { }
-        #
-        # into
-        #
-        # use List::Util qw( any );
-        # sub any {}
-        next if $self->_document->is_sub_name("$word");
-        my $isa_symbol = $word->isa('PPI::Token::Symbol');
-
-        # A hash key might, for example, be a variable.
-        if (
-            !$isa_symbol
-            && !(
-                   $word->statement
-                && $word->statement->isa('PPI::Statement::Variable')
-            )
-            && is_hash_key($word)
-        ) {
-            next;
-        }
-
-        next if !$isa_symbol && is_method_call($word);
-
         # We don't want (for instance) pragma names to be confused with
         # functions.
         #
@@ -242,6 +212,7 @@ sub _build_imports {
         }
 
         my $found_import;
+        my $isa_symbol = $word->isa('PPI::Token::Symbol');
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
