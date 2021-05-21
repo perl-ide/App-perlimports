@@ -16,7 +16,7 @@ use Pod::Usage qw( pod2usage );
 use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
 
 has _args => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => HashRef,
     lazy    => 1,
     builder => '_build_args',
@@ -37,14 +37,14 @@ has _never_exports => (
 );
 
 has _opts => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => InstanceOf ['Getopt::Long::Descriptive::Opts'],
     lazy    => 1,
     default => sub { $_[0]->_args->{opts} },
 );
 
 has _usage => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => Object,
     lazy    => 1,
     default => sub { $_[0]->_args->{usage} },
