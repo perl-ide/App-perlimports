@@ -12,7 +12,6 @@ use List::Util qw( any none uniq );
 use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
-use Perl::Tidy 20210111 qw( perltidy );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw(
     is_function_call
@@ -554,7 +553,9 @@ sub _build_formatted_ppi_statement {
             $formatted
         );
 
-        perltidy(
+        # save ~60ms in cases where we don't need Perl::Tidy
+        require Perl::Tidy;    ## no perlimports
+        Perl::Tidy::perltidy(
             argv        => '-npro',
             source      => \$statement,
             destination => \$statement
