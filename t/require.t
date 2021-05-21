@@ -5,9 +5,8 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports::Document ();
 use Path::Tiny qw( path );
-use TestHelper qw( source2pi );
+use TestHelper qw( doc source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 my $filename = 'test-data/require.pl';
@@ -27,7 +26,7 @@ subtest 'replace top level require via snippet' => sub {
 };
 
 my $content = path($filename)->slurp;
-my $doc     = PPI::Document->new( \$content );
+my ($doc) = PPI::Document->new( \$content );
 
 my $includes = $doc->find(
     sub {
@@ -125,7 +124,7 @@ subtest 'require rewritten as use' => sub {
 };
 
 subtest 'require Exporter not rewritten' => sub {
-    my $doc = App::perlimports::Document->new(
+    my ($doc) = doc(
         filename => 'test-data/lib/Local/RequireExporter.pm',
     );
 

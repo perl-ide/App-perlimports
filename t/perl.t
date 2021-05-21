@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
+use lib 't/lib';
+
+use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is' ];
 
-my $doc
-    = App::perlimports::Document->new(
-    filename => 'test-data/perl-version.pl' );
+my ($doc) = doc( filename => 'test-data/perl-version.pl' );
 my $expected = <<'EOF';
 use strict;
 use warnings;
