@@ -318,9 +318,10 @@ sub _build_possible_imports {
     my $self   = shift;
     my $before = $self->ppi_document->find(
         sub {
-            $_[1]->isa('PPI::Token::Word')
+                   $_[1]->isa('PPI::Token::Word')
                 || $_[1]->isa('PPI::Token::Symbol')
-                || $_[1]->isa('PPI::Token::Label');
+                || $_[1]->isa('PPI::Token::Label')
+                || $_[1]->isa('PPI::Token::Prototype');
         }
     ) || [];
 

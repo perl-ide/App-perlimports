@@ -214,21 +214,21 @@ sub _build_imports {
             next;
         }
 
-        my $found_import;
+        my @found_import;
         my $isa_symbol = $word->isa('PPI::Token::Symbol');
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
         if (   $isa_symbol
             && $self->_is_importable( $word->symbol ) ) {
-            $found_import = $word->symbol;
+            @found_import = ( $word->symbol );
         }
 
         # Match on \&is_Str as is_Str
         elsif ($isa_symbol
             && $word->symbol_type eq '&'
             && $self->_is_importable( substr( $word->symbol, 1 ) ) ) {
-            $found_import = substr( $word->symbol, 1 );
+            @found_import = ( substr( $word->symbol, 1 ) );
         }
 
         # Don't catch ${foo} here and mistake it for "foo". We deal with that
@@ -243,14 +243,14 @@ sub _build_imports {
                 && $word->previous_token->previous_token eq '$'
             )
         ) {
-            $found_import = "$word";
+            @found_import = ("$word");
         }
 
         # Maybe a subroutine ref has been exported. For instance,
         # Getopt::Long exports &GetOptions
         elsif ($is_function_call
             && $self->_is_importable( '&' . $word ) ) {
-            $found_import = '&' . "$word";
+            @found_import = ( '&' . "$word" );
         }
 
         # Maybe this is an inner package referencing a function in main.  We
@@ -259,7 +259,7 @@ sub _build_imports {
         elsif ($is_function_call
             && $word =~ m{^::\w+}
             && $self->_is_importable( substr( $word, 2 ) ) ) {
-            $found_import = substr( $word, 2 );
+            @found_import = ( substr( $word, 2 ) );
         }
 
         # PPI can think that an imported function in a ternary is a label
@@ -269,15 +269,42 @@ sub _build_imports {
             if ( $word->content =~ m{^(\w+)} ) {
                 my $label = $1;
                 if ( $self->_is_importable($label) ) {
-                    $found_import = $label;
+                    @found_import = ($label);
                     $found{$label}++;
                 }
             }
         }
 
-        if ( $found_import
-            && !$self->_is_already_imported($found_import) ) {
-            $found{$found_import}++;
+        # Sometimes an import is only used to set a default value for a
+        # variable in a signature. Without treating a prototype as a signature,
+        # we would miss the import entirely.  I'm not particularly proud of
+        # this, but since PPI doesn't yet support signatures, this will at
+        # least help us cover some cases. If the prototype is actually a
+        # prototype, then this just shouldn't find anything.
+        elsif ( $word->isa('PPI::Token::Prototype') ) {
+            my $prototype = $word->prototype;
+
+            # sometimes closing parens don't get included by PPI.
+            if ( substr( $prototype, -1, 1 ) eq '(' ) {
+                $prototype .= ')';
+            }
+            $prototype =~ s{,}{;}g;
+
+            $prototype .= ';';    # Won't hurt if there's an extra ";"
+            my $new = PPI::Document->new( \$prototype );
+            my $words
+                = $new->find( sub { $_[1]->isa('PPI::Token::Word'); } ) || [];
+            for my $word ( @{$words} ) {
+                if ( $self->_is_importable("$word") ) {
+                    push @found_import, "$word";
+                }
+            }
+        }
+
+        for my $found (@found_import) {
+            if ( !$self->_is_already_imported($found) ) {
+                $found{$found}++;
+            }
         }
     }
 

@@ -17,18 +17,15 @@ no warnings qw(experimental::signatures);
 
 use signatures;
 
-use HTTP::Status qw( HTTP_CONTINUE );
+use HTTP::Status qw( HTTP_CONTINUE HTTP_OK );
 
 ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-sub one ( $continue  = HTTP_CONTINUE, $foo = 'bar' ) {
+sub one ( $continue  = HTTP_CONTINUE, $foo = 'bar', $two = HTTP_OK() ) {
     return $continue;
 }
 EOF
 
-TODO: {
-    local $TODO = 'need to handle symbols used in sigatures';
-    my ($doc) = doc( filename => 'test-data/signatures.pl' );
-    is( $doc->tidied_document, $expected, 'tidied_document' );
-}
+my ( $doc, $logs ) = doc( filename => 'test-data/signatures.pl' );
+is( $doc->tidied_document, $expected, 'tidied_document' );
 
 done_testing;
