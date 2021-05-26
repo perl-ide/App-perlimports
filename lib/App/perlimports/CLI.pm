@@ -67,7 +67,7 @@ sub _build_args {
         [],
         [
             'cache!',
-            'cache some objects in order to speed up subsequent runs. Defaults to no cache.',
+            '(Experimental.) Cache some objects in order to speed up subsequent runs. Defaults to no cache.',
             { default => 0 },
         ],
         [],
