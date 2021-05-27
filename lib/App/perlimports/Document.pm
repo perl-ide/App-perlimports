@@ -659,6 +659,7 @@ sub inspector_for {
             };
             if ($inspector) {
                 $self->logger->info("Using cached version of $module");
+                $inspector->set_logger( $self->logger );
                 return $inspector;
             }
         }

@@ -10,6 +10,7 @@ has logger => (
     is        => 'ro',
     isa       => InstanceOf ['Log::Dispatch'],
     predicate => '_has_logger',
+    writer    => 'set_logger',
 );
 
 1;
