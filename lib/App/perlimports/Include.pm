@@ -422,8 +422,8 @@ sub _build_is_translatable {
         return 0;
     }
 
-    # Any other case of "require Foo;" should be translate to "use Foo ();"
-    # as those are functionally equivalent."
+    # Any other case of "require Foo;" should be translated to "use Foo ();"
+    # as those are functionally equivalent.
     return 1;
 }
 
@@ -573,7 +573,7 @@ sub _build_formatted_ppi_statement {
         );
     }
 
-    # Don't deal with Test::Builder classes here to keep is simple for now
+    # Don't deal with Test::Builder classes here to keep it simple for now
     if ( length($statement) > 78 && !$self->_isa_test_builder_module ) {
         $statement = sprintf( "use %s qw(\n", $self->module_name );
         for ( @{ $self->_imports } ) {
