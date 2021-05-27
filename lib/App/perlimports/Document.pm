@@ -718,6 +718,8 @@ sub _build_tidied_document {
             $self->logger->error( 'Error is: ' . $error );
         };
 
+        next unless $elem;
+
         # If this is a module with bare imports which is not used anywhere,
         # maybe we can just remove it.
         if ( !$self->_preserve_unused ) {
@@ -733,8 +735,6 @@ sub _build_tidied_document {
                 next;
             }
         }
-
-        next unless $elem;
 
         # https://github.com/adamkennedy/PPI/issues/189
         my $inserted = $include->insert_before($elem);
