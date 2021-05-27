@@ -827,8 +827,10 @@ sub _maybe_cache_inspectors {
         { croak_on_bless => 0, undef_unknown => 1, } );
 
     for my $name ( $self->all_inspector_names ) {
-        $self->logger->info("I would like to cache $name");
         my $file = $self->_cache_file_for_module($name);
+        next if -e $file;
+
+        $self->logger->info("I would like to cache $name at $file");
         $encoder->encode_to_file(
             $file,
             $self->inspector_for($name),
