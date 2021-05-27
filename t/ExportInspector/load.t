@@ -78,6 +78,7 @@ subtest 'Local::UsesMoose' => sub {
     my ($ei) = ei('Local::UsesMoose');
     ok( $ei->is_oo_class,     'is oo class' );
     ok( !$ei->is_moose_class, 'Not a Moose class' );
+    ok( $ei->uses_moose,      'uses Moose' );
     is_deeply( $ei->class_isa, ['Moose::Object'], 'ISA Moose::Object' );
 };
 

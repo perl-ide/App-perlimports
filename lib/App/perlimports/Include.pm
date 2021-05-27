@@ -92,6 +92,7 @@ has _isa_test_builder_module => (
     isa     => Bool,
     lazy    => 1,
     builder => '_build_isa_test_builder_module',
+    default => sub { shift->_export_inspector->isa_test_builder },
 );
 
 has _is_translatable => (
@@ -150,20 +151,6 @@ sub _build_explicit_exports {
     return $self->_export_inspector->has_explicit_exports
         ? $self->_export_inspector->explicit_exports
         : $self->_export_inspector->implicit_exports;
-}
-
-sub _build_isa_test_builder_module {
-    my $self = shift;
-    $self->_maybe_require_module( $self->module_name );
-
-## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
-    my $isa_test_builder = any { $_ eq 'Test::Builder::Module' }
-    @{ $self->module_name . '::ISA' };
-    use strict;
-## use critic
-
-    return $isa_test_builder ? 1 : 0;
 }
 
 sub _build_imports {
@@ -369,23 +356,11 @@ sub _build_is_ignored {
 
     return 0 if $self->_export_inspector->is_oo_class;
 
-    if ( $self->_export_inspector->is_moose_class ) {
-        return 1;
-    }
+    return 1 if $self->_export_inspector->is_moose_class;
 
-    # This should catch Moose classes
-    if ( $self->_maybe_require_module('Moose::Util')
-        && Moose::Util::find_meta( $self->module_name ) ) {
-        return 1;
-    }
+    return 1 if $self->_export_inspector->uses_moose;
 
-    # This should catch Moo classes
-    if ( $self->_maybe_require_module('Class::Inspector') ) {
-        return 1
-            if any { $_ eq 'Moo::is_class' }
-        @{ Class::Inspector->methods( $self->module_name, 'full', 'public' )
-                || [] };
-    }
+    return 1 if $self->_export_inspector->is_moo_class;
 
     return 1
         if any { $_ eq 'Moo::Object' } @{ $self->_export_inspector->pkg_isa };
@@ -602,22 +577,6 @@ sub _maybe_get_new_include {
     # naive, but should be good enough for now. It should reduce the churn
     # created by this script.
     return ( "$rewrite" eq $check_string ) ? $self->_include : $rewrite;
-}
-
-sub _maybe_require_module {
-    my $self              = shift;
-    my $module_to_require = shift;
-
-    my $success;
-    try {
-        require_module($module_to_require);
-        $success = 1;
-    }
-    catch {
-        $self->logger->info("$module_to_require error. $_");
-    };
-
-    return $success;
 }
 
 # If there's a different module in this document which has already imported

@@ -13,6 +13,7 @@ use List::Util qw( any );
 use Log::Dispatch::Array ();
 use Module::Runtime qw( require_module );
 use Sub::HandlesVia;
+use Try::Tiny qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';
@@ -86,6 +87,13 @@ has is_exporter => (
     builder => '_build_is_exporter',
 );
 
+has isa_test_builder => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_isa_test_builder',
+);
+
 has explicit_exports => (
     is          => 'ro',
     isa         => HashRef,
@@ -127,6 +135,13 @@ has is_moose_class => (
     builder => '_build_is_moose_class',
 );
 
+has is_moo_class => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_is_moo_class',
+);
+
 has is_moose_type_class => (
     is      => 'ro',
     isa     => Bool,
@@ -163,6 +178,13 @@ has uses_import_into => (
     isa     => Bool,
     lazy    => 1,
     builder => '_build_uses_import_into',
+);
+
+has uses_moose => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    builder => '_build_uses_moose',
 );
 
 sub _build_explicit_exports {
@@ -227,6 +249,12 @@ sub _build_is_oo_class {
     @{$methods};
 }
 
+sub _build_isa_test_builder {
+    my $self = shift;
+    return any { $_ eq 'Test::Builder::Module' }
+    @{ $self->_implicit->{class_isa} };
+}
+
 sub _list_to_hash {
     my $self = shift;
     my $pkg  = shift;
@@ -271,11 +299,10 @@ sub _list_to_hash {
 
 sub _build_implicit {
     my $self = shift;
-    my $pkg  = $self->_pkg_for('implicit');
 
     my $module_name   = $self->_module_name;
+    my $pkg           = $self->_pkg_for('implicit');
     my $use_statement = "use $module_name;";
-
     my $maybe_exports = $self->_exports_for_include( $pkg, $use_statement );
 
     no strict 'refs';
@@ -410,6 +437,28 @@ sub _build_is_moose_class {
     @{ $self->pkg_isa };
 }
 
+sub _build_uses_moose {
+    my $self = shift;
+    if ( $self->_maybe_require_module('Moose::Util') ) {
+        return Moose::Util::find_meta( $self->_module_name ) ? 1 : 0;
+    }
+    return 0;
+}
+
+sub _build_is_moo_class {
+    my $self = shift;
+    if ( $self->_maybe_require_module('Class::Inspector') ) {
+        return 1
+            if any { $_ eq 'Moo::is_class' }
+        @{ Class::Inspector->methods(
+                $self->_module_name, 'full', 'public'
+                )
+                || []
+        };
+    }
+    return 0;
+}
+
 sub _build_is_moose_type_class {
     my $self = shift;
 
@@ -430,6 +479,24 @@ sub implicit_export_names_match_values {
     return
         join( q{}, sort $self->implicit_export_names ) eq
         join( q{}, sort $self->implicit_export_values );
+}
+
+sub _maybe_require_module {
+    my $self              = shift;
+    my $module_to_require = shift;
+
+    $self->logger->info("going to require $module_to_require");
+
+    my $success;
+    try {
+        require_module($module_to_require);
+        $success = 1;
+    }
+    catch {
+        $self->logger->info("$module_to_require error. $_");
+    };
+
+    return $success;
 }
 
 1;
