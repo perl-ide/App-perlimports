@@ -2,7 +2,7 @@ package App::perlimports::Role::Logger;
 
 use Moo::Role;
 
-our $VERSION = '0.000007';
+our $VERSION = '0.000008';
 
 use Types::Standard qw( InstanceOf );
 
