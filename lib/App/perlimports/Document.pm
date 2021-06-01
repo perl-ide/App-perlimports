@@ -227,6 +227,7 @@ my %default_ignore = (
     'Exporter'                       => 1,
     'Exporter::Lite'                 => 1,
     'Feature::Compat::Try'           => 1,
+    'Mojo::Base'                     => 1,
     'Mojolicious::Lite'              => 1,
     'Moo'                            => 1,
     'Moo::Role'                      => 1,
