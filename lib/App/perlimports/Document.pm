@@ -252,6 +252,7 @@ my %default_ignore = (
     'Test::Whitespaces'              => 1,
     'Test::XML'                      => 1,
     'Types::Standard'                => 1,
+    'URI::QueryParam'                => 1,
 );
 
 # Funky stuff could happen with inner packages.
