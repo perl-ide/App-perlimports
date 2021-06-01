@@ -278,9 +278,13 @@ sub _build_imports {
             $prototype =~ s{,}{;}g;
 
             $prototype .= ';';    # Won't hurt if there's an extra ";"
-            my $new = PPI::Document->new( \$prototype );
-            my $words
-                = $new->find( sub { $_[1]->isa('PPI::Token::Word'); } ) || [];
+            my $new   = PPI::Document->new( \$prototype );
+            my $words = $new->find(
+                sub {
+                    $_[1]->isa('PPI::Token::Word')
+                        || $_[1]->isa('PPI::Token::Symbol');
+                }
+            ) || [];
             for my $word ( @{$words} ) {
                 if ( $self->_is_importable("$word") ) {
                     push @found_import, "$word";

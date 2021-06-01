@@ -17,12 +17,15 @@ no warnings qw(experimental::signatures);
 
 use signatures;
 
+use FindBin qw( $Bin );
 use HTTP::Status qw( HTTP_CONTINUE HTTP_OK );
 
 ## no critic (Subroutines::ProhibitSubroutinePrototypes)
 sub one ( $continue  = HTTP_CONTINUE, $foo = 'bar', $two = HTTP_OK() ) {
     return $continue;
 }
+
+sub two ( $cwd = $Bin ) { }
 EOF
 
 my ( $doc, $logs ) = doc( filename => 'test-data/signatures.pl' );

@@ -7,9 +7,12 @@ no warnings qw(experimental::signatures);
 
 use signatures;
 
+use FindBin;
 use HTTP::Status qw( HTTP_CONTINUE );
 
 ## no critic (Subroutines::ProhibitSubroutinePrototypes)
 sub one ( $continue  = HTTP_CONTINUE, $foo = 'bar', $two = HTTP_OK() ) {
     return $continue;
 }
+
+sub two ( $cwd = $Bin ) { }
