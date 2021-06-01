@@ -28,10 +28,8 @@ sub _build_annotations {
     my @found = ();
     my $comments
         = $self->_ppi_document->find('PPI::Token::Comment') || return [];
-    my $disable_rx
-        = qr{\A (?: [#]! .*? )? \s* [#][#] \s* no  \s+ perlimports}xms;
-    my $enable_rx
-        = qr{\A (?: [#]! .*? )? \s* [#][#] \s* use  \s+ perlimports}xms;
+    my $disable_rx = qr{[#][#] \s* no  \s+ perlimports}xms;
+    my $enable_rx  = qr{[#][#] \s* use \s+ perlimports}xms;
 
     my @enabled = ( grep { $_ =~ $enable_rx } @{$comments} );
 

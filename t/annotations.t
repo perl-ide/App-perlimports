@@ -73,6 +73,7 @@ use Digest;
 ## use perlimports
 
 use Encode qw( decode encode );
+use FindBin; # Reasons ## no perlimports
 
 print decode(
     'utf8',

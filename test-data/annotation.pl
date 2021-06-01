@@ -11,6 +11,7 @@ use Digest;
 ## use perlimports
 
 use Encode;
+use FindBin; # Reasons ## no perlimports
 
 print decode(
     'utf8',
