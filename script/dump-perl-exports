@@ -22,6 +22,10 @@ if ( $opts->verbose_help ) {
     exit;
 }
 
+if ( $opts->libs ) {
+    unshift @INC, ( split m{,}, $opts->libs );
+}
+
 my $logger = Log::Dispatch->new(
     outputs => [
         [
@@ -144,6 +148,12 @@ sub _options {
         [
             'module|m=s', 'The module to inspect for exports',
             { required => 1 }
+        ],
+        [],
+        [
+            'libs=s',
+            'Comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
+
         ],
         [],
         [ 'version', 'Print installed version', { shortcircuit => 1 } ],
