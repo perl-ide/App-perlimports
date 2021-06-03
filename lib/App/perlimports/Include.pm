@@ -169,9 +169,7 @@ sub _build_imports {
 
         # No need to keep looking if we've found everything that can be
         # imported
-        if ( keys %found == $self->_explicit_export_count ) {
-            last;
-        }
+        last unless $self->_imports_remain( \%found );
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
@@ -307,15 +305,18 @@ sub _build_imports {
     }
 
     #  A used import might be a variable interpolated into quotes.
-    for my $var ( keys %{ $self->_document->interpolated_symbols } ) {
-        if ( $self->_is_importable($var) ) {
-            $found{$var} = 1;
+    if ( $self->_imports_remain( \%found ) ) {
+        for my $var ( keys %{ $self->_document->interpolated_symbols } ) {
+            if ( $self->_is_importable($var) ) {
+                $found{$var} = 1;
+            }
         }
     }
 
     #  A used import might be just be a symbol that just gets exported.  ie. If
     #  it appears as @EXPORT = ( 'SOME_SYMBOL') we don't want to miss it.
-    if (   $self->_document->my_own_inspector
+    if (   $self->_imports_remain( \%found )
+        && $self->_document->my_own_inspector
         && $self->_document->my_own_inspector->is_exporter ) {
         for my $symbol (
             uniq(
@@ -325,6 +326,16 @@ sub _build_imports {
         ) {
             if ( $self->_is_importable($symbol) ) {
                 $found{$symbol} = 1;
+            }
+        }
+    }
+
+    # A used import might just be something that gets re-exported by
+    # Sub::Exporter
+    if ( $self->_imports_remain( \%found ) ) {
+        for my $func ( $self->_document->sub_exporter_export_list ) {
+            if ( $self->_is_importable($func) ) {
+                $found{$func}++;
             }
         }
     }
@@ -569,6 +580,12 @@ sub _build_formatted_ppi_statement {
     }
 
     return $self->_maybe_get_new_include($statement);
+}
+
+sub _imports_remain {
+    my $self  = shift;
+    my $found = shift;
+    return keys %{$found} < $self->_explicit_export_count;
 }
 
 sub _maybe_get_new_include {
