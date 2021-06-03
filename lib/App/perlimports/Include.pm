@@ -28,10 +28,11 @@ has _explicit_exports => (
     isa         => HashRef,
     handles_via => 'Hash',
     handles     => {
-        _delete_export        => 'delete',
-        _has_explicit_exports => 'count',
-        _is_importable        => 'exists',
-        _import_name          => 'get',
+        _delete_export         => 'delete',
+        _explicit_export_count => 'count',
+        _has_explicit_exports  => 'count',
+        _import_name           => 'get',
+        _is_importable         => 'exists',
     },
     lazy    => 1,
     builder => '_build_explicit_exports',
@@ -165,6 +166,12 @@ sub _build_imports {
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word ( @{ $self->_document->possible_imports } ) {
         next if exists $found{"$word"};
+
+        # No need to keep looking if we've found everything that can be
+        # imported
+        if ( keys %found == $self->_explicit_export_count ) {
+            last;
+        }
 
         # We don't want (for instance) pragma names to be confused with
         # functions.
