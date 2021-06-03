@@ -14,6 +14,7 @@ use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw( is_hash_key is_method_call );
+use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use String::InterpolatedVariables ();
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
@@ -176,6 +177,17 @@ has _preserve_unused => (
     isa      => Bool,
     init_arg => 'preserve_unused',
     default  => 1,
+);
+
+has _sub_exporter_export_list => (
+    is          => 'ro',
+    isa         => ArrayRef,
+    handles_via => 'Array',
+    handles     => {
+        sub_exporter_export_list => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_sub_exporter_export_list',
 );
 
 has _sub_names => (
@@ -428,6 +440,37 @@ sub _build_original_imports {
     }
 
     return \%imports;
+}
+
+sub _build_sub_exporter_export_list {
+    my $self = shift;
+
+    my $sub_ex = $self->ppi_document->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include')
+                && $_[1]->module eq 'Sub::Exporter';
+        }
+    ) || [];
+    $self->logger->error( $sub_ex->[0] );
+    return [] unless @{$sub_ex};
+
+    my @found;
+    for my $include ( @{$sub_ex} ) {
+        my @arguments = $include->arguments;
+        for my $arg (@arguments) {
+            if ( $arg->isa('PPI::Structure::Constructor') ) {
+                ## no critic (BuiltinFunctions::ProhibitStringyEval)
+                my $thing = eval $arg;
+                if ( is_plain_hashref($thing) ) {
+                    if ( is_plain_arrayref( $thing->{exports} ) ) {
+                        push @found, @{ $thing->{exports} };
+                    }
+                }
+            }
+        }
+    }
+
+    return [ uniq @found ];
 }
 
 sub _imports_for_include {
