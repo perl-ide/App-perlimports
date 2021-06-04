@@ -47,17 +47,6 @@ has _cache_dir => (
     builder => '_build_cache_dir',
 );
 
-has _export_list => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        all_document_exports => 'elements',
-    },
-    lazy    => 1,
-    builder => '_build_export_list',
-);
-
 has _filename => (
     is       => 'ro',
     isa      => Str,
@@ -300,16 +289,6 @@ sub _build_my_own_inspector {
         logger      => $self->logger,
         module_name => $pkg->namespace,
     );
-}
-
-sub _build_export_list {
-    my $self = shift;
-    my $i    = $self->my_own_inspector;
-
-    return [
-        uniq values %{ $i->all_exports },
-        values %{ $i->default_exports }
-    ];
 }
 
 sub _build_includes {
