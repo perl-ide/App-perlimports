@@ -789,7 +789,7 @@ sub _build_tidied_document {
             }
         }
 
-        # https://github.com/adamkennedy/PPI/issues/189
+        # https://github.com/Perl-Critic/PPI/issues/189
         my $inserted = $include->insert_before($elem);
         if ( !$inserted ) {
             $self->logger->error( 'Could not insert ' . $elem );
