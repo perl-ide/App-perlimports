@@ -113,6 +113,7 @@ jobs:
         run: cpan-install-dist-deps && test-dist
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+          HARNESS_PERL_SWITCHES: "-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data"
   test-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
