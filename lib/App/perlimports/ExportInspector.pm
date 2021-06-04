@@ -260,8 +260,6 @@ sub _list_to_hash {
     my $pkg  = shift;
     my $list = shift;
 
-    $self->logger->debug( 'list to hash: ' . $pkg . "\n" . Dumper($list) );
-
     my %hash;
     for my $item ( @{$list} ) {
         my $value = $item;
