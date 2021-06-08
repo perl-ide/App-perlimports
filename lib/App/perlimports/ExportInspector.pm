@@ -4,7 +4,7 @@ use Moo;
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
 
-our $VERSION = '0.000008';
+our $VERSION = '0.000009';
 
 use Class::Inspector ();
 use Class::Unload    ();
