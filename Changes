@@ -1,6 +1,13 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Detect imported symbols used in prototypes
+    - Ignore more modules
+    - Make annotation regex less restrictive
+    - Add --libs arg to dump-perl-exports
+    - Detect when modules are only used via package variables
+    - Detect subs which are only re-exported via Sub::Exporter
+    - Optimize for speed a little bit more
 
 0.000007  2021-05-27 15:24:53Z
     - Add an experimental --cache flag
