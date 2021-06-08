@@ -105,6 +105,7 @@
             "Getopt::Long" : "2.40",
             "LWP::UserAgent" : "6.49",
             "Sub::Exporter" : "0",
+            "Test::Differences" : "0",
             "Test::More" : "0",
             "Test::Most" : "0",
             "Test::Needs" : "0",
@@ -128,7 +129,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000007",
+   "version" : "0.000008",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030002"
@@ -240,7 +241,7 @@
             "class" : "Dist::Zilla::Plugin::InstallGuide",
             "config" : {
                "Dist::Zilla::Role::ModuleMetadata" : {
-                  "Module::Metadata" : "1.000037",
+                  "Module::Metadata" : "1.000036",
                   "version" : "0.006"
                }
             },
@@ -688,7 +689,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000007",
+                  "tag" : "v0.000008",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },

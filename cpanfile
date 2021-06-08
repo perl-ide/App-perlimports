@@ -44,6 +44,7 @@ on 'test' => sub {
   requires "Getopt::Long" => "2.40";
   requires "LWP::UserAgent" => "6.49";
   requires "Sub::Exporter" => "0";
+  requires "Test::Differences" => "0";
   requires "Test::More" => "0";
   requires "Test::Most" => "0";
   requires "Test::Needs" => "0";

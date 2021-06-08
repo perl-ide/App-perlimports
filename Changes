@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000008  2021-06-08 10:42:56Z
     - Detect imported symbols used in prototypes
     - Ignore more modules
     - Make annotation regex less restrictive
