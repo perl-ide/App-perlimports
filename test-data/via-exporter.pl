@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 
-use DDP;
 use Local::ViaExporter;
 
 my $one   = foo();

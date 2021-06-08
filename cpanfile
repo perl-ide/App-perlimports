@@ -5,7 +5,6 @@ requires "Capture::Tiny" => "0";
 requires "Class::Inspector" => "1.36";
 requires "Class::Unload" => "0";
 requires "Data::Dumper" => "0";
-requires "Data::Printer" => "0.36";
 requires "File::Basename" => "0";
 requires "Getopt::Long::Descriptive" => "0";
 requires "List::Util" => "0";
@@ -37,7 +36,6 @@ requires "warnings" => "0";
 
 on 'test' => sub {
   requires "Cpanel::JSON::XS" => "0";
-  requires "Data::Printer" => "0.36";
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
   requires "Geo::IP" => "0";

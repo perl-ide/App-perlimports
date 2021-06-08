@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 use App::perlimports::ExportInspector ();
-use Data::Printer;
 use Getopt::Long::Descriptive qw( describe_options );
 use List::Util qw( max );
 use Log::Dispatch ();
+use Module::Runtime qw( use_module );
 use Pod::Usage qw( pod2usage );
 use Text::SimpleTable::AutoWidth ();
 
@@ -130,7 +130,9 @@ if ( $ei->has_implicit_exports ) {
     }
     print $t->draw;
     printf( "%i symbols\n", scalar $ei->explicit_export_names );
-    $logger->debug( np $ei );
+
+    require Data::Dumper; ## no perlimports
+    $logger->debug( Data::Dumper::Dumper($ei) );
 }
 
 if ( @{ $ei->at_export_fail } ) {
