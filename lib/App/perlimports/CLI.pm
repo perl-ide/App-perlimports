@@ -234,7 +234,9 @@ sub run {
         print $tidied;
     }
     elsif ( $opts->inplace_edit ) {
-        path( $opts->filename )->spew($tidied);
+
+        # append() with truncate, because spew() can change file permissions
+        path( $opts->filename )->append( { truncate => 1 }, $tidied );
     }
     else {
         print $tidied;
