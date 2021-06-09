@@ -70,6 +70,21 @@ to ignore. (See above for behaviour). The pattern is one module name per line.
     Foo
     Foo::Bar
 
+=head2 --ignore-modules-pattern
+
+A comma-separated list of module names which should be ignored by this script.
+Any modules in this list should remain unchanged after processing.
+
+    --ignore-modules '^(Foo|Foo::Bar)'
+
+=head2 --ignore-modules-pattern-filename
+
+The absolute or relative path to a file which contains a lost of module names
+to ignore. (See above for behaviour). The pattern is one module name per line.
+
+    ^Foo
+    ^Foo::Bar
+
 =head2 --never-export-modules
 
 A comma-separated list of module names which should never export symbols. If
