@@ -8,7 +8,7 @@ our $VERSION = '0.000009';
 use App::perlimports::Annotations ();
 use App::perlimports::Include     ();
 use File::Basename qw( fileparse );
-use List::Util qw( any uniq);
+use List::Util qw( any uniq );
 use Module::Runtime qw( module_notional_filename );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
@@ -665,11 +665,12 @@ sub _is_ignored {
     my $self    = shift;
     my $element = shift;
 
-    my $res =
-           exists $default_ignore{ $element->module }
+    my $res
+        = exists $default_ignore{ $element->module }
         || exists $self->_ignore_modules->{ $element->module }
         || $self->_annotations->is_ignored($element)
-        || any { $element->module =~ /$_/ } grep { $_ } @{ $self->_ignore_modules_pattern || [] };
+        || any { $element->module =~ /$_/ }
+    grep { $_ } @{ $self->_ignore_modules_pattern || [] };
     return $res;
 }
 

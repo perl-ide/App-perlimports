@@ -166,7 +166,9 @@ sub _build_ignore_modules {
 sub _build_ignore_modules_pattern {
     my $self = shift;
     my @ignore_modules_pattern
-        = $self->_opts->ignore_modules_pattern ? $self->_opts->ignore_modules_pattern : ();
+        = $self->_opts->ignore_modules_pattern
+        ? $self->_opts->ignore_modules_pattern
+        : ();
 
     if ( $self->_opts->ignore_modules_pattern_filename ) {
         my @from_file
