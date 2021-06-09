@@ -431,7 +431,7 @@ sub _build_sub_exporter_export_list {
                 && $_[1]->module eq 'Sub::Exporter';
         }
     ) || [];
-    $self->logger->error( $sub_ex->[0] );
+    $self->logger->error( $sub_ex->[0] ) if defined $sub_ex->[0];
     return [] unless @{$sub_ex};
 
     my @found;
