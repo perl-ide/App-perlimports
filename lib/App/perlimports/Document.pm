@@ -628,10 +628,13 @@ sub _has_import_switches {
     # tag, but instead it's something entirely different.
     #
     # use Getopt::Long qw(:config no_ignore_case bundling);
+    #
+    # We will leave this case as broken for the time being. I'm not sure how
+    # common that invocation is.
 
     if (
         exists $self->original_imports->{$module_name}
-        && any { $_ =~ m{^[\-:]} }
+        && any { $_ =~ m{^[\-]} }
         @{ $self->original_imports->{$module_name} || [] }
     ) {
         return 1;
