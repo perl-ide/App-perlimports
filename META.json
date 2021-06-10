@@ -61,7 +61,6 @@
             "Class::Inspector" : "1.36",
             "Class::Unload" : "0",
             "Data::Dumper" : "0",
-            "Data::Printer" : "0.36",
             "File::Basename" : "0",
             "Getopt::Long::Descriptive" : "0",
             "List::Util" : "0",
@@ -98,7 +97,6 @@
          },
          "requires" : {
             "Cpanel::JSON::XS" : "0",
-            "Data::Printer" : "0.36",
             "ExtUtils::MakeMaker" : "0",
             "File::Spec" : "0",
             "Geo::IP" : "0",
@@ -129,7 +127,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000008",
+   "version" : "0.000009",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030002"
@@ -689,7 +687,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000008",
+                  "tag" : "v0.000009",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
@@ -864,6 +862,8 @@
       }
    },
    "x_contributors" : [
+      "Kenichi Ishigaki <ishigaki@cpan.org>",
+      "Nicolas Mendoza <mendoza@pvv.ntnu.no>",
       "Olaf Alders <olaf.alders@gmail.com>",
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
