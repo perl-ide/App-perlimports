@@ -28,6 +28,13 @@ has _ignore_modules => (
     builder => '_build_ignore_modules',
 );
 
+has _ignore_modules_pattern => (
+    is      => 'ro',
+    isa     => ArrayRef,
+    lazy    => 1,
+    builder => '_build_ignore_modules_pattern',
+);
+
 has _never_exports => (
     is      => 'ro',
     isa     => ArrayRef,
@@ -64,6 +71,10 @@ sub _build_args {
             'ignore-modules=s',
             'Comma-separated list of modules to ignore.'
         ],
+        [
+            'ignore-modules-pattern=s',
+            'Regular expression that matches modules to ignore.'
+        ],
         [],
         [
             'cache!',
@@ -74,6 +85,10 @@ sub _build_args {
         [
             'ignore-modules-filename=s',
             'Path to file listing modules to ignore. One per line.'
+        ],
+        [
+            'ignore-modules-pattern-filename=s',
+            'Path to file listing regular expressions that matches modules to ignore. One per line.'
         ],
         [],
         [
@@ -148,6 +163,22 @@ sub _build_ignore_modules {
     return \@ignore_modules;
 }
 
+sub _build_ignore_modules_pattern {
+    my $self = shift;
+    my @ignore_modules_pattern
+        = $self->_opts->ignore_modules_pattern
+        ? $self->_opts->ignore_modules_pattern
+        : ();
+
+    if ( $self->_opts->ignore_modules_pattern_filename ) {
+        my @from_file
+            = path( $self->_opts->ignore_modules_pattern_filename )
+            ->lines( { chomp => 1 } );
+        @ignore_modules_pattern = uniq( @ignore_modules_pattern, @from_file );
+    }
+    return \@ignore_modules_pattern;
+}
+
 sub _build_never_exports {
     my $self = shift;
 
@@ -215,6 +246,9 @@ sub run {
                 filename => $opts->filename,
                 @{ $self->_ignore_modules }
                 ? ( ignore_modules => $self->_ignore_modules )
+                : (),
+                @{ $self->_ignore_modules_pattern }
+                ? ( ignore_modules_pattern => $self->_ignore_modules_pattern )
                 : (),
                 @{ $self->_never_exports }
                 ? ( never_export_modules => $self->_never_exports )

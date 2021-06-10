@@ -54,6 +54,31 @@ EOF
     is( $stdout, $expected, );
 };
 
+subtest '--ignore-modules-pattern' => sub {
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Perl::Critic::Utils;
+
+my %foo = (
+    $QUOTE => q{description},
+);
+EOF
+
+    local @ARGV = (
+        '--ignore-modules-pattern',
+        '^Perl::.*',
+        '-f',
+        'test-data/var-in-hash-key.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ($stdout) = capture {
+        $cli->run;
+    };
+    is( $stdout, $expected, );
+};
+
 subtest '--never-export-modules' => sub {
     my $expected = <<'EOF';
 use strict;

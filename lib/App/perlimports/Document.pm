@@ -61,6 +61,13 @@ has _ignore_modules => (
     default  => sub { +{} },
 );
 
+has _ignore_modules_pattern => (
+    is       => 'ro',
+    isa      => ArrayRef [Str],
+    init_arg => 'ignore_modules_pattern',
+    default  => sub { [] },
+);
+
 has includes => (
     is          => 'ro',
     isa         => ArrayRef [Object],
@@ -658,10 +665,13 @@ sub _is_ignored {
     my $self    = shift;
     my $element = shift;
 
-    return
-           exists $default_ignore{ $element->module }
+    my $res
+        = exists $default_ignore{ $element->module }
         || exists $self->_ignore_modules->{ $element->module }
-        || $self->_annotations->is_ignored($element);
+        || $self->_annotations->is_ignored($element)
+        || any { $element->module =~ /$_/ }
+    grep { $_ } @{ $self->_ignore_modules_pattern || [] };
+    return $res;
 }
 
 sub inspector_for {
