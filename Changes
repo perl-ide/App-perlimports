@@ -5,6 +5,7 @@ Revision history for App-perlimports
     - Add support for ignoring modules via regular expression pattern (GH#16)
       (Nicolas Mendoza)
     - Silence "Use of uninitialized value" warning (GH#21) (Kenichi Ishigaki)
+    - Export tag are now converted to symbols
 
 0.000008  2021-06-08 10:42:56Z
     - Detect imported symbols used in prototypes
