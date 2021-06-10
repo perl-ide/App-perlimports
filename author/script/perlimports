@@ -72,9 +72,9 @@ to ignore. (See above for behaviour). The pattern is one module name per line.
 
 =head2 --ignore-modules-pattern
 
-A regular expression that comma-separated list of module names which should be
-ignored by this script. Any modules matched by this regular expression remain
-unchanged after processing.
+A regular expression to match module names which should be ignored by this
+script. Any modules matched by this regular expression remain unchanged after
+processing.
 
     --ignore-modules '^(Foo|Foo::Bar)'
 
