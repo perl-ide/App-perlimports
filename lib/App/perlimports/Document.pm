@@ -649,7 +649,7 @@ sub _is_used_fully_qualified {
 
     # We could tighten this up and check that the word following "::" is a sub
     # which exists in that package.
-    return !!$self->ppi_document->find(
+    return 1 if $self->ppi_document->find(
         sub {
             (
                 $_[1]->isa('PPI::Token::Word')
@@ -663,6 +663,11 @@ sub _is_used_fully_qualified {
                 && $_[1] =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z_]} );
         }
     );
+
+    for my $key ( keys %{ $self->interpolated_symbols } ) {
+        return 1 if $key =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z_]+\z};
+    }
+    return 0;
 }
 
 sub _is_ignored {
