@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000010  2021-06-12 03:25:27Z
     - Detect fully qualified symbol name interpolated in quotes
     - Ignore HTTP::Message::PSGI
     - Include docs for regex patterns which should have been included in
