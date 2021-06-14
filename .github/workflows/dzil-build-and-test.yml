@@ -120,8 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #os: [ubuntu-20.04, macos-latest, windows-latest]
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, macos-latest]
         perl-version:
           - "5.10"
           - "5.12"
@@ -135,15 +134,6 @@ jobs:
           - "5.28"
           - "5.30"
           - "5.32"
-        exclude:
-          - os: windows-latest
-            perl-version: "5.8"
-          - os: windows-latest
-            perl-version: "5.10"
-          - os: windows-latest
-            perl-version: "5.12"
-          - os: windows-latest
-            perl-version: "5.32"
     name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
