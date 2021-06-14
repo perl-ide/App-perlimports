@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Fix export tag test
 
 0.000010  2021-06-12 03:25:27Z
     - Detect fully qualified symbol name interpolated in quotes
