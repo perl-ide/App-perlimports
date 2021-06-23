@@ -42,15 +42,8 @@ my $ei = App::perlimports::ExportInspector->new(
     module_name => $opts->module,
 );
 
-my $exports = $ei->explicit_exports;
-
 if ( $ei->is_oo_class ) {
     print 'Appears to be an Object Oriented class.' . "\n";
-}
-
-if ( !keys %{$exports} ) {
-    print 'No exported symbols found' . "\n";
-    exit(0);
 }
 
 if ( @{ $ei->class_isa } ) {
@@ -95,6 +88,15 @@ if ( @{ $ei->at_export_tags } ) {
     print $t->draw;
 }
 
+if ( @{ $ei->at_export_fail } ) {
+    my $t = Text::SimpleTable::AutoWidth->new();
+    $t->captions( ['@EXPORT_FAIL'] );
+    for my $val ( sort @{ $ei->at_export_fail } ) {
+        $t->row($val);
+    }
+    print $t->draw;
+}
+
 if ( $ei->has_implicit_exports ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     if ( $ei->implicit_export_names_match_values ) {
@@ -111,6 +113,12 @@ if ( $ei->has_implicit_exports ) {
     }
     print $t->draw;
     printf( "%i symbols\n", scalar $ei->implicit_export_names );
+}
+
+my $exports = $ei->explicit_exports;
+if ( !keys %{$exports} ) {
+    print 'No exported symbols found' . "\n";
+    exit(0);
 }
 
 {
@@ -133,15 +141,6 @@ if ( $ei->has_implicit_exports ) {
 
     require Data::Dumper; ## no perlimports
     $logger->debug( Data::Dumper::Dumper($ei) );
-}
-
-if ( @{ $ei->at_export_fail } ) {
-    my $t = Text::SimpleTable::AutoWidth->new();
-    $t->captions( ['@EXPORT_FAIL'] );
-    for my $val ( sort @{ $ei->at_export_fail } ) {
-        $t->row($val);
-    }
-    print $t->draw;
 }
 
 sub _options {
