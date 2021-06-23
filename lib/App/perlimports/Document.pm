@@ -3,7 +3,7 @@ package App::perlimports::Document;
 use Moo;
 use utf8;
 
-our $VERSION = '0.000012';
+our $VERSION = '0.000013';
 
 use App::perlimports::Annotations ();
 use App::perlimports::Include     ();
@@ -237,6 +237,7 @@ my %default_ignore = (
     'Feature::Compat::Try'           => 1,
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
     'Mojo::Base'                     => 1,
+    'Mojo::Date'                     => 1,
     'Mojolicious::Lite'              => 1,
     'Moo'                            => 1,
     'Moo::Role'                      => 1,
