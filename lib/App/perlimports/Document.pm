@@ -487,11 +487,21 @@ sub _imports_for_include {
     return $imports;
 }
 
+sub _extract_words_from_snippet {
+    my $self    = shift;
+    my $snippet = shift;
+    return () unless defined $snippet;
+
+    my $doc   = PPI::Document->new( \$snippet );
+    my @words = map { $_ . q{} } @{ $doc->find('PPI::Token::Word') || [] };
+    return @words;
+}
+
 sub _build_interpolated_symbols {
     my $self = shift;
-    my %symbols;
+    my @symbols;
 
-    for my $quote (
+    for my $token (
         @{
             $self->ppi_document->find(
                 sub {
@@ -504,19 +514,21 @@ sub _build_interpolated_symbols {
                 || []
         }
     ) {
-        my $vars = String::InterpolatedVariables::extract($quote);
-        for my $var ( @{$vars} ) {
-            ++$symbols{$var};
+        my $vars = String::InterpolatedVariables::extract($token);
+        push @symbols, @{$vars};
+
+        if ( $token->isa('PPI::Token::Regexp') ) {
+            for my $snippet (
+                $token->get_match_string,
+                $token->get_substitute_string
+            ) {
+                push @symbols, $self->_extract_words_from_snippet($snippet);
+            }
         }
 
         # Match on @{[ ... ]}
-        if ( $quote =~ m/ @ \{ \[ (.*) \] \} /x ) {
-            my $doc   = PPI::Document->new( \$1 );
-            my $words = $doc->find( sub { $_[1]->isa('PPI::Token::Word') } )
-                || [];
-            for my $word (@$words) {
-                ++$symbols{$word};
-            }
+        if ( $token =~ m/ @ \{ \[ (.*) \] \} /x ) {
+            push @symbols, $self->_extract_words_from_snippet($1);
         }
     }
 
@@ -539,7 +551,7 @@ sub _build_interpolated_symbols {
             if ( $var =~ m/([\$\@\%])\{(\w+)\}/ ) {
                 $var = $1 . $2;
             }
-            ++$symbols{$var};
+            push @symbols, $var;
         }
     }
 
@@ -560,9 +572,10 @@ sub _build_interpolated_symbols {
         my $sigil   = $cast . q{};
         my $sibling = $cast->snext_sibling . q{};
         if ( $sibling =~ m/{(\w+)}/ ) {
-            ++$symbols{ $sigil . $1 };
+            push @symbols, $sigil . $1;
         }
     }
+    my %symbols = map { $_ => 1 } @symbols;
     return \%symbols;
 }
 
@@ -664,9 +677,16 @@ sub _is_used_fully_qualified {
         }
     );
 
+    # We could combine the regexes, but this is easy to read.
     for my $key ( keys %{ $self->interpolated_symbols } ) {
-        return 1 if $key =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z_]+\z};
+
+        # package level variable
+        return 1 if $key =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z0-9_]+\z};
+
+        # function
+        return 1 if $key =~ m/\A${module_name}::[a-zA-Z0-9_]+\z/;
     }
+
     return 0;
 }
 
