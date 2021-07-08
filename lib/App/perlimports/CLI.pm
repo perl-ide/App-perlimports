@@ -3,7 +3,7 @@ package App::perlimports::CLI;
 use Moo;
 use utf8;
 
-our $VERSION = '0.000014';
+our $VERSION = '0.000015';
 
 use App::perlimports           ();
 use App::perlimports::Document ();
