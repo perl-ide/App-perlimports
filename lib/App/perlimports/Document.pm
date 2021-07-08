@@ -13,12 +13,15 @@ use Module::Runtime qw( module_notional_filename );
 use MooX::StrictConstructor;
 use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
-use PPIx::Utils::Classification qw( is_hash_key is_method_call );
+use PPIx::Utils::Classification qw(
+    is_function_call
+    is_hash_key
+    is_method_call
+);
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
-use String::InterpolatedVariables ();
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
+use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Maybe Object Str );
 
 with 'App::perlimports::Role::Logger';
 
@@ -487,13 +490,62 @@ sub _imports_for_include {
     return $imports;
 }
 
-sub _extract_words_from_snippet {
+sub _extract_symbols_from_snippet {
     my $self    = shift;
     my $snippet = shift;
     return () unless defined $snippet;
 
-    my $doc   = PPI::Document->new( \$snippet );
-    my @words = map { $_ . q{} } @{ $doc->find('PPI::Token::Word') || [] };
+    # Restore line breaks
+    $snippet =~ s{\\n}{\n}g;
+
+    my $doc = PPI::Document->new( \$snippet );
+    my @symbols
+        = map { $_ . q{} } @{ $doc->find('PPI::Token::Symbol') || [] };
+
+    my $maybe_extract = $doc->find('PPI::Token::Word') || [];
+    for my $word ( @{$maybe_extract} ) {
+
+        # Turn ${FOO} into $FOO
+        #
+        # PPI::Token::Cast    '$'
+        # PPI::Structure::Block       { ... }
+        #   PPI::Statement
+        #     PPI::Token::Word        'FOO'
+        if (   "$word" =~ m{\A\w}
+            && $word->parent->isa('PPI::Statement')
+            && $word->parent->parent->isa('PPI::Structure::Block')
+            && $word->parent->parent->sprevious_sibling->isa(
+                'PPI::Token::Cast') ) {
+            push @symbols, $word->parent->parent->sprevious_sibling . "$word";
+            next;
+        }
+        push @symbols, "$word" if is_function_call($word);
+    }
+
+    return @symbols;
+}
+
+sub _unnest_quotes {
+    my $self  = shift;
+    my $token = shift;
+    my @words = @_;
+
+    if (  !$token->isa('PPI::Token::Quote')
+        || $token->isa('PPI::Token::Quote::Single') ) {
+        return @words;
+    }
+
+    push @words, $self->_extract_symbols_from_snippet( $token->string );
+
+    my $doc    = PPI::Document->new( \$token->string );
+    my $quotes = $doc->find('PPI::Token::Quote');
+    return @words unless $quotes;
+
+    for my $q (@$quotes) {
+        push @words, $self->_extract_symbols_from_snippet("$q");
+        push @words, $self->_unnest_quotes($q);
+    }
+
     return @words;
 }
 
@@ -507,6 +559,7 @@ sub _build_interpolated_symbols {
                 sub {
                     ( $_[1]->isa('PPI::Token::Quote')
                             && !$_[1]->isa('PPI::Token::Quote::Single') )
+                        || $_[1]->isa('PPI::Token::Quote::Interpolate')
                         || $_[1]->isa('PPI::Token::QuoteLike::Regexp')
                         || $_[1]->isa('PPI::Token::Regexp');
                 }
@@ -514,22 +567,17 @@ sub _build_interpolated_symbols {
                 || []
         }
     ) {
-        my $vars = String::InterpolatedVariables::extract($token);
-        push @symbols, @{$vars};
-
-        if ( $token->isa('PPI::Token::Regexp') ) {
+        if (   $token->isa('PPI::Token::Regexp')
+            || $token->isa('PPI::Token::QuoteLike::Regexp') ) {
             for my $snippet (
                 $token->get_match_string,
-                $token->get_substitute_string
+                $token->get_substitute_string,
             ) {
-                push @symbols, $self->_extract_words_from_snippet($snippet);
+                push @symbols, $self->_extract_symbols_from_snippet($snippet);
             }
         }
 
-        # Match on @{[ ... ]}
-        if ( $token =~ m/ @ \{ \[ (.*) \] \} /x ) {
-            push @symbols, $self->_extract_words_from_snippet($1);
-        }
+        push @symbols, $self->_unnest_quotes($token);
     }
 
     # Crude hack to catch vars like ${FOO_BAR} in heredocs.
@@ -545,14 +593,7 @@ sub _build_interpolated_symbols {
     ) {
         my $content = join "\n", $heredoc->heredoc;
         next if $heredoc =~ m{'};
-
-        my $vars = String::InterpolatedVariables::extract($content);
-        for my $var ( @{$vars} ) {
-            if ( $var =~ m/([\$\@\%])\{(\w+)\}/ ) {
-                $var = $1 . $2;
-            }
-            push @symbols, $var;
-        }
+        push @symbols, $self->_extract_symbols_from_snippet($content);
     }
 
     # Catch vars like ${FOO_BAR}. This is probably not good enough.

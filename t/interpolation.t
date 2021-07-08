@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 
-use App::perlimports::Document ();
-use Test::More import => [qw( done_testing is_deeply )];
+use lib 't/lib';
 
-my $doc = App::perlimports::Document->new(
-    filename => 'test-data/interpolation.pl' );
+use TestHelper qw( doc );
+use Test::More import => [ 'diag', 'done_testing', 'is_deeply' ];
+
+my ($doc) = doc( filename => 'test-data/interpolation.pl' );
 
 is_deeply(
     $doc->interpolated_symbols, { '$code' => 1, encode => 1 },
