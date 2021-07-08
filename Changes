@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Reduce false positives introduced by 0.000014 (GH#28) (Olaf Alders)
 
 0.000014  2021-07-08 19:47:54Z
     - Detect symbols in nested quotes (GH#27) (Olaf Alders)
