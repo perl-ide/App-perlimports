@@ -3,12 +3,13 @@ use warnings;
 
 use lib 't/lib';
 
+use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'diag', 'done_testing', 'is_deeply' ];
+use Test::More import => ['done_testing'];
 
 my ($doc) = doc( filename => 'test-data/interpolation.pl' );
 
-is_deeply(
+eq_or_diff(
     $doc->interpolated_symbols, { '$code' => 1, encode => 1 },
     'vars'
 );

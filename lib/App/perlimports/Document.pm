@@ -495,31 +495,36 @@ sub _extract_symbols_from_snippet {
     my $snippet = shift;
     return () unless defined $snippet;
 
-    # Restore line breaks
+    # Restore line breaks and tabs
     $snippet =~ s{\\n}{\n}g;
+    $snippet =~ s{\\t}{\t}g;
 
     my $doc = PPI::Document->new( \$snippet );
     my @symbols
         = map { $_ . q{} } @{ $doc->find('PPI::Token::Symbol') || [] };
 
-    my $maybe_extract = $doc->find('PPI::Token::Word') || [];
-    for my $word ( @{$maybe_extract} ) {
+    my $casts = $doc->find('PPI::Token::Cast') || [];
+    for my $cast ( @{$casts} ) {
+        my $full_cast   = $cast . $cast->snext_sibling;
+        my $cast_as_doc = PPI::Document->new( \$full_cast );
+        push @symbols,
+            map { $_ . q{} }
+            @{ $cast_as_doc->find('PPI::Token::Symbol') || [] };
 
-        # Turn ${FOO} into $FOO
-        #
-        # PPI::Token::Cast    '$'
-        # PPI::Structure::Block       { ... }
-        #   PPI::Statement
-        #     PPI::Token::Word        'FOO'
-        if (   "$word" =~ m{\A\w}
-            && $word->parent->isa('PPI::Statement')
-            && $word->parent->parent->isa('PPI::Structure::Block')
-            && $word->parent->parent->sprevious_sibling->isa(
-                'PPI::Token::Cast') ) {
-            push @symbols, $word->parent->parent->sprevious_sibling . "$word";
+        my $words = $cast_as_doc->find('PPI::Token::Word') || [];
+
+        ## Turn ${FOO} into $FOO
+        if (   $words
+            && scalar @$words == 1
+            && $full_cast =~ m/([\$\@\%])\{$words->[0]}/ ) {
+            push @symbols, $1 . $words->[0];
             next;
         }
-        push @symbols, "$word" if is_function_call($word);
+
+        # This could likely be a source of false positives.
+        for my $word (@$words) {
+            push @symbols, "$word" if is_function_call($word);
+        }
     }
 
     return @symbols;

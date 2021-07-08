@@ -9,9 +9,8 @@ use Test::More import => [ 'done_testing', 'is_deeply' ];
 
 my ($doc) = doc( filename => 'test-data/nested-quotes.pl' );
 
-# "content" is a false positive. Not sure how best to deal with that.
 is_deeply(
-    $doc->interpolated_symbols, { content => 1, path => 1, '$thing' => 1, },
+    $doc->interpolated_symbols, { path => 1, '$thing' => 1, },
     'vars'
 );
 
