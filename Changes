@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000014  2021-07-08 19:47:54Z
     - Detect symbols in nested quotes (GH#27) (Olaf Alders)
 
 0.000013  2021-07-08 14:54:28Z

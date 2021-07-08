@@ -23,7 +23,6 @@ requires "Pod::Usage" => "0";
 requires "Ref::Util" => "0";
 requires "Sereal::Decoder" => "0";
 requires "Sereal::Encoder" => "0";
-requires "String::InterpolatedVariables" => "0";
 requires "Sub::HandlesVia" => "0";
 requires "Symbol::Get" => "0.10";
 requires "Text::SimpleTable::AutoWidth" => "0";
