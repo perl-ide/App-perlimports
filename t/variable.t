@@ -14,4 +14,9 @@ is(
     'variable in block is found'
 );
 
+is_deeply(
+    $include->_document->interpolated_symbols,
+    { '$REQUIRE_ORDER' => 1, '$RETURN_IN_ORDER' => 1, }
+);
+
 done_testing();
