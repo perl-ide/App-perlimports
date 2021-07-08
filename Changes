@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Detect functions used in regex replacements (GH#26) (Olaf Alders)
 
 0.000012  2021-06-23 17:52:22Z
     - Fix a warning that was being triggered by the logger
