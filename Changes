@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000016  2021-07-09 17:54:06Z
     - Detect Module::->new syntax (GH#29) (Olaf Alders)
     - Fix some regex parsing behaviour (GH#29) (Olaf Alders)
 
