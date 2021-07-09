@@ -505,6 +505,12 @@ sub _extract_symbols_from_snippet {
 
     my $casts = $doc->find('PPI::Token::Cast') || [];
     for my $cast ( @{$casts} ) {
+
+        # Optimistically avoid misinterpreting regex assertions as casts
+        # We don't want to match on "A" in the following example:
+        # if ( $thing =~ m{ \A b }x ) { ... }
+        next if $cast eq '\\';
+
         my $full_cast   = $cast . $cast->snext_sibling;
         my $cast_as_doc = PPI::Document->new( \$full_cast );
         push @symbols,
