@@ -708,18 +708,22 @@ sub _is_used_fully_qualified {
 
     # We could tighten this up and check that the word following "::" is a sub
     # which exists in that package.
+    #
+    # Module::function
+    # Module::->new
+    # isa => ArrayRef[Module::]
     return 1 if $self->ppi_document->find(
         sub {
             (
                 $_[1]->isa('PPI::Token::Word')
                     && (
-                    $_[1]->content =~ m{\A${module_name}::[a-zA-Z_]}
+                    $_[1]->content =~ m{\A${module_name}::[a-zA-Z0-9_]*\z}
                     || (   $_[1]->content eq ${module_name}
                         && $_[1]->snext_sibling eq '->' )
                     )
                 )
                 || ( $_[1]->isa('PPI::Token::Symbol')
-                && $_[1] =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z_]} );
+                && $_[1] =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z0-9_]} );
         }
     );
 
