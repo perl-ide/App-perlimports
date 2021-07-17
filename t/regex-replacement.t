@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use TestHelper qw( doc );
 use Test::More import => [ '$TODO', 'diag', 'done_testing', 'is' ];
-use Test::Needs qw( IP::Random );
+use Test::Needs { 'IP::Random' => '1.200230' };
 
 my ($doc) = doc(
     filename        => 'test-data/regex-replacement.pl',
