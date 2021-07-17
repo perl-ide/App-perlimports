@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Bump version of IP::Random used in tests. Fixes #30. (GH#31) (Olaf
+      Alders)
 
 0.000016  2021-07-09 17:54:06Z
     - Detect Module::->new syntax (GH#29) (Olaf Alders)
