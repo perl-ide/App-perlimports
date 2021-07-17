@@ -5,7 +5,7 @@ on 'test' => sub {
     requires 'File::chdir' => 0;
     requires 'File::Spec::Functions' => 0;
     requires 'HTML::TableExtract' => 0;
-    requires 'IP::Random' if "$]" >= 5.020;
+    requires 'IP::Random' => '1.200230' if "$]" >= 5.020;
     requires 'Lingua::EN::Inflect';
     requires 'List::AllUtils' => 0;
     requires 'MetaCPAN::Moose' => 0;
