@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Cover more object oriented modules (GH#32) (Olaf Alders)
 
 0.000017  2021-07-17 15:54:27Z
     - Bump version of IP::Random used in tests. Fixes #30. (GH#31) (Olaf
