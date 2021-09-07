@@ -535,7 +535,7 @@ A regular expression to match module names which should be ignored by this
 script. Any modules matched by this regular expression remain unchanged after
 processing.
 
-    --ignore-modules '^(Foo|Foo::Bar)'
+    --ignore-modules-pattern '^(Foo|Foo::Bar)'
 
 =head2 --ignore-modules-pattern-filename
 
