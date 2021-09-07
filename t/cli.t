@@ -129,7 +129,7 @@ subtest '--stdout' => sub {
 use strict;
 use warnings;
 
-use Local::STDOUT;
+use Local::STDOUT ();
 
 BEGIN {
     print "perlimports should trap this";

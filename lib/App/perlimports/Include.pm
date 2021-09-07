@@ -440,7 +440,7 @@ sub _build_formatted_ppi_statement {
     # of imports.
     if (   $self->_will_never_export
         || $self->_is_translatable
-        || ( $self->_has_explicit_exports && !@{ $self->_imports } ) ) {
+        || !@{ $self->_imports } ) {
         return $self->_maybe_get_new_include(
             sprintf(
                 'use %s %s();', $self->module_name,
@@ -449,15 +449,6 @@ sub _build_formatted_ppi_statement {
                 : q{}
             )
         );
-    }
-
-    # We don't know if the module exports anything (because it may not be using
-    # Exporter) but we also haven't explicitly flagged this as a module which
-    # never exports. So basically we can't be correct with confidence, so we'll
-    # return the original statement.
-    if (  !$self->_has_explicit_exports
-        && $self->_include->type ne 'require' ) {
-        return $self->_include;
     }
 
     my $statement;
