@@ -34,7 +34,7 @@ package Local::MyOwnMoo;
 use strict;
 use warnings;
 
-use Import::Into;
+use Import::Into ();
 
 sub import {
     $_->import::into( scalar caller ) for qw( Moo );

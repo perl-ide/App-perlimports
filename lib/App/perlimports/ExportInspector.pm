@@ -173,13 +173,6 @@ has pkg_isa => (
     },
 );
 
-has uses_import_into => (
-    is      => 'ro',
-    isa     => Bool,
-    lazy    => 1,
-    builder => '_build_uses_import_into',
-);
-
 has uses_moose => (
     is      => 'ro',
     isa     => Bool,
@@ -314,39 +307,6 @@ sub _build_implicit {
     };
 
     return $aggregated;
-}
-
-sub _build_uses_import_into {
-    my $self           = shift;
-    my $already_loaded = Class::Inspector->loaded('Import::Into');
-    if ($already_loaded) {
-
-        #Class::Unload->unload ($self->_module_name );
-        Class::Unload->unload('Import::Into');
-        delete $import::{into};
-        delete $unimport::{out_of};
-    }
-    my $pkg           = $self->_pkg_for('uses::import::into');
-    my $use_statement = sprintf( 'use %s;', $self->_module_name );
-
-    my @log;
-    $self->logger->add(
-        Log::Dispatch::Array->new(
-            name      => 'import_into_logger',
-            min_level => 'warning',
-            array     => \@log,
-        )
-    );
-    $self->_exports_for_include( $pkg, $use_statement );
-
-    my $uses_import_into = Class::Inspector->loaded('Import::Into')
-        || any { $_->{message} =~ q{"into" via package "import"} } @log;
-
-    if ( $already_loaded && !$uses_import_into ) {
-        require_module('Import::Into');
-        Import::Into->import;
-    }
-    return $uses_import_into;
 }
 
 sub _exports_for_include {
