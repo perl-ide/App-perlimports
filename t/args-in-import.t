@@ -3,9 +3,8 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports::Document ();
 use TestHelper qw( doc );
-use Test::More;
+use Test::More import => [ 'done_testing', 'is_deeply' ];
 use Test::Needs qw( Test2::V0 );
 
 my ($doc) = doc(

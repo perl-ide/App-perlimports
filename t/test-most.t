@@ -5,7 +5,8 @@ use lib 't/lib';
 
 use App::perlimports::Document ();
 use TestHelper qw( logger );
-use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::Needs qw( Test::Most );
 
 my %modules = (
     'Test::More' => 'test-data/test-more.t',

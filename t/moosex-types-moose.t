@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc );
-use Test::More;
+use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( MooseX::Types MooseX::Types::Moose );
 
 my ($doc) = doc(

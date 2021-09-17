@@ -7,10 +7,7 @@ use Moo;
 our $VERSION = '0.000019';
 
 use Class::Inspector ();
-use Class::Unload    ();
-use Data::Dumper qw( Dumper );
 use List::Util qw( any );
-use Log::Dispatch::Array ();
 use Module::Runtime qw( require_module );
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );

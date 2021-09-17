@@ -7,7 +7,7 @@ use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
 use TestHelper qw( logger );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [ 'diag', 'done_testing', 'is', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Perl::Critic::Utils );
 
 subtest '--filename' => sub {

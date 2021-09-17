@@ -3,8 +3,7 @@
 use strict;
 use warnings;
 
-use Capture::Tiny qw( capture );
-use Test::More import => [ 'diag', 'done_testing', 'like', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'subtest' ];
 use Test::Needs qw( Moose );
 use Test::Script 1.27 qw(
     script_compiles

@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc );
-use Test::More;
+use Test::More import => [ 'done_testing', 'is' ];
 
 my ($doc) = doc(
     filename => 'test-data/socket.pl',

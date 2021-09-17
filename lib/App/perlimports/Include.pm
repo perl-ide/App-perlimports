@@ -4,14 +4,10 @@ use Moo;
 
 our $VERSION = '0.000019';
 
-use App::perlimports::ExportInspector ();
-use Class::Inspector                  ();
 use Data::Dumper qw( Dumper );
 use List::Util qw( any none uniq );
 use Memoize qw( memoize );
-use Module::Runtime qw( require_module );
 use MooX::StrictConstructor;
-use Path::Tiny qw( path );
 use PPI::Document 1.270 ();
 use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );

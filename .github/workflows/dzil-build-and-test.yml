@@ -109,6 +109,9 @@ jobs:
         with:
           name: build_dir
           path: .
+      - name: install test-needs deps
+        run: cpm install -g --cpanfile test-needs-cpanfile
+        continue-on-error: true
       - name: Install deps and test
         run: cpan-install-dist-deps && test-dist
         env:
@@ -153,7 +156,7 @@ jobs:
           cpanfile: "cpanfile"
           args: "--with-suggests --with-test --with-develop"
       - run: prove -lr t
-  test-needs-job:
+  without-test-needs-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
     strategy:

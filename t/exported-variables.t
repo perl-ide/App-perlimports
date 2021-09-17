@@ -6,7 +6,7 @@ use warnings;
 use lib 'test-data/lib', 't/lib';
 
 use TestHelper qw( doc inc );
-use Test::More import => [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok' ];
+use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
 
 my ($doc) = doc(
     filename  => 'test-data/exported-variables.pl',
