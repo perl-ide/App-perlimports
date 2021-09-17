@@ -7,6 +7,7 @@ use lib 't/lib';
 
 use TestHelper qw( file2includes source2pi );
 use Test::More import => [ 'done_testing', 'is' ];
+use Test::Needs qw( HTTP::Status );
 
 my @includes = file2includes('test-data/http-status.pl');
 

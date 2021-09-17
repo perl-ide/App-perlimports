@@ -8,6 +8,7 @@ use lib 't/lib';
 use Path::Tiny qw( path );
 use TestHelper qw( doc source2pi );
 use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::Needs qw( LWP::UserAgent );
 
 my $filename = 'test-data/require.pl';
 

@@ -5,6 +5,7 @@ use lib 't/lib';
 
 use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is' ];
+use Test::Needs qw( LWP::UserAgent );
 
 my ($doc) = doc(
     filename  => 'test-data/method.pl',
