@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000019  2021-09-17 19:20:44Z
     - Ignore modules with import errors (GH#35) (Olaf Alders)
     - Stop special-casing Import::Into (GH#35) (Olaf Alders)
     - Reduce required dependencies (GH#36) (Olaf Alders)

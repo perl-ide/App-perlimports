@@ -3,19 +3,16 @@
 
 requires "Capture::Tiny" => "0";
 requires "Class::Inspector" => "1.36";
-requires "Class::Unload" => "0";
 requires "Data::Dumper" => "0";
 requires "File::Basename" => "0";
 requires "Getopt::Long::Descriptive" => "0";
 requires "List::Util" => "0";
 requires "Log::Dispatch" => "0";
-requires "Log::Dispatch::Array" => "0";
 requires "Memoize" => "0";
 requires "Module::Runtime" => "0";
 requires "Moo" => "0";
 requires "Moo::Role" => "0";
 requires "MooX::StrictConstructor" => "0";
-requires "PPI" => "1.270";
 requires "PPIx::Utils::Classification" => "0";
 requires "Path::Tiny" => "0";
 requires "Perl::Tidy" => "20210402";
@@ -34,16 +31,12 @@ requires "utf8" => "0";
 requires "warnings" => "0";
 
 on 'test' => sub {
-  requires "Cpanel::JSON::XS" => "0";
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
-  requires "Geo::IP" => "0";
-  requires "Getopt::Long" => "2.40";
-  requires "LWP::UserAgent" => "6.49";
+  requires "Log::Dispatch::Array" => "0";
   requires "Sub::Exporter" => "0";
   requires "Test::Differences" => "0";
   requires "Test::More" => "0";
-  requires "Test::Most" => "0";
   requires "Test::Needs" => "0";
   requires "Test::RequiresInternet" => "0";
   requires "Test::Script" => "1.27";
