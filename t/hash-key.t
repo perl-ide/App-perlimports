@@ -5,9 +5,8 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports ();
 use TestHelper qw( file2includes source2pi );
-use Test::More import => [qw( done_testing is )];
+use Test::More import => [ 'done_testing', 'is' ];
 
 my @includes = file2includes('test-data/http-status.pl');
 

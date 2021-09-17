@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More;
+use Test::More import => [ 'done_testing', 'ok' ];
 
 my ($doc) = doc(
     filename        => 'test-data/fully-qualified.pl',

@@ -6,7 +6,7 @@ use lib 't/lib';
 use App::perlimports::Annotations ();
 use PPI::Document                 ();
 use TestHelper qw( doc );
-use Test::More import => [ 'diag', 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 
 subtest 'mixed' => sub {
     my $doc = PPI::Document->new( 'test-data/annotation.pl', readonly => 1, );

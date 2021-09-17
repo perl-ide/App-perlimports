@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::Document ();
 use TestHelper qw( logger );
-use Test::More;
+use Test::More import => [ 'done_testing', 'is' ];
 
 my @log;
 

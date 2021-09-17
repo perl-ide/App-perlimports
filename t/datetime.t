@@ -3,9 +3,8 @@ use warnings;
 
 use lib 't/lib';
 
-use App::perlimports::Document ();
 use TestHelper qw( doc );
-use Test::More import => [ 'diag', 'done_testing', 'is' ];
+use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( DateTime );
 
 my ( $doc, $logs ) = doc( filename => 'test-data/datetime.pl' );

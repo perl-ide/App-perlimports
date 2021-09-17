@@ -5,7 +5,7 @@ use lib 't/lib', 'test-data/lib';
 
 use Test::Differences qw( eq_or_diff );
 use Test::More import =>
-    [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
+    [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 use TestHelper qw( inspector );
 use Test::Needs qw(
     Import::Into

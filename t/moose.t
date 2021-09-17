@@ -5,7 +5,6 @@ use warnings;
 
 use lib 'test-data/lib', 't/lib';
 
-use App::perlimports::Document ();
 use TestHelper qw( doc );
 use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Import::Into Moose );

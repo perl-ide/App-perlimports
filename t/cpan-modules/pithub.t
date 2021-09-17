@@ -5,7 +5,6 @@ use warnings;
 
 use lib 'test-data/lib', 't/lib';
 
-use App::perlimports ();
 use TestHelper qw( source2pi );
 use Test::More import => [ 'done_testing', 'is' ];
 use Test::Needs qw( Pithub );

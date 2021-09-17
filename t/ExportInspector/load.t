@@ -5,8 +5,7 @@ use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::ExportInspector ();
 use TestHelper qw( logger );
-use Test::More import =>
-    [ 'diag', 'done_testing', 'is_deeply', 'ok', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is_deeply', 'ok', 'subtest' ];
 use Test::Needs qw( Import::Into Moose );
 use Test::Warnings ();
 
