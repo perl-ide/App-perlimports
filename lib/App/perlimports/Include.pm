@@ -376,6 +376,8 @@ sub _build_is_ignored {
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;
 
+    return 1 if $self->_export_inspector->has_fatal_error;
+
     return 0 if $self->_export_inspector->is_oo_class;
 
     return 1 if $self->_export_inspector->is_moose_class;

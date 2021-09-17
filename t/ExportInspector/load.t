@@ -128,4 +128,9 @@ subtest 'IO::Socket::INET' => sub {
     ok( $ei->has_implicit_exports, 'no implicit_exports' );
 };
 
+subtest 'Local::Explodes' => sub {
+    my ( $ei, $log ) = ei('Local::Explodes');
+    ok( $ei->has_fatal_error, 'has_fatal_error' );
+};
+
 done_testing();

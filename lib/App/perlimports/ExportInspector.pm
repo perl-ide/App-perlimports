@@ -62,6 +62,13 @@ has class_isa => (
     default => sub { shift->_implicit->{class_isa} },
 );
 
+has has_fatal_error => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub { shift->_implicit->{fatal_error} ? 1 : 0 },
+);
+
 has _implicit => (
     is      => 'ro',
     isa     => HashRef,
@@ -195,10 +202,8 @@ sub _build_explicit_exports {
     # If this is Sub::Exporter, we can cheat and see what's in the :all tag
     my $pkg           = $self->_pkg_for('all');
     my $use_statement = sprintf( 'use %s qw(:all);', $self->_module_name );
-    return $self->_list_to_hash(
-        $pkg,
-        $self->_exports_for_include( $pkg, $use_statement )
-    );
+    my ($exports)     = $self->_exports_for_include( $pkg, $use_statement );
+    return $self->_list_to_hash( $pkg, $exports );
 
     # If this module uses something other than Exporter or Sub::Exporter, we
     # probably returned an empty hash above.  We could guess and say it's the
@@ -294,7 +299,8 @@ sub _build_implicit {
     my $module_name   = $self->_module_name;
     my $pkg           = $self->_pkg_for('implicit');
     my $use_statement = "use $module_name;";
-    my $maybe_exports = $self->_exports_for_include( $pkg, $use_statement );
+    my ( $maybe_exports, $fatal_error )
+        = $self->_exports_for_include( $pkg, $use_statement );
 
     no strict 'refs';
     my $aggregated = {
@@ -303,6 +309,7 @@ sub _build_implicit {
         export_fail    => [ @{ $self->_module_name . '::EXPORT_FAIL' } ],
         export_ok      => [ @{ $self->_module_name . '::EXPORT_OK' } ],
         export_tags    => [ @{ $self->_module_name . '::EXPORT_TAGS' } ],
+        fatal_error    => $fatal_error,
         _maybe_exports => $maybe_exports,
     };
 
@@ -365,6 +372,7 @@ EOF
 
     if ($@) {
         $logger_cb->($@);
+        return undef, $@;
     }
 
     ## no critic (TestingAndDebugging::ProhibitNoStrict)
@@ -375,7 +383,7 @@ EOF
     use strict;
     ## use critic
 
-    return \@export;
+    return \@export, undef;
 }
 
 sub _pkg_for {
