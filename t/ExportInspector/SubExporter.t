@@ -3,8 +3,9 @@ use warnings;
 
 use lib 't/lib', 'test-data/lib';
 
+use Test::Differences qw( eq_or_diff );
 use Test::More import =>
-    [ 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
+    [ 'diag', 'done_testing', 'is', 'is_deeply', 'ok', 'subtest' ];
 use TestHelper qw( inspector );
 use Test::Needs qw(
     Import::Into
@@ -109,13 +110,11 @@ subtest 'MetaCPAN::Moose' => sub {
         'exports'
     );
 
-    ok( $inspector->uses_import_into, 'uses_import_into' );
-
     ( $inspector, $log ) = inspector('MetaCPAN::Moose');
 
     # Test again to ensure code can still run after removing and re-importing
     # Import::Into.
-    is_deeply(
+    eq_or_diff(
         $inspector->implicit_exports,
         $expected_export_list,
         'exports'
