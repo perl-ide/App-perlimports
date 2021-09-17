@@ -1,12 +1,13 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
 use TestHelper qw( logger );
-use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::Differences qw( eq_or_diff );
+use Test::More import => [ 'diag', 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Perl::Critic::Utils );
 
 subtest '--filename' => sub {
@@ -141,7 +142,8 @@ EOF
     my ( $stdout, $stderr ) = capture {
         $cli->run;
     };
-    is( $stdout, $expected );
+
+    eq_or_diff( $stdout, $expected );
 };
 
 done_testing();
