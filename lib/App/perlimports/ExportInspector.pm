@@ -4,7 +4,7 @@ use Moo;
 
 ## no critic (TestingAndDebugging::ProhibitNoStrict)
 
-our $VERSION = '0.000019';
+our $VERSION = '0.000020';
 
 use Class::Inspector ();
 use List::Util qw( any );
