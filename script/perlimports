@@ -500,9 +500,9 @@ Process all lib files:
 
     find lib -type f | grep .pm$ | xargs -n 1 perlimports -i --libs lib --no-preserve-unused --no-preserve-duplicates -f
 
-The above command finds all C<.pm> files in C<./t> and pipes them to
+The above command finds all C<.pm> files in C<./lib> and pipes them to
 C<perlimports>. C<lib> has been added to C<@INC>. The files are edited in place
-(C<-i>). Verbose errors will be displayed.
+(C<-i>).
 
 =head1 COMMAND LINE PARAMETERS
 
