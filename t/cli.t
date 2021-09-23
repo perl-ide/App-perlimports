@@ -5,9 +5,10 @@ use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
+use Path::Tiny ();
 use TestHelper qw( logger );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
 use Test::Needs qw( Perl::Critic::Utils );
 
 subtest '--filename' => sub {
@@ -28,6 +29,33 @@ EOF
         $cli->run;
     };
     is( $stdout, $expected, 'parses filename' );
+};
+
+subtest '--log-filename' => sub {
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Perl::Critic::Utils qw( $QUOTE );
+
+my %foo = (
+    $QUOTE => q{description},
+);
+EOF
+
+    my $file = Path::Tiny->tempfile;
+    local @ARGV = (
+        '-f',             'test-data/var-in-hash-key.pl',
+        '--log-filename', $file,
+        '--log-level',    'info',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ($stdout) = capture {
+        $cli->run;
+    };
+    is( $stdout, $expected, 'parses filename' );
+
+    ok( $file->lines, 'something was logged to file' );
 };
 
 subtest '--ignore-modules' => sub {

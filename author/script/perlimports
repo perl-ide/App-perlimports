@@ -189,7 +189,12 @@ subject to change.
     -l info
 
 See L<https://metacpan.org/pod/Log::Dispatch#LOG-LEVELS> for a list of
-available log levels.
+available log levels. Log output defaults to STDERR. See C<--log-filename> if
+you'd rather log to a file.
+
+=head2 --log-filename
+
+Name of a file to redirect logs to, rather than STDERR.
 
 =head2 --help
 

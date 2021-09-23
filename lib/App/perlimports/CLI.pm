@@ -138,6 +138,9 @@ sub _build_args {
             'log-level|l=s', 'Print messages to STDERR',
             { default => 'error' }
         ],
+        [
+            'log-filename=s', 'Log messages to file rather than STDERR',
+        ],
         [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
         [
             'verbose-help', "Print usage message and documentation ",
@@ -226,10 +229,19 @@ sub run {
         ? $self->logger
         : Log::Dispatch->new(
         outputs => [
-            [
+            $opts->log_filename ? [
+                'File',
+                binmode   => ':encoding(UTF-8)',
+                filename  => $opts->log_filename,
+                min_level => $opts->log_level,
+                mode      => '>>',
+                newline   => 1,
+                ]
+            : [
                 'Screen',
                 min_level => $opts->log_level,
                 newline   => 1,
+                stderr    => 1,
                 utf8      => 1,
             ]
         ]
