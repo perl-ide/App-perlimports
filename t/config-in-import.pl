@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports::Document ();
-use Test::More;
+use Test::More import => [ 'done_testing', 'is' ];
 
 my $doc = App::perlimports::Document->new(
     filename => 'test-data/config-in-import.pl' );

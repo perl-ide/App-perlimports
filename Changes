@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add a --log-filename parameter (GH#37) (Olaf Alders)
+    - Add a --[no-]tidy-whitespace param (GH#38) (Olaf Alders)
+    - Fix disappearing module version numbers (GH#38) (Olaf Alders)
 
 0.000019  2021-09-17 19:20:44Z
     - Ignore modules with import errors (GH#35) (Olaf Alders)

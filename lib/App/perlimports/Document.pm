@@ -207,6 +207,14 @@ has tidied_document => (
     builder => '_build_tidied_document',
 );
 
+has _tidy_whitespace => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'tidy_whitespace',
+    lazy     => 1,
+    default  => sub { 1 },
+);
+
 has _verbose => (
     is       => 'ro',
     isa      => Bool,
@@ -834,6 +842,7 @@ sub _build_tidied_document {
             logger           => $self->logger,
             original_imports => $self->original_imports->{ $include->module },
             pad_imports      => $self->_padding,
+            tidy_whitespace  => $self->_tidy_whitespace,
         );
         my $elem;
         try {

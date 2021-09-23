@@ -588,6 +588,17 @@ parentheses.
     # --no-padding
     use Foo qw(bar baz);
 
+=head2 --[no-]tidy-whitespace
+
+C<--tidy-whitespace> is enabled by default. This means that use statements will
+be updated even when the only change is in whitespace. Disabling this can help
+reduce the churn involved when running C<perlimports>, especially if the codebase
+does not have automated tidying.
+
+If you have changed from C<--padding> to C<--no-padding> or vice versa, you'll
+probably want to ensure that C<--tidy-whitespace> has also been enabled so that
+you can see the whitespace changes.
+
 =head2 --libs
 
 A comma separated list of module directories which are not in your C<@INC>
