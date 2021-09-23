@@ -132,6 +132,12 @@ sub _build_args {
             { default => 1 },
         ],
         [],
+        [
+            'tidy-whitespace!',
+            'reformat use statements even when changes are only whitespace',
+            { default => 1 },
+        ],
+        [],
         [],
         [ 'version', 'Print installed version', { shortcircuit => 1 } ],
         [

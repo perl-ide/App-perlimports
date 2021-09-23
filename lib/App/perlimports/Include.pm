@@ -125,6 +125,14 @@ has _pad_imports => (
     default  => sub { 1 },
 );
 
+has _tidy_whitespace => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'tidy_whitespace',
+    lazy     => 1,
+    default  => sub { 1 },
+);
+
 has _will_never_export => (
     is      => 'ro',
     isa     => Bool,
@@ -583,16 +591,17 @@ sub _maybe_get_new_include {
     my $doc       = PPI::Document->new( \$statement );
     my $includes
         = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
-
-    my $check_string = $self->_include . q{};
-    $check_string =~ s{\s+}{ }g;
-
     my $rewrite = $includes->[0]->clone;
+
+    return $rewrite if $self->_tidy_whitespace;
 
     # If the only difference is spacing, we'll just return the original
     # statement rather than mess with the original formatting. This check is
     # naive, but should be good enough for now. It should reduce the churn
     # created by this script.
+    my $check_string = $self->_include . q{};
+    $check_string =~ s{\s+}{ }g;
+
     return ( "$rewrite" eq $check_string ) ? $self->_include : $rewrite;
 }
 

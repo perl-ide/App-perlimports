@@ -10,6 +10,7 @@ use Test::More import => [ 'done_testing', 'ok' ];
 my ($doc) = doc(
     filename        => 'test-data/fully-qualified.pl',
     preserve_unused => 0,
+    tidy_whitespace => 0,
 );
 
 ok( $doc->_is_used_fully_qualified('List::Util'), 'find List::Util' );
