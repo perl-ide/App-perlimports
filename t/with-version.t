@@ -3,25 +3,39 @@ use warnings;
 
 use lib 't/lib';
 
-use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
+use Test::Differences qw( eq_or_diff );
+use TestHelper qw( doc );
+use Test::More import => ['done_testing'];
 use Test::Needs qw( Cpanel::JSON::XS );
 
-my $e = source2pi(
-    'test-data/with-version.pl',
-    'use Getopt::Long 2.40 qw();',
-);
-is(
-    $e->module_name(), 'Getopt::Long',
-    'module_name'
+my ($doc) = doc( filename => 'test-data/with-version.pl' );
+
+my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Cpanel::JSON::XS 4.19 qw( decode_json );
+use Getopt::Long 2.40 qw( GetOptions );
+use LWP::UserAgent 6.49 ();
+use Test::Script 1.27 qw(
+    script_compiles
+    script_runs
+    script_stderr_is
+    script_stderr_like
 );
 
-ok( !$e->_is_ignored, '_is_ignored' );
-is_deeply( $e->_imports, ['GetOptions'], '_imports' );
-is(
-    $e->formatted_ppi_statement,
-    q{use Getopt::Long 2.40 qw( GetOptions );},
-    'formatted_ppi_statement'
+my $foo = decode_json( { foo => 'bar' } );
+my @foo = GetOptions();
+
+script_compiles();
+script_runs();
+script_stderr_is();
+script_stderr_like();
+EOF
+
+eq_or_diff(
+    $doc->tidied_document,
+    $expected
 );
 
 done_testing();
