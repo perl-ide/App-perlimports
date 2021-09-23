@@ -2,7 +2,7 @@ package App::perlimports::Include;
 
 use Moo;
 
-our $VERSION = '0.000020';
+our $VERSION = '0.000021';
 
 use Data::Dumper qw( Dumper );
 use List::Util qw( any none uniq );

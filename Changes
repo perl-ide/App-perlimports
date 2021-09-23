@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000020  2021-09-23 22:49:41Z
     - Add a --log-filename parameter (GH#37) (Olaf Alders)
     - Add a --[no-]tidy-whitespace param (GH#38) (Olaf Alders)
