@@ -1,10 +1,10 @@
 /App-perlimports*
+*.sw*
 .build
 fatlib
+nytprof.out
+tidyall.ERR
+.ppi_build/
+.tidyall.d/
 local/
 nytprof/
-nytprof.out
-.ppi_build/
-*.sw*
-.tidyall.d/
-tidyall.ERR
