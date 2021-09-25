@@ -3,6 +3,7 @@ Revision history for App-perlimports
 {{$NEXT}}
     - Document how to configure Code::TidyAll and precious
     - Add Carp::Always to ignored modules
+    - Require Log::Dispatch 2.70
 
 0.000020  2021-09-23 22:49:41Z
     - Add a --log-filename parameter (GH#37) (Olaf Alders)
