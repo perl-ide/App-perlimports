@@ -46,7 +46,7 @@ lint_failure_exit_codes = 2
 expect_stderr = true
 
 [commands.perlimports]
-type = "both"
+type = "tidy"
 include = [ "**/*.{pl,pm,t,psgi}" ]
 cmd = [ "perl", "-Ilib", "script/perlimports" ]
 tidy_flags = [ "--libs", "lib,t/lib", "--no-preserve-duplicates", "--no-preserve-unused", "--log-filename", "/tmp/perlimports.txt", "--log-level", "debug", "-f" ]
