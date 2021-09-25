@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000021  2021-09-25 23:51:02Z
     - Document how to configure Code::TidyAll and precious
     - Add Carp::Always to ignored modules
     - Require Log::Dispatch 2.70
