@@ -239,6 +239,7 @@ around BUILDARGS => sub {
 };
 
 my %default_ignore = (
+    'Carp::Always'                   => 1,
     'Data::Printer'                  => 1,
     'DDP'                            => 1,
     'Devel::Confess'                 => 1,
