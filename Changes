@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Ensure PPI 1.270 is required in cpanfile (Reported by Slaven Rezić in
+      #39)
 
 0.000021  2021-09-25 23:51:02Z
     - Document how to configure Code::TidyAll and precious
