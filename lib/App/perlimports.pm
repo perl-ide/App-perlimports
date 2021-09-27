@@ -3,7 +3,7 @@ package App::perlimports;
 use strict;
 use warnings;
 
-our $VERSION = '0.000022';
+our $VERSION = '0.000023';
 
 1;
 

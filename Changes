@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000022  2021-09-27 01:31:43Z
     - Ensure PPI 1.270 is required in cpanfile (Reported by Slaven Rezić in
       #39)
