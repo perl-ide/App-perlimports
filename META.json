@@ -69,6 +69,7 @@
             "Moo" : "0",
             "Moo::Role" : "0",
             "MooX::StrictConstructor" : "0",
+            "PPI" : "1.270",
             "PPIx::Utils::Classification" : "0",
             "Path::Tiny" : "0",
             "Perl::Tidy" : "20210402",
@@ -119,7 +120,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000021",
+   "version" : "0.000022",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.034000"
@@ -679,7 +680,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000021",
+                  "tag" : "v0.000022",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },

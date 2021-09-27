@@ -13,6 +13,7 @@ requires "Module::Runtime" => "0";
 requires "Moo" => "0";
 requires "Moo::Role" => "0";
 requires "MooX::StrictConstructor" => "0";
+requires "PPI" => "1.270";
 requires "PPIx::Utils::Classification" => "0";
 requires "Path::Tiny" => "0";
 requires "Perl::Tidy" => "20210402";
