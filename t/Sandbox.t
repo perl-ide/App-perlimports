@@ -12,4 +12,22 @@ ok( $pkg2, 'second pkg' );
 
 cmp_ok( $pkg1, 'ne', $pkg2, 'names are not the same' );
 
+{
+    my $eval = App::perlimports::Sandbox::eval_pkg(
+        'Carp',
+        'use Carp qw( croak );',
+    );
+
+    ok( !$eval, 'no problems with eval' );
+}
+
+{
+    my $eval = App::perlimports::Sandbox::eval_pkg(
+        'Carp',
+        'use Local::ZZZ::XXX ();',
+    );
+
+    ok( $eval, 'could not eval' );
+}
+
 done_testing();

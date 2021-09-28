@@ -23,6 +23,26 @@ use Data::UUID ();
     }
 }
 
+sub eval_pkg {
+    my $module_name = shift;
+    my $content     = shift;
+
+    my $pkg = pkg_for($module_name);
+
+    my $to_eval = <<"EOF";
+package $pkg;
+$content;
+1;
+EOF
+
+    local $@;
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval $to_eval;
+
+    my $e = $@;
+    return $e;
+}
+
 1;
 
 # ABSTRACT: Internal Tools for perlimports
