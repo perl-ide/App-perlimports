@@ -47,8 +47,13 @@ EOF
 
 # ABSTRACT: Internal Tools for perlimports
 
-=head1 pkg_for( $string )
+=head2 pkg_for( $string )
 
 Returns a random module/package name, which can be used to eval arbitrary code.
 Requires the name of the module which will be imported into the package to be
 created.
+
+=head2 eval_pkg( $module_name, $pkg_content )
+
+Takes a module name and content to eval. Returns the contents of C<$@>. So, if
+it returns true, the C<eval> failed.
