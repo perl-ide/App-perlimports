@@ -49,6 +49,13 @@ expect_stderr = true
 type = "tidy"
 include = [ "**/*.{pl,pm,t,psgi}" ]
 cmd = [ "perl", "-Ilib", "script/perlimports" ]
-tidy_flags = [ "--libs", "lib,t/lib", "--no-preserve-duplicates", "--no-preserve-unused", "--log-filename", "/tmp/perlimports.txt", "--log-level", "debug", "-f" ]
+tidy_flags = [
+    "--libs", "lib,t/lib",
+    "--log-filename", "/tmp/perlimports.txt",
+    "--log-level", "debug",
+    "--no-preserve-duplicates",
+    "--no-preserve-unused",
+    "-f",
+]
 ok_exit_codes = 0
 expect_stderr = true
