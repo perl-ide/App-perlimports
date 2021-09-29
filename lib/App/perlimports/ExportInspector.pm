@@ -272,8 +272,28 @@ sub _build_is_oo_class {
 
 sub _build_isa_test_builder {
     my $self = shift;
-    return any { $_ eq 'Test::Builder::Module' }
-    @{ $self->_implicit->{class_isa} };
+    if (
+        any { $_ eq 'Test::Builder::Module' }
+        @{ $self->_implicit->{class_isa} }
+    ) {
+        return 1;
+    }
+
+    return 0 if $self->_module_name !~ m{\ATest};
+
+    my $err = App::perlimports::Sandbox::eval_pkg(
+        $self->_module_name,
+        sprintf( 'use %s qw( some_function );', $self->_module_name )
+    );
+
+    # Catch cases like Test::HTML::Lint, where, which doesn't subclass
+    # Test::Builder, but essentially calls Tester::Builder->new->plan(@_); in
+    # its import(). The error will be something like "plan() doesn't understand
+    # some_function at"
+    if ( $err =~ m{plan} ) {
+        return 1;
+    }
+    return 0;
 }
 
 sub _list_to_hash {
