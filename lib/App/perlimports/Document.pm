@@ -8,6 +8,7 @@ our $VERSION = '0.000023';
 use App::perlimports::Annotations     ();
 use App::perlimports::ExportInspector ();
 use App::perlimports::Include         ();
+use App::perlimports::Sandbox         ();
 use File::Basename qw( fileparse );
 use List::Util qw( any uniq );
 use Module::Runtime qw( module_notional_filename );
@@ -872,6 +873,18 @@ sub _build_tidied_document {
                 $self->_remove_with_trailing_characters($include);
                 next;
             }
+        }
+
+        # Let's see if the import itself might break something
+        if ( my $err
+            = App::perlimports::Sandbox::eval_pkg( $elem->module, "$elem" ) )
+        {
+            $self->logger->warning(
+                sprintf(
+                    'New include (%s) triggers error (%s)', $elem, $err
+                )
+            );
+            next;
         }
 
         # https://github.com/Perl-Critic/PPI/issues/189

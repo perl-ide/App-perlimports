@@ -6,7 +6,8 @@ use Moo;
 
 our $VERSION = '0.000023';
 
-use Class::Inspector ();
+use App::perlimports::Sandbox ();
+use Class::Inspector          ();
 use List::Util qw( any );
 use Module::Runtime qw( require_module );
 use Sub::HandlesVia;
@@ -126,7 +127,7 @@ has implicit_exports => (
 
 sub _build_implicit_exports {
     my $self = shift;
-    my $pkg  = $self->_pkg_for('implicit');
+    my $pkg  = $self->_pkg_for_implicit;
     return $self->is_exporter
         ? $self->_list_to_hash( $pkg, $self->at_export )
         : $self->_list_to_hash( $pkg, $self->_implicit->{_maybe_exports} );
@@ -173,8 +174,15 @@ has pkg_isa => (
     lazy    => 1,
     default => sub {
         no strict 'refs';
-        return [ @{ shift->_pkg_for('implicit') . '::ISA' } ];
+        return [ @{ shift->_pkg_for_implicit . '::ISA' } ];
     },
+);
+
+has _pkg_for_implicit => (
+    is      => 'ro',
+    isa     => Str,
+    lazy    => 1,
+    default => sub { return shift()->_random_pkg_name },
 );
 
 has uses_moose => (
@@ -191,13 +199,13 @@ sub _build_explicit_exports {
     # @EXPORT or @EXPORT_OK. Maybe in both?
     if ( $self->has_at_export_ok || $self->has_at_export ) {
         return $self->_list_to_hash(
-            $self->_pkg_for('implicit'),    # reuse package name
+            $self->_pkg_for_implicit,    # reuse package name
             [ @{ $self->at_export }, @{ $self->at_export_ok } ]
         );
     }
 
     # If this is Sub::Exporter, we can cheat and see what's in the :all tag
-    my $pkg           = $self->_pkg_for('all');
+    my $pkg           = $self->_random_pkg_name;
     my $use_statement = sprintf( 'use %s qw(:all);', $self->_module_name );
     my ($exports)     = $self->_exports_for_include( $pkg, $use_statement );
     return $self->_list_to_hash( $pkg, $exports );
@@ -294,7 +302,7 @@ sub _build_implicit {
     my $self = shift;
 
     my $module_name   = $self->_module_name;
-    my $pkg           = $self->_pkg_for('implicit');
+    my $pkg           = $self->_pkg_for_implicit;
     my $use_statement = "use $module_name;";
     my ( $maybe_exports, $fatal_error )
         = $self->_exports_for_include( $pkg, $use_statement );
@@ -383,14 +391,9 @@ EOF
     return \@export, undef;
 }
 
-sub _pkg_for {
-    my $self   = shift;
-    my $suffix = shift;
-
-    return sprintf(
-        'Local::%s::%s::%s::%s', __PACKAGE__, 'imported', $self->_module_name,
-        $suffix
-    );
+sub _random_pkg_name {
+    my $self = shift;
+    return App::perlimports::Sandbox::pkg_for( $self->_module_name );
 }
 
 sub _build_is_moose_class {

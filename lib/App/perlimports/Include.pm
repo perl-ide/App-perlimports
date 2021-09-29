@@ -88,7 +88,6 @@ has _isa_test_builder_module => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    builder => '_build_isa_test_builder_module',
     default => sub { shift->_export_inspector->isa_test_builder },
 );
 
@@ -212,6 +211,14 @@ sub _build_imports {
 
         my @found_import;
         my $isa_symbol = $word->isa('PPI::Token::Symbol');
+
+        # Don't confuse my @Foo with a use of @Foo which is exported by a module.
+        if ( $isa_symbol && $word->content =~ m{\A(@|%|$)} ) {
+            my $previous_sibling = $word->sprevious_sibling;
+            if ( $previous_sibling && $previous_sibling->content eq 'my' ) {
+                next;
+            }
+        }
 
         # If a module exports %foo and we find $foo{bar}, $word->canonical
         # returns $foo and $word->symbol returns %foo
