@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000023  2021-09-29 18:50:41Z
     - Eval import() statements before changing them (GH#40) (Olaf Alders)
     - Don't consider "my @Foo" to be a use of an imported "@Foo" (GH#40) (Olaf
