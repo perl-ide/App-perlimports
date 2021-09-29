@@ -6,6 +6,7 @@ use lib 't/lib';
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
 use Test::More import => [ 'diag', 'done_testing', 'ok' ];
+use Test::Needs qw( HTTP::Tiny );
 
 my ( $doc, $log ) = doc(
     filename        => 'test-data/fully-qualified.pl',
