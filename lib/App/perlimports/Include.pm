@@ -88,7 +88,6 @@ has _isa_test_builder_module => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    builder => '_build_isa_test_builder_module',
     default => sub { shift->_export_inspector->isa_test_builder },
 );
 
