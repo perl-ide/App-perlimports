@@ -5,9 +5,9 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'ok' ];
+use Test::More import => [ 'diag', 'done_testing', 'ok' ];
 
-my ($doc) = doc(
+my ( $doc, $log ) = doc(
     filename        => 'test-data/fully-qualified.pl',
     preserve_unused => 0,
     tidy_whitespace => 0,
@@ -51,6 +51,8 @@ sub also_ok {
     return %Local::ViaExporter::foo;
 }
 EOF
-eq_or_diff( $doc->tidied_document, $expected, 'used modules not removed' );
+
+eq_or_diff( $doc->tidied_document, $expected, 'used modules not removed' )
+    || do { require Data::Dumper; diag Data::Dumper::Dumper($log); };
 
 done_testing;
