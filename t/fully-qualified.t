@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 't/lib', 'test-data/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
