@@ -6,7 +6,10 @@ use lib 't/lib';
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
 use Test::More import => [ 'diag', 'done_testing' ];
-use Test::Needs qw( Cpanel::JSON::XS LWP::UserAgent );
+use Test::Needs {
+    'Cpanel::JSON::XS' => 4.19,
+    'LWP::UserAgent'   => 5.00,
+};
 
 my ( $doc, $log ) = doc( filename => 'test-data/with-version.pl' );
 
