@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Fix t/with-version.t on some machines by requiring the correct minimum
+      needed module version via Test::Needs (GH#42) (Olaf Alders)
 
 0.000023  2021-09-29 18:50:41Z
     - Eval import() statements before changing them (GH#40) (Olaf Alders)
