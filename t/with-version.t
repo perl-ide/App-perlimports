@@ -8,6 +8,7 @@ use TestHelper qw( doc );
 use Test::More import => [ 'diag', 'done_testing' ];
 use Test::Needs {
     'Cpanel::JSON::XS' => 4.19,
+    'Getopt::Long'     => 2.40,
     'LWP::UserAgent'   => 5.00,
 };
 
