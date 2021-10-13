@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000025  2021-10-13 21:42:40Z
     - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)
 
 0.000024  2021-10-12 15:58:08Z
