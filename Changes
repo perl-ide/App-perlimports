@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)
 
 0.000024  2021-10-12 15:58:08Z
     - Fix t/with-version.t on some machines by requiring the correct minimum
