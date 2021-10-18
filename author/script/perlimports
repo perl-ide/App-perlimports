@@ -524,13 +524,14 @@ configuration might look something like this:
     [commands.perlimports]
     type = "tidy"
     include = [ "**/*.{pl,pm,t,psgi}" ]
-    cmd = [ "perl", "-Ilib", "script/perlimports" ]
+    cmd = [ "perlimports" ]
     tidy_flags = [
         "--libs", "lib,t/lib",
         "--log-filename", "/tmp/perlimports.txt",
         "--log-level", "debug",
         "--no-preserve-duplicates",
         "--no-preserve-unused",
+        "-i",
         "-f",
     ]
     ok_exit_codes = 0
