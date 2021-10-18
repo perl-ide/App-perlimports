@@ -55,6 +55,7 @@ tidy_flags = [
     "--log-level", "debug",
     "--no-preserve-duplicates",
     "--no-preserve-unused",
+    "-i",
     "-f",
 ]
 ok_exit_codes = 0
