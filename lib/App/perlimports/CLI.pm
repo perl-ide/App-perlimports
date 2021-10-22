@@ -209,7 +209,7 @@ sub run {
     my $self = shift;
     my $opts = $self->_opts;
 
-    ( print $VERSION )            && return if $opts->version;
+    ( print $VERSION, "\n" )      && return if $opts->version;
     ( print $self->_usage->text ) && return if $opts->help;
 
     if ( $opts->verbose_help ) {
