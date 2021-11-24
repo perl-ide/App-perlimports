@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use feature qw( say );
 
 use App::perlimports::ExportInspector ();
 use Getopt::Long::Descriptive qw( describe_options );
@@ -12,14 +13,20 @@ use Pod::Usage qw( pod2usage );
 use Text::SimpleTable::AutoWidth ();
 
 my ( $opts, $usage ) = _options();
-( print $App::perlimports::ExportInspector::VERSION ) && exit
-    if $opts->version;
-( print $usage ) && exit if $opts->help;
+
+if ( $opts->version ) {
+    say $App::perlimports::ExportInspector::VERSION;
+    exit(0);
+}
+
+if ( $opts->help ) {
+    print $usage;
+    exit(0);
+}
 
 if ( $opts->verbose_help ) {
-    print $usage;
-    print pod2usage();
-    exit;
+    print STDOUT $usage;
+    pod2usage({ -exitval => 0 });
 }
 
 if ( $opts->libs ) {
@@ -37,9 +44,17 @@ my $logger = Log::Dispatch->new(
     ]
 );
 
+my $module = $opts->module || shift @ARGV;
+
+if ( !$module ) {
+    say q{Mandatory parameter 'module' missing};
+    print $usage;
+    exit(1);
+}
+
 my $ei = App::perlimports::ExportInspector->new(
     logger      => $logger,
-    module_name => $opts->module,
+    module_name => $module,
 );
 
 if ( $ei->is_oo_class ) {
@@ -148,7 +163,6 @@ sub _options {
         'dump-perl-exports %o',
         [
             'module|m=s', 'The module to inspect for exports',
-            { required => 1 }
         ],
         [],
         [

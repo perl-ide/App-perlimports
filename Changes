@@ -1,7 +1,10 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
-    - Ignore Env.pm for the time being
+    - Ignore Env.pm for the time being (GH#47) (Olaf Alders)
+    - Allow module name to be passed to dump-perl-exports without flag (GH#46) (Olaf Alders)
+    - Ignore Constant::Generate and Git::Sub (GH#46) (Olaf Alders)
+    - Bump minimum Perl to 5.12.0 (GH#46) (Olaf Alders)
 
 0.000025  2021-10-13 21:42:40Z
     - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)
