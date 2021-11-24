@@ -24,6 +24,44 @@ subtest 'Moo' => sub {
     script_stderr_is( q{}, 'no errors' );
 };
 
+subtest 'implied --module' => sub {
+    script_runs( [ 'script/dump-perl-exports', 'Moo' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
+
+subtest 'help' => sub {
+    script_runs( [ 'script/dump-perl-exports', '--help' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
+
+subtest 'libs' => sub {
+    script_runs(
+        [
+            'script/dump-perl-exports',
+            '--libs',
+            'test-data/lib',
+            'Local::ViaExporter'
+        ]
+    );
+    script_stderr_is( q{}, 'no errors' );
+};
+
+subtest 'log level' => sub {
+    script_runs(
+        [ 'script/dump-perl-exports', '--log-level', 'info', 'Moo' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
+
+subtest 'verbose help' => sub {
+    script_runs( [ 'script/dump-perl-exports', '--verbose-help' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
+
+subtest 'version' => sub {
+    script_runs( [ 'script/dump-perl-exports', '--version' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
+
 subtest 'Local::ViaExporter' => sub {
     script_runs(
         [
