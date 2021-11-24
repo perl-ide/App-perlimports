@@ -241,6 +241,7 @@ around BUILDARGS => sub {
 
 my %default_ignore = (
     'Carp::Always'                   => 1,
+    'Constant::Generate'             => 1,
     'Data::Printer'                  => 1,
     'DDP'                            => 1,
     'Devel::Confess'                 => 1,
@@ -250,6 +251,7 @@ my %default_ignore = (
     'Exporter'                       => 1,
     'Exporter::Lite'                 => 1,
     'Feature::Compat::Try'           => 1,
+    'Git::Sub'                       => 1,
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
     'Mojo::Base'                     => 1,
     'Mojo::Date'                     => 1,
