@@ -235,7 +235,8 @@ sub run {
         ? $self->logger
         : Log::Dispatch->new(
         outputs => [
-            $opts->log_filename ? [
+            $opts->log_filename
+            ? [
                 'File',
                 binmode   => ':encoding(UTF-8)',
                 filename  => $opts->log_filename,
