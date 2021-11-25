@@ -3,8 +3,9 @@ use warnings;
 
 use lib 't/lib', 'test-data/lib';
 
+use PPI::Document ();
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [ 'done_testing', 'is', 'ok' ];
 
 my ( $doc, $log ) = doc(
     filename        => 'test-data/explodes.pl',
@@ -25,5 +26,11 @@ is(
     $expected,
     'modules which throw exceptions are ignored'
 );
+
+my $raw_include = 'use Local::Explodes qw( foo );';
+my $inc         = PPI::Document->new( \$raw_include );
+my $found       = $inc->find('PPI::Statement::Include')->[0];
+
+ok( $doc->_is_ignored($found) );
 
 done_testing;

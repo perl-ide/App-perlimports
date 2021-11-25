@@ -5,8 +5,9 @@ use warnings;
 
 use lib 't/lib';
 
+use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'subtest' ];
+use Test::More import => [ 'done_testing', 'is_deeply', 'subtest' ];
 
 subtest 'verbose' => sub {
     my ($doc) = doc( filename => 'test-data/carp.pl' );
@@ -20,7 +21,7 @@ use Carp qw( croak verbose );
 
 croak('oof');
 EOF
-    is(
+    eq_or_diff(
         $doc->tidied_document,
         $expected,
         'verbose is preserved'
@@ -39,7 +40,7 @@ use Carp qw( croak );
 croak('oof');
 EOF
 
-    is(
+    eq_or_diff(
         $doc->tidied_document,
         $expected,
         'verbose is not inserted'
@@ -64,7 +65,7 @@ EOF
         'original imports'
     );
 
-    is(
+    eq_or_diff(
         $doc->tidied_document,
         $expected,
         'verbose is not inserted'

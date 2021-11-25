@@ -768,8 +768,12 @@ sub _is_ignored {
         = exists $default_ignore{ $element->module }
         || exists $self->_ignore_modules->{ $element->module }
         || $self->_annotations->is_ignored($element)
-        || any { $element->module =~ /$_/ }
-    grep { $_ } @{ $self->_ignore_modules_pattern || [] };
+        || (
+        any { $element->module =~ /$_/ }
+        grep { $_ } @{ $self->_ignore_modules_pattern || [] }
+        )
+        || ( $self->inspector_for( $element->module )
+        && !$self->inspector_for( $element->module )->evals_ok );
     return $res;
 }
 

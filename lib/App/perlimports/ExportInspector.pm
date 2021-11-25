@@ -12,7 +12,7 @@ use List::Util qw( any );
 use Module::Runtime qw( require_module );
 use Sub::HandlesVia;
 use Try::Tiny qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Str);
+use Types::Standard qw(ArrayRef Bool HashRef Int InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';
 
@@ -185,12 +185,30 @@ has _pkg_for_implicit => (
     default => sub { return shift()->_random_pkg_name },
 );
 
+has success_counter => (
+    traits  => ['Counter'],
+    is      => 'ro',
+    isa     => Int,
+    default => 0,
+    handles => {
+        _increment_success_counter => 'inc',
+    },
+);
+
 has uses_moose => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
     builder => '_build_uses_moose',
 );
+
+sub evals_ok {
+    my $self = shift;
+
+    $self->explicit_exports;
+    $self->implicit_exports;
+    return $self->success_counter;
+}
 
 sub _build_explicit_exports {
     my $self = shift;
@@ -379,6 +397,9 @@ EOF
         $logger_cb->($@);
         return undef, $@;
     }
+    else {
+        $self->_increment_success_counter;
+    }
 
     ## no critic (TestingAndDebugging::ProhibitNoStrict)
     no strict 'refs';
@@ -517,6 +538,11 @@ ArrayRef );>.
 In cases where we cannot be certain about the explicit exports, you can try to
 fall back to the implicit exports to get an idea of what this module can
 export.
+
+=head2 evals_ok
+
+Returns true if either implicit or explicit exports can be built without
+setting C<$@>.
 
 =head2 implicit_export_names_match_values
 
