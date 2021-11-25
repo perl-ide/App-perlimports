@@ -7,6 +7,7 @@ use Test::More import => [ 'done_testing', 'subtest' ];
 use Test::Needs qw( Moose );
 use Test::Script 1.27 qw(
     script_compiles
+    script_fails
     script_runs
     script_stderr_is
     script_stderr_like
@@ -22,10 +23,10 @@ subtest 'filename' => sub {
     script_stderr_is( q{}, 'no errors' );
 };
 
-#subtest 'implied --filename' => sub {
-#script_runs( [ $script, 'Moo' ] );
-#script_stderr_is( q{}, 'no errors' );
-#};
+subtest 'implied --filename' => sub {
+    script_runs( [ $script, 'test-data/carp.pl' ] );
+    script_stderr_is( q{}, 'no errors' );
+};
 
 subtest 'help' => sub {
     script_runs( [ $script, '--help' ] );
@@ -65,13 +66,17 @@ subtest 'version' => sub {
     script_stderr_is( q{}, 'no errors' );
 };
 
-#subtest 'Not Found' => sub {
-#script_runs(
-#[
-#'script/perlimports', '--filename', 'x',
-#]
-#);
-#script_stderr_like( qr{Can't locate}, 'error when module not found' );
-#};
+subtest 'Not Found' => sub {
+    script_fails(
+        [
+            'script/perlimports', '--filename', 'x',
+        ],
+        { exit => 1 }
+    );
+    script_stderr_like(
+        qr{x does not appear to be a file},
+        'error when module not found'
+    );
+};
 
 done_testing();
