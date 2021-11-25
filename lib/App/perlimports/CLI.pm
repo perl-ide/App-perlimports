@@ -215,7 +215,7 @@ sub run {
     if ( $opts->verbose_help ) {
         print $self->_usage->text;
         require Pod::Usage;    ## no perlimports
-        print Pod::Usage::pod2usage();
+        Pod::Usage::pod2usage( ( { -exitval => 0 } ) );
         return;
     }
 
