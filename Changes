@@ -6,6 +6,7 @@ Revision history for App-perlimports
     - Ignore Constant::Generate and Git::Sub (GH#46) (Olaf Alders)
     - Bump minimum Perl to 5.12.0 (GH#46) (Olaf Alders)
     - Ignore modules which we cannot eval (GH#49) (Olaf Alders)
+    - Ignore MLDBM
 
 0.000025  2021-10-13 21:42:40Z
     - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)
