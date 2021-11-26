@@ -7,6 +7,7 @@ Revision history for App-perlimports
     - Bump minimum Perl to 5.12.0 (GH#46) (Olaf Alders)
     - Ignore modules which we cannot eval (GH#49) (Olaf Alders)
     - Ignore MLDBM
+    - Ensure --no-tidy-whitespace is passed as a CLI param (GH#53) (Olaf Alders)
 
 0.000025  2021-10-13 21:42:40Z
     - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)

@@ -287,6 +287,7 @@ sub run {
                 padding             => $opts->padding,
                 preserve_duplicates => $opts->preserve_duplicates,
                 preserve_unused     => $opts->preserve_unused,
+                tidy_whitespace     => $opts->tidy_whitespace,
                 $input ? ( selection => $input ) : (),
             );
 
