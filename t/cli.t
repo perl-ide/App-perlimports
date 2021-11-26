@@ -8,7 +8,7 @@ use Capture::Tiny qw( capture );
 use Path::Tiny ();
 use TestHelper qw( logger );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [ 'done_testing', 'is', 'ok', 'subtest' ];
+use Test::More import => [ 'diag', 'done_testing', 'is', 'ok', 'subtest' ];
 use Test::Needs qw( Perl::Critic::Utils );
 
 subtest '--filename' => sub {
@@ -165,13 +165,14 @@ BEGIN {
 }
 EOF
 
-    local @ARGV = ( '-f', 'test-data/stdout.pl', );
+    local @ARGV = ( '--libs', 'test-data/lib', '-f', 'test-data/stdout.pl', );
     my $cli = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture {
         $cli->run;
     };
 
     eq_or_diff( $stdout, $expected );
+    diag $stderr;
 };
 
 done_testing();
