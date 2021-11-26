@@ -11,12 +11,13 @@ use Test::Script 1.27 qw(
     script_runs
     script_stderr_is
     script_stderr_like
+    script_stdout_like
 );
-
-script_compiles('script/perlimports');
 
 my $script   = 'script/perlimports';
 my @filename = ( '--filename', 'test-data/carp.pl' );
+
+script_compiles($script);
 
 subtest 'filename' => sub {
     script_runs( [ $script, @filename ] );
@@ -52,12 +53,19 @@ subtest 'log level' => sub {
 };
 
 subtest 'help' => sub {
-    script_runs( [ 'script/perlimports', '--help' ] );
+    script_runs( [ $script, '--help' ] );
     script_stderr_is( q{}, 'no errors' );
 };
 
+subtest 'tidy_whitespace' => sub {
+    script_runs(
+        [ $script, '--no-tidy-whitespace', 'test-data/preserve-spaces.pl' ] );
+    script_stderr_is( q{}, 'no errors' );
+    script_stdout_like( qr{use Carp    \(\);}, 'whitespace preserved' );
+};
+
 subtest 'verbose help' => sub {
-    script_runs( [ 'script/perlimports', '--verbose-help' ] );
+    script_runs( [ $script, '--verbose-help' ] );
     script_stderr_is( q{}, 'no errors' );
 };
 
@@ -68,9 +76,7 @@ subtest 'version' => sub {
 
 subtest 'Not Found' => sub {
     script_fails(
-        [
-            'script/perlimports', '--filename', 'x',
-        ],
+        [ $script, '--filename', 'x', ],
         { exit => 1 }
     );
     script_stderr_like(
