@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000026  2021-11-26 21:35:12Z
     - Ignore Env.pm for the time being (GH#47) (Olaf Alders)
     - Allow module name to be passed to dump-perl-exports without flag (GH#46) (Olaf Alders)
