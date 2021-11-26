@@ -9,6 +9,7 @@ Revision history for App-perlimports
     - Ignore Sort::ByExample and MLDBM
     - Ensure --no-tidy-whitespace is passed as a CLI param (GH#53) (Olaf Alders)
     - Ignore Import::Into (GH#52) (Olaf Alders)
+    - Ignore more whitespace changes (GH#54) (Olaf Alders)
 
 0.000025  2021-10-13 21:42:40Z
     - Add another minimum version to t/with-version.t (GH#43) (Olaf Alders)

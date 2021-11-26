@@ -6,8 +6,9 @@ use warnings;
 use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [ 'done_testing', 'subtest' ];
 use TestHelper qw( doc );
+use Test::More import => [ 'done_testing', 'subtest' ];
+use Test::Needs qw( HTTP::Status );
 
 subtest 'tidy_whitespace' => sub {
     my $expected = <<'EOF';
@@ -15,6 +16,9 @@ use strict;
 use warnings;
 
 use Carp ();
+use HTTP::Status qw( HTTP_FOUND );
+
+print HTTP_FOUND;
 EOF
     my ($doc) = doc(
         filename        => 'test-data/preserve-spaces.pl',
@@ -24,7 +28,7 @@ EOF
     eq_or_diff(
         $doc->tidied_document,
         $expected,
-        'arbitrary spacing is preserved'
+        'arbitrary spacing is not preserved'
     );
 };
 
@@ -34,6 +38,9 @@ use strict;
 use warnings;
 
 use Carp    ();
+use HTTP::Status qw ( HTTP_FOUND );
+
+print HTTP_FOUND;
 EOF
     my ($doc) = doc(
         filename        => 'test-data/preserve-spaces.pl',
