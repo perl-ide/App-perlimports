@@ -272,6 +272,7 @@ my %default_ignore = (
     'MooX::StrictConstructor'                             => 1,
     'namespace::autoclean'                                => 1,
     'Regexp::Common'                                      => 1,
+    'Sort::ByExample'                                     => 1,
     'Struct::Dumb'                                        => 1,
     'Sub::Exporter'                                       => 1,
     'Sub::Exporter::Progressive'                          => 1,
