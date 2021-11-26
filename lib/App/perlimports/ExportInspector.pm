@@ -552,6 +552,11 @@ Returns true if the keys and values in C<implicit_exports> match.
 
 Returns true if the keys and values in C<explicit_exports> match.
 
+=head2 success_counter
+
+Returns an integer representing the number of times we were able to execute
+eval statements for this package which did not pollute C<$@>.
+
 =head1 CAVEATS
 
 This may not work with modules using some creative way of managing symbol
