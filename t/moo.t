@@ -24,7 +24,8 @@ subtest 'Moo' => sub {
 
 subtest 'Import::Into' => sub {
     my ($doc) = doc(
-        filename => 'test-data/lib/Local/MyOwnMoo.pm',
+        filename        => 'test-data/lib/Local/MyOwnMoo.pm',
+        preserve_unused => 0,
     );
 
     my $expected = <<'EOF';
@@ -33,7 +34,7 @@ package Local::MyOwnMoo;
 use strict;
 use warnings;
 
-use Import::Into ();
+use Import::Into;
 
 sub import {
     $_->import::into( scalar caller ) for qw( Moo );
@@ -50,7 +51,8 @@ EOF
 
 subtest 'Uses MyOwnMoo' => sub {
     my ($doc) = doc(
-        filename => 'test-data/lib/Local/UsesMyOwnMoo.pm',
+        filename        => 'test-data/lib/Local/UsesMyOwnMoo.pm',
+        preserve_unused => 0,
     );
 
     my $expected = <<'EOF';

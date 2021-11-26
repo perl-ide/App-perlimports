@@ -10,7 +10,10 @@ use Test::More import => [ 'done_testing', 'is', 'subtest' ];
 use Test::Needs qw( Import::Into Moose );
 
 subtest 'Moose' => sub {
-    my ($doc) = doc( filename => 'test-data/lib/Local/UsesMoose.pm' );
+    my ($doc) = doc(
+        filename        => 'test-data/lib/Local/UsesMoose.pm',
+        preserve_unused => 1,
+    );
 
     my $expected = <<'EOF';
 package Local::UsesMoose;
@@ -35,7 +38,8 @@ EOF
 
 subtest 'Import::Into' => sub {
     my ($doc) = doc(
-        filename => 'test-data/lib/Local/MyOwnMoose.pm',
+        filename        => 'test-data/lib/Local/MyOwnMoose.pm',
+        preserve_unused => 1,
     );
 
     my $expected = <<'EOF';
@@ -44,7 +48,7 @@ package Local::MyOwnMoose;
 use strict;
 use warnings;
 
-use Import::Into ();
+use Import::Into;
 
 sub import {
     $_->import::into( scalar caller ) for qw( Moose );
@@ -61,7 +65,8 @@ EOF
 
 subtest 'Uses MyOwnMoose' => sub {
     my ($doc) = doc(
-        filename => 'test-data/lib/Local/UsesMyOwnMoose.pm',
+        filename        => 'test-data/lib/Local/UsesMyOwnMoose.pm',
+        preserve_unused => 1,
     );
 
     my $expected = <<'EOF';

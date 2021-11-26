@@ -253,6 +253,7 @@ my %default_ignore = (
     'Feature::Compat::Try'           => 1,
     'Git::Sub'                       => 1,
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
+    'Import::Into'                   => 1,
     'MLDBM'                          => 1,
     'Mojo::Base'                     => 1,
     'Mojo::Date'                     => 1,
