@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.008;
+use 5.012000;
 
 use ExtUtils::MakeMaker;
 
@@ -18,7 +18,7 @@ my %WriteMakefileArgs = (
     "script/perlimports"
   ],
   "LICENSE" => "perl",
-  "MIN_PERL_VERSION" => "5.008",
+  "MIN_PERL_VERSION" => "5.012000",
   "NAME" => "App::perlimports",
   "PREREQ_PM" => {
     "Capture::Tiny" => 0,
@@ -47,6 +47,7 @@ my %WriteMakefileArgs = (
     "Text::SimpleTable::AutoWidth" => 0,
     "Try::Tiny" => 0,
     "Types::Standard" => 0,
+    "feature" => 0,
     "strict" => 0,
     "utf8" => 0,
     "warnings" => 0
@@ -108,6 +109,7 @@ my %FallbackPrereqs = (
   "Text::SimpleTable::AutoWidth" => 0,
   "Try::Tiny" => 0,
   "Types::Standard" => 0,
+  "feature" => 0,
   "lib" => 0,
   "strict" => 0,
   "utf8" => 0,

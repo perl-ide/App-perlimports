@@ -27,7 +27,8 @@ requires "Symbol::Get" => "0.10";
 requires "Text::SimpleTable::AutoWidth" => "0";
 requires "Try::Tiny" => "0";
 requires "Types::Standard" => "0";
-requires "perl" => "5.008";
+requires "feature" => "0";
+requires "perl" => "v5.12.0";
 requires "strict" => "0";
 requires "utf8" => "0";
 requires "warnings" => "0";
@@ -44,7 +45,7 @@ on 'test' => sub {
   requires "Test::Script" => "1.27";
   requires "Test::Warnings" => "0";
   requires "lib" => "0";
-  requires "perl" => "5.008";
+  requires "perl" => "v5.12.0";
 };
 
 on 'test' => sub {
@@ -53,7 +54,7 @@ on 'test' => sub {
 
 on 'configure' => sub {
   requires "ExtUtils::MakeMaker" => "0";
-  requires "perl" => "5.008";
+  requires "perl" => "5.010";
 };
 
 on 'develop' => sub {
