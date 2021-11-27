@@ -57,3 +57,7 @@ created.
 
 Takes a module name and content to eval. Returns the contents of C<$@>. So, if
 it returns true, the C<eval> failed.
+
+Returns a random module/package name, which can be used to eval arbitrary code.
+Requires the name of the module which will be imported into the package to be
+created.

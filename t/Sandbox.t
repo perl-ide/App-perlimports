@@ -71,5 +71,4 @@ EOF
         'does not update import with eval failure'
     );
 };
-
 done_testing();
