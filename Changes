@@ -2,6 +2,7 @@ Revision history for App-perlimports
 
 {{$NEXT}}
     - Detect Test::Builder objects used in import() (GH#56) (Olaf Alders)
+    - Require Test::Script 1.29
 
 0.000026  2021-11-26 21:35:12Z
     - Ignore Env.pm for the time being (GH#47) (Olaf Alders)
