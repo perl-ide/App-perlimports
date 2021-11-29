@@ -103,7 +103,7 @@
             "Test::More" : "0",
             "Test::Needs" : "0",
             "Test::RequiresInternet" : "0",
-            "Test::Script" : "1.27",
+            "Test::Script" : "1.29",
             "Test::Warnings" : "0",
             "lib" : "0",
             "perl" : "v5.12.0"
@@ -122,7 +122,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000026",
+   "version" : "0.000027",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030002"
@@ -179,7 +179,7 @@
             "class" : "Dist::Zilla::Plugin::MakeMaker",
             "config" : {
                "Dist::Zilla::Role::TestRunner" : {
-                  "default_jobs" : "8"
+                  "default_jobs" : "1"
                }
             },
             "name" : "@Author::OALDERS/MakeMaker",
@@ -353,7 +353,7 @@
             "class" : "Dist::Zilla::Plugin::RunExtraTests",
             "config" : {
                "Dist::Zilla::Role::TestRunner" : {
-                  "default_jobs" : "8"
+                  "default_jobs" : "1"
                }
             },
             "name" : "@Author::OALDERS/RunExtraTests",
@@ -682,7 +682,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000026",
+                  "tag" : "v0.000027",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },

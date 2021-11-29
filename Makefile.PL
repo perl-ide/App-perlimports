@@ -61,7 +61,7 @@ my %WriteMakefileArgs = (
     "Test::More" => 0,
     "Test::Needs" => 0,
     "Test::RequiresInternet" => 0,
-    "Test::Script" => "1.27",
+    "Test::Script" => "1.29",
     "Test::Warnings" => 0,
     "lib" => 0
   },
@@ -104,7 +104,7 @@ my %FallbackPrereqs = (
   "Test::More" => 0,
   "Test::Needs" => 0,
   "Test::RequiresInternet" => 0,
-  "Test::Script" => "1.27",
+  "Test::Script" => "1.29",
   "Test::Warnings" => 0,
   "Text::SimpleTable::AutoWidth" => 0,
   "Try::Tiny" => 0,
