@@ -24,5 +24,6 @@ on 'test' => sub {
     requires 'Perl::Critic::Utils' => 0;
     requires 'Pithub' => '0';
     requires 'Test2::V0' => '0';
+    requires 'Test::HTML::Lint' => '0';
     requires 'Test::Most' => '0';
 };
