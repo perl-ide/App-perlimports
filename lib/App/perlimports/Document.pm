@@ -278,6 +278,7 @@ my %default_ignore = (
     'Sub::Exporter::Progressive'                          => 1,
     'Sub::HandlesVia'                                     => 1,
     'Syntax::Keyword::Try'                                => 1,
+    'Term::Size::Any'                                     => 1,
     'Test2::Util::HashBase'                               => 1,
     'Test::Exception'                                     => 1,
     'Test::Needs'                                         => 1,
