@@ -166,8 +166,10 @@ sub _build_imports {
 
     my %found;
 
+    print 'xxx',  "\n";
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word ( @{ $self->_document->possible_imports } ) {
+        print "$word\n";
         next if exists $found{"$word"};
 
         # No need to keep looking if we've found everything that can be
@@ -369,7 +371,9 @@ sub _build_imports {
         }
     }
 
-    @found = uniq sort { "\L$a" cmp "\L$b" } @found;
+    @found = uniq $self->_sort_symbols( @found );
+    use DDP;
+    p @found;
     if ( $self->_original_imports ) {
         my @preserved = grep { m{\A[!_]} } @{ $self->_original_imports };
         @found = uniq( @preserved, @found );
@@ -663,6 +667,23 @@ sub _is_already_imported {
     }
 
     return $duplicate;
+}
+
+sub _sort_symbols {
+    my $self = shift;
+    my @list = @_;
+
+    my @sorted = sort {
+        my $A = _transform_before_cmp($a);
+        my $B = _transform_before_cmp($b);
+        "\L$A" cmp "\L$B";
+    } @list;
+}
+
+sub _transform_before_cmp {
+    my $thing = shift;
+    $thing =~ s{\A[^\w]+}{};
+    return $thing;
 }
 
 1;
