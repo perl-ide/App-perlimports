@@ -166,10 +166,8 @@ sub _build_imports {
 
     my %found;
 
-    print 'xxx',  "\n";
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
     for my $word ( @{ $self->_document->possible_imports } ) {
-        print "$word\n";
         next if exists $found{"$word"};
 
         # No need to keep looking if we've found everything that can be
@@ -371,9 +369,7 @@ sub _build_imports {
         }
     }
 
-    @found = uniq $self->_sort_symbols( @found );
-    use DDP;
-    p @found;
+    @found = uniq $self->_sort_symbols(@found);
     if ( $self->_original_imports ) {
         my @preserved = grep { m{\A[!_]} } @{ $self->_original_imports };
         @found = uniq( @preserved, @found );
@@ -680,9 +676,19 @@ sub _sort_symbols {
     } @list;
 }
 
+# This looks a little weird, but basically we want to maintain a stable sort
+# order with lists that look like (foo, $foo, @foo, %foo).
 sub _transform_before_cmp {
     my $thing = shift;
-    $thing =~ s{\A[^\w]+}{};
+    if ( $thing =~ m{\A[\$]} ) {
+        $thing = substr( $thing, 1 ) . '_A';
+    }
+    elsif ( $thing =~ m{\A[@]} ) {
+        $thing = substr( $thing, 1 ) . '_B';
+    }
+    elsif ( $thing =~ m{\A[%]} ) {
+        $thing = substr( $thing, 1 ) . '_C';
+    }
     return $thing;
 }
 

@@ -83,10 +83,10 @@ subtest 'ViaExporter' => sub {
         'Found some _explicit_exports'
     );
     ok( !$e->_isa_test_builder_module, 'isa_test_builder_module' );
-    is_deeply( $e->_imports, [qw( $foo %foo @foo foo )], '_imports' );
+    is_deeply( $e->_imports, [qw( foo $foo @foo %foo )], '_imports' );
     is(
         $e->formatted_ppi_statement,
-        'use Local::ViaExporter qw( $foo %foo @foo foo );',
+        'use Local::ViaExporter qw( foo $foo @foo %foo );',
         'formatted_ppi_statement'
     );
 };
