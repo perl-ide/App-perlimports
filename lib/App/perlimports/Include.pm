@@ -369,7 +369,7 @@ sub _build_imports {
         }
     }
 
-    @found = uniq sort { "\L$a" cmp "\L$b" } @found;
+    @found = uniq $self->_sort_symbols(@found);
     if ( $self->_original_imports ) {
         my @preserved = grep { m{\A[!_]} } @{ $self->_original_imports };
         @found = uniq( @preserved, @found );
@@ -663,6 +663,33 @@ sub _is_already_imported {
     }
 
     return $duplicate;
+}
+
+sub _sort_symbols {
+    my $self = shift;
+    my @list = @_;
+
+    my @sorted = sort {
+        my $A = _transform_before_cmp($a);
+        my $B = _transform_before_cmp($b);
+        "\L$A" cmp "\L$B";
+    } @list;
+}
+
+# This looks a little weird, but basically we want to maintain a stable sort
+# order with lists that look like (foo, $foo, @foo, %foo).
+sub _transform_before_cmp {
+    my $thing = shift;
+    if ( $thing =~ m{\A[\$]} ) {
+        $thing = substr( $thing, 1 ) . '_A';
+    }
+    elsif ( $thing =~ m{\A[@]} ) {
+        $thing = substr( $thing, 1 ) . '_B';
+    }
+    elsif ( $thing =~ m{\A[%]} ) {
+        $thing = substr( $thing, 1 ) . '_C';
+    }
+    return $thing;
 }
 
 1;

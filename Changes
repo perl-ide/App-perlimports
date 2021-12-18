@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Maintain stable sort order for lists which include sigils (GH#57) (Olaf
+      Alders)
 
 0.000027  2021-11-29 22:29:05Z
     - Detect Test::Builder objects used in import() (GH#56) (Olaf Alders)
