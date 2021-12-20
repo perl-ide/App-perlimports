@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Improve import sort order (GH#58) (Olaf Alders)
 
 0.000028  2021-12-18 02:26:13Z
     - Maintain stable sort order for lists which include sigils (GH#57) (Olaf

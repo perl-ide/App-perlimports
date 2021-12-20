@@ -677,17 +677,18 @@ sub _sort_symbols {
 }
 
 # This looks a little weird, but basically we want to maintain a stable sort
-# order with lists that look like (foo, $foo, @foo, %foo).
+# order with lists that look like (foo, $foo, @foo, %foo). We use "-" to begin
+# the suffix because it comes earliest in a sorted list of letters and digits.
 sub _transform_before_cmp {
     my $thing = shift;
     if ( $thing =~ m{\A[\$]} ) {
-        $thing = substr( $thing, 1 ) . '_A';
+        $thing = substr( $thing, 1 ) . '-0';
     }
     elsif ( $thing =~ m{\A[@]} ) {
-        $thing = substr( $thing, 1 ) . '_B';
+        $thing = substr( $thing, 1 ) . '-1';
     }
     elsif ( $thing =~ m{\A[%]} ) {
-        $thing = substr( $thing, 1 ) . '_C';
+        $thing = substr( $thing, 1 ) . '-2';
     }
     return $thing;
 }

@@ -13,11 +13,12 @@ my $expected = <<'EOF';
 use strict;
 use warnings;
 
-use Local::Sort qw( $AAA bbb @BBB %CCC );
+use Local::Sort qw( $AAA $AAA_2FA bbb @BBB %CCC );
 
 bbb();
+bbb_2fa();
 
-if ( defined $AAA || scalar @BBB || keys %CCC ) {
+if ( defined $AAA || defined $AAA_2FA || scalar @BBB || keys %CCC ) {
     print 'defined';
 }
 EOF
