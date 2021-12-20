@@ -122,10 +122,10 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000028",
+   "version" : "0.000029",
    "x_Dist_Zilla" : {
       "perl" : {
-         "version" : "5.030003"
+         "version" : "5.030002"
       },
       "plugins" : [
          {
@@ -682,7 +682,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000028",
+                  "tag" : "v0.000029",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
@@ -862,8 +862,8 @@
       "Olaf Alders <olaf.alders@gmail.com>",
       "Olaf Alders <olaf@wundersolutions.com>"
    ],
-   "x_generated_by_perl" : "v5.30.3",
-   "x_serialization_backend" : "Cpanel::JSON::XS version 4.19",
+   "x_generated_by_perl" : "v5.30.2",
+   "x_serialization_backend" : "Cpanel::JSON::XS version 4.26",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1
 }
