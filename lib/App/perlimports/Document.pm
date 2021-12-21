@@ -518,6 +518,8 @@ sub _extract_symbols_from_snippet {
     $snippet =~ s{\\t}{\t}g;
 
     my $doc = PPI::Document->new( \$snippet );
+    return () unless defined $doc;
+
     my @symbols
         = map { $_ . q{} } @{ $doc->find('PPI::Token::Symbol') || [] };
 

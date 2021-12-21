@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Avoid calling methods on undef variable (GH#59) (Olaf Alders)
 
 0.000029  2021-12-20 19:24:54Z
     - Improve import sort order (GH#58) (Olaf Alders)
