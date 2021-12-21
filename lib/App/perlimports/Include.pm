@@ -601,22 +601,54 @@ sub _maybe_get_new_include {
         = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
     my $rewrite = $includes->[0]->clone;
 
-    return $rewrite if $self->_tidy_whitespace;
-
-    # If the only difference is spacing, we'll just return the original
-    # statement rather than mess with the original formatting. This check is
-    # naive, but should be good enough for now. It should reduce the churn
-    # created by this script.
-    #
-    # This check will fail if a newline has been added or removed. That's fine
-    # for now as that indicates a formatting change that we *probably* want. We
-    # could make this configurable.
     my $a = $self->_include . q{};
     my $b = $rewrite . q{};
+
+    # If the only difference is some whitespace before the quotes, we'll not
+    # alter the include. This reduces some of the churn. What we want to avoid
+    # is rewriting imports where the only change is to remove some whitespace
+    # padding which was specifically added by perltidy. If we keep removing
+    # changes made by perltidy this tool will be unfit to be used as a linter,
+    # because it will either force a tidy after every run or it will introduce
+    # tidying errors.
+    #
+    # So "use Foo     qw( bar );" should be considered equivalent to
+    #    "use Foo qw( bar );" because it might be in the context of
+    #
+    #    use AAAAAAA qw( thing );
+    #    use Foo     qw( bar );
+    #    use FFFFFFF qw( other );
+    #
+    #    If the existing include is something like
+    #    "use Foo    123 qw( foo );"
+    #    we should probably rewrite that since perltidy will likely rewrite
+    #    this to
+    #    "use Foo 123 qw( foo );"
+
+    my $orig = $a;
+    if ( _respace_include($orig) eq $b ) {
+        return $self->_include;
+    }
+
+    return $rewrite if $self->_tidy_whitespace;
+
+    # We will return the rewritten include if a newline has been added or
+    # removed. This is a formatting change that we *probably* want.
+
     $a =~ s{\s}{}g;
     $b =~ s{\s}{}g;
 
     return ( $a eq $b ) ? $self->_include : $rewrite;
+}
+
+# This function takes the original include and strips away the extra spaces
+# which might have been added as formatting by perltidy. This makes it easier
+# to compare the old include with the new and decide if we really need to
+# replace it.
+sub _respace_include {
+    my $include = shift;
+    $include =~ s{\s+(qw|\()}{ $1};
+    return $include;
 }
 
 # If there's a different module in this document which has already imported

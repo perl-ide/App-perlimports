@@ -15,7 +15,7 @@ subtest 'tidy_whitespace' => sub {
 use strict;
 use warnings;
 
-use Carp ();
+use Carp    ();
 use HTTP::Status qw( HTTP_FOUND );
 
 print HTTP_FOUND;
@@ -28,7 +28,7 @@ EOF
     eq_or_diff(
         $doc->tidied_document,
         $expected,
-        'arbitrary spacing is not preserved'
+        'arbitrary spacing is preserved'
     );
 };
 
