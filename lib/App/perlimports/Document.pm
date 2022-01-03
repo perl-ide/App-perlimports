@@ -271,6 +271,7 @@ my %default_ignore = (
     'MooseX::Types'                                       => 1,
     'MooX::StrictConstructor'                             => 1,
     'namespace::autoclean'                                => 1,
+    'PerlIO::gzip'                                        => 1,
     'Regexp::Common'                                      => 1,
     'Sort::ByExample'                                     => 1,
     'Struct::Dumb'                                        => 1,
