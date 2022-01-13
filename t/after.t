@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( List::AllUtils );
 
 my ( $doc, $logs ) = doc(

@@ -7,7 +7,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is_deeply', 'subtest' ];
+use Test::More import => [qw( done_testing is_deeply subtest )];
 
 subtest 'verbose' => sub {
     my ($doc) = doc( filename => 'test-data/carp.pl' );

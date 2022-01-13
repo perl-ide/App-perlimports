@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 use TestHelper qw( source2pi );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [qw( done_testing ok )],;
+use Test::More import => [qw( done_testing ok )];
 
 my $e = source2pi(
     'test-data/skip-all.t',

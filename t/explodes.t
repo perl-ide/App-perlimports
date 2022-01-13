@@ -5,7 +5,7 @@ use lib 't/lib', 'test-data/lib';
 
 use PPI::Document ();
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is', 'ok' ];
+use Test::More import => [qw( done_testing is ok )];
 
 my ( $doc, $log ) = doc(
     filename        => 'test-data/explodes.pl',

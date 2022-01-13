@@ -5,7 +5,7 @@ use lib 't/lib', 'test-data/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => ['done_testing'];
+use Test::More import => [qw( done_testing )];
 
 my ( $doc, $log ) = doc( filename => 'test-data/sort.pl' );
 

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports::Include ();
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 
 {
     my $AA = 'use Foo     qw( bar );';

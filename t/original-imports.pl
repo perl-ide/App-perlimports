@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More import => [ 'done_testing', 'is_deeply' ];
+use Test::More import => [qw( done_testing is_deeply )];
 
 use App::perlimports::Document ();
 my $doc = App::perlimports::Document->new(

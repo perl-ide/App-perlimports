@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::Document ();
 use TestHelper qw( logger );
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( HTML::TableExtract Object::Tap );
 
 my @errors;

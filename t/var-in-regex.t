@@ -3,7 +3,7 @@ use warnings;
 
 use lib 't/lib';
 
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 use TestHelper qw( source2pi );
 use Test::Needs qw( Perl::Critic::Utils );
 
