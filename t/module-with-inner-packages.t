@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is', '$TODO' ];
+use Test::More import => [qw( done_testing is $TODO )];
 
 my ($doc) = doc( filename => 'test-data/lib/Local/WithInnerPkg.pm' );
 my $expected = <<'EOF';

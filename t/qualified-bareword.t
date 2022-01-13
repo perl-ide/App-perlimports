@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is_deeply' ];
+use Test::More import => [qw( done_testing is_deeply )];
 
 my ($doc) = doc(
     filename => 'test-data/qualified-bareword.pl', preserve_unused => 0,

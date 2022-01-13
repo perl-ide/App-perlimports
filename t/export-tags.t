@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use TestHelper qw( doc );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => ['done_testing'];
+use Test::More import => [qw( done_testing )];
 use Test::Needs { 'HTTP::Status' => 6.28 };
 
 my ($doc) = doc( filename => 'test-data/export-tags.pl' );

@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'ok' ];
+use Test::More import => [qw( done_testing ok )];
 
 my ($doc) = doc( filename => 'test-data/original-imports.pl' );
 

@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc source2pi );
-use Test::More import => [ 'done_testing', 'is', 'subtest' ];
+use Test::More import => [qw( done_testing is subtest )];
 use Test::Needs;
 
 subtest 'catdir' => sub {

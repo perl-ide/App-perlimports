@@ -7,7 +7,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'subtest' ];
+use Test::More import => [qw( done_testing subtest )];
 use Test::Needs qw( HTTP::Status );
 
 subtest 'tidy_whitespace' => sub {

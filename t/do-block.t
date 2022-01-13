@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'ok' ];
+use Test::More import => [qw( done_testing is ok )];
 
 my $source_text
     = q{use Test::More do { $ENV{COVERAGE} ? ( skip_all => 'skip under Devel::Cover' ) : () };};

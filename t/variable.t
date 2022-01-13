@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use lib 't/lib';
-use Test::More import => [ 'done_testing', 'is', 'is_deeply' ];
+use Test::More import => [qw( done_testing is is_deeply )];
 use TestHelper qw( source2pi );
 
 my $source_text = 'use Getopt::Long qw( $REQUIRE_ORDER $RETURN_IN_ORDER );';

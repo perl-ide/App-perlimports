@@ -10,7 +10,7 @@ use lib 't/lib';
 
 use Path::Tiny qw( path );
 use TestHelper qw( source2pi );
-use Test::More import => [ 'done_testing', 'is', 'ok' ];
+use Test::More import => [qw( done_testing is ok )];
 
 my $filename = 'test-data/pragma.t';
 

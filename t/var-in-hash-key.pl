@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 use TestHelper qw( source2pi );
 
 my $source_text = 'use Perl::Critic::Utils;';

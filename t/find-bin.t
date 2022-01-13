@@ -7,7 +7,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper qw( doc source2pi );
-use Test::More import => [ 'done_testing', 'is', 'is_deeply', 'ok' ];
+use Test::More import => [qw( done_testing is is_deeply ok )];
 
 my $e = source2pi(
     'test-data/find-bin.pl',

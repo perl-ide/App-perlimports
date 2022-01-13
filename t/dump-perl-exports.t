@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More import => [ 'done_testing', 'subtest' ];
+use Test::More import => [qw( done_testing subtest )];
 use Test::Needs qw( Moose );
 use Test::Script 1.27 qw(
     script_compiles

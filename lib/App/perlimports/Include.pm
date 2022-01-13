@@ -515,6 +515,9 @@ sub _build_formatted_ppi_statement {
             $error = 1;
         }
 
+        # We will replace these with our own parsed imports.
+        delete $args->{import};
+
         # Ignore this line if we can't parse it. This will happen if the arg to
         # test is a do block, for example.
         return $self->_include if $error;
@@ -527,19 +530,29 @@ sub _build_formatted_ppi_statement {
         local $Data::Dumper::Trailingcomma = 1;
         local $Data::Dumper::Deparse       = 1;
 
-        $args->{import} = $self->_imports;
-
         my $dumped = Dumper($args);
-        my $formatted;
+        my $non_import_args;
+        my $import_arg;
+
         if ( $dumped =~ m/^{(.*)}$/ ) {
-            $formatted = $1;
+            $non_import_args = $1;
         }
 
+        if ( $self->_imports ) {
+            $import_arg = sprintf(
+                'import => [qw( %s )]',
+                join( q{ }, @{ $self->_imports } )
+            );
+        }
+
+        my $all_args = join ', ',
+            grep { $_ && $_ =~ m{\w} } ( $import_arg, $non_import_args );
+
         $statement = sprintf(
-            keys %$args > 1 ? 'use %s%s ( %s );' : 'use %s%s %s;',
+            'use %s%s %s;',
             $self->module_name,
             $maybe_module_version,
-            $formatted
+            $all_args
         );
 
         # save ~60ms in cases where we don't need Perl::Tidy

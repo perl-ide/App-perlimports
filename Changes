@@ -2,6 +2,7 @@ Revision history for App-perlimports
 
 {{$NEXT}}
     - Ignore PerlIO::gzip and Modern::Perl
+    - Rework formatting of Test::Builder modules (GH#61) (Olaf Alders)
 
 0.000030  2021-12-21 22:55:49Z
     - Avoid calling methods on undef variable (GH#59) (Olaf Alders)

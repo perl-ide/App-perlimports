@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports::Document ();
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 
 my $doc
     = App::perlimports::Document->new( filename => 'test-data/builtin.pl' );

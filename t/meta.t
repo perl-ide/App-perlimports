@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( doc );
-use Test::More import => [ 'done_testing', 'is' ];
+use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( Test2::V0 );
 
 my ($doc) = doc(
