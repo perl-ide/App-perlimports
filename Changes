@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000031  2022-01-13 21:05:01Z
     - Ignore PerlIO::gzip and Modern::Perl
     - Rework formatting of Test::Builder modules (GH#61) (Olaf Alders)
