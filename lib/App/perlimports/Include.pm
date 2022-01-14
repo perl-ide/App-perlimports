@@ -594,7 +594,7 @@ sub _build_formatted_ppi_statement {
         for ( @{ $self->_imports } ) {
             $statement .= "    $_\n";
         }
-        $statement .= ");";
+        $statement .= ');';
     }
 
     return $self->_maybe_get_new_include($statement);

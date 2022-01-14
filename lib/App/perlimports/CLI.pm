@@ -145,9 +145,9 @@ sub _build_args {
         [
             'log-filename=s', 'Log messages to file rather than STDERR',
         ],
-        [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+        [ 'help', 'Print usage message and exit', { shortcircuit => 1 } ],
         [
-            'verbose-help', "Print usage message and documentation ",
+            'verbose-help', 'Print usage message and documentation ',
             { shortcircuit => 1 }
         ],
     );

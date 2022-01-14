@@ -43,7 +43,7 @@ subtest 'Test::More' => sub {
     is_deeply( $e->_imports, [qw( done_testing ok)], '_imports' );
     is(
         $e->formatted_ppi_statement,
-        q{use Test::More import => [ qw( done_testing ok ) ];},
+        'use Test::More import => [ qw( done_testing ok ) ];',
         'formatted_ppi_statement'
     );
 };

@@ -18,7 +18,7 @@ subtest 'with version' => sub {
     ok( !$pi->_is_ignored, '_is_ignored' );
     is(
         $pi->formatted_ppi_statement,
-        q{use LWP::UserAgent 6.49 ();},
+        'use LWP::UserAgent 6.49 ();',
         'formatted_ppi_statement'
     );
 
@@ -36,7 +36,7 @@ subtest 'without version' => sub {
     ok( !$pi->_is_ignored, '_is_ignored' );
     is(
         $pi->formatted_ppi_statement,
-        q{use LWP::UserAgent ();},
+        'use LWP::UserAgent ();',
         'formatted_ppi_statement'
     );
 
@@ -53,7 +53,7 @@ subtest 'without incorrect import' => sub {
     ok( !$pi->_is_ignored, '_is_ignored' );
     is(
         $pi->formatted_ppi_statement,
-        q{use LWP::UserAgent ();},
+        'use LWP::UserAgent ();',
         'formatted_ppi_statement'
     );
 

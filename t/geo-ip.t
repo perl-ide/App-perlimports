@@ -22,7 +22,7 @@ is_deeply(
 );
 is(
     $e->formatted_ppi_statement,
-    q{use Geo::IP qw( GEOIP_MEMORY_CACHE GEOIP_STANDARD );},
+    'use Geo::IP qw( GEOIP_MEMORY_CACHE GEOIP_STANDARD );',
     'formatted_ppi_statement'
 );
 

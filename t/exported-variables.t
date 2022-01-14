@@ -32,7 +32,7 @@ ok( !$pi->_is_ignored, '_is_ignored' );
 
 is(
     $pi->formatted_ppi_statement,
-    q{use Local::ViaExporter qw( $foo @foo %foo );},
+    'use Local::ViaExporter qw( $foo @foo %foo );',
     'formatted_ppi_statement'
 );
 

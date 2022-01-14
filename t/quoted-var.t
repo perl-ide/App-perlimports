@@ -28,7 +28,7 @@ my $e = source2pi(
 ok( !$e->_is_ignored, 'is not ignored' );
 is(
     $e->formatted_ppi_statement,
-    q{use IO::Uncompress::Gunzip qw( $GunzipError );},
+    'use IO::Uncompress::Gunzip qw( $GunzipError );',
     'var is detected inside of quotes'
 );
 

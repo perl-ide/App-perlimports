@@ -18,7 +18,7 @@ my $e = source2pi(
 
 is(
     $e->formatted_ppi_statement,
-    q{use HTTP::Status qw( is_info );},
+    'use HTTP::Status qw( is_info );',
     'does not think hash key is a function'
 );
 

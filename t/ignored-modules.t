@@ -17,7 +17,7 @@ use Test::Needs qw( Geo::IP );
 
     is(
         $e->formatted_ppi_statement,
-        q{use Geo::IP qw( GEOIP_MEMORY_CACHE GEOIP_STANDARD );},
+        'use Geo::IP qw( GEOIP_MEMORY_CACHE GEOIP_STANDARD );',
         'module not ignored'
     );
 }

@@ -983,7 +983,7 @@ sub _maybe_cache_inspectors {
     return unless $self->_cache;
 
     my @names = sort $self->all_inspector_names;
-    $self->logger->info("maybe cache");
+    $self->logger->info('maybe cache');
     return unless @names;
 
     my $append = 0;

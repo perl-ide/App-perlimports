@@ -21,7 +21,7 @@ subtest 'replace top level require via snippet' => sub {
     ok( !$e->_is_ignored, 'is not ignored' );
     is(
         $e->formatted_ppi_statement,
-        q{use LWP::UserAgent ();},
+        'use LWP::UserAgent ();',
         'formatted_ppi_statement'
     );
 };
@@ -45,7 +45,7 @@ subtest 'replace top level require from document' => sub {
     ok( !$e->_is_ignored, 'is not ignored' );
     is(
         $e->formatted_ppi_statement,
-        q{use LWP::UserAgent ();},
+        'use LWP::UserAgent ();',
         'formatted_ppi_statement'
     );
 };
@@ -60,7 +60,7 @@ subtest 'preserve require inside if block' => sub {
     ok( $e->_is_ignored, 'is ignored' );
     is(
         $e->formatted_ppi_statement,
-        q{require WWW::Mechanize;},
+        'require WWW::Mechanize;',
         'formatted_ppi_statement'
     );
 };
@@ -75,7 +75,7 @@ subtest 'preserve require inside postfix if defined' => sub {
     ok( $e->_is_ignored, 'is ignored' );
     is(
         $e->formatted_ppi_statement,
-        q{require Carp if $ENV{BAR};},
+        'require Carp if $ENV{BAR};',
         'formatted_ppi_statement'
     );
 };
@@ -89,7 +89,7 @@ subtest 'do not import fully qualified function calls' => sub {
 
     is(
         $e->formatted_ppi_statement,
-        q{use List::Util ();},
+        'use List::Util ();',
         'formatted_ppi_statement'
     );
 };
@@ -119,7 +119,7 @@ subtest 'require rewritten as use' => sub {
     ok( !$e->_is_ignored, 'is not ignored' );
     is(
         $e->formatted_ppi_statement,
-        q{use Cwd ();},
+        'use Cwd ();',
         'formatted_ppi_statement'
     );
 };

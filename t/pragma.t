@@ -34,7 +34,7 @@ my $e = source2pi(
 ok( !$e->_is_ignored, 'is not ignored' );
 is(
     $e->formatted_ppi_statement,
-    q{use Test::Warnings ();},
+    'use Test::Warnings ();',
     'formatted_ppi_statement'
 );
 
