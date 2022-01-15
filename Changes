@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Require Perl::Tidy version 20211029
 
 0.000031  2022-01-13 21:05:01Z
     - Ignore PerlIO::gzip and Modern::Perl
