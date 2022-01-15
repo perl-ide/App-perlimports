@@ -17,7 +17,7 @@ requires "MooX::StrictConstructor" => "0";
 requires "PPI" => "1.270";
 requires "PPIx::Utils::Classification" => "0";
 requires "Path::Tiny" => "0";
-requires "Perl::Tidy" => "20210402";
+requires "Perl::Tidy" => "20211029";
 requires "Pod::Usage" => "0";
 requires "Ref::Util" => "0";
 requires "Sereal::Decoder" => "0";
@@ -54,7 +54,7 @@ on 'test' => sub {
 
 on 'configure' => sub {
   requires "ExtUtils::MakeMaker" => "0";
-  requires "perl" => "5.010";
+  requires "perl" => "v5.10.0";
 };
 
 on 'develop' => sub {
