@@ -570,7 +570,9 @@ sub _unnest_quotes {
 
     push @words, $self->_extract_symbols_from_snippet( $token->string );
 
-    my $doc    = PPI::Document->new( \$token->string );
+    my $doc = PPI::Document->new( \$token->string );
+    return @words unless $doc;
+
     my $quotes = $doc->find('PPI::Token::Quote');
     return @words unless $quotes;
 
