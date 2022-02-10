@@ -2,6 +2,7 @@ Revision history for App-perlimports
 
 {{$NEXT}}
     - Update forked PPI to include PPI 1.272 (GH#64) (Olaf Alders)
+    - Avoid exceptions when trying to unnest quotes (GH#65) (Olaf Alders)
 
 0.000032  2022-01-15 03:41:49Z
     - Require Perl::Tidy version 20211029
