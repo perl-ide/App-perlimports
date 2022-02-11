@@ -440,13 +440,13 @@ sub _build_original_imports {
 
         # If a module has been included multiple times, we want to have a
         # cumulative tally of what has been explicitly imported.
-        my $found = $self->_imports_for_include($include);
-        if ($found) {
+        my $found_for_include = $self->_imports_for_include($include);
+        if ($found_for_include) {
             if ( $imports{$pkg} ) {
-                push @{ $imports{$pkg} }, @{$found};
+                push @{ $imports{$pkg} }, @{$found_for_include};
             }
             else {
-                $imports{$pkg} = $found;
+                $imports{$pkg} = $found_for_include;
             }
         }
     }
