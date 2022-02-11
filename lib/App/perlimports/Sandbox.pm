@@ -35,8 +35,9 @@ $content;
 1;
 EOF
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     local $@;
-    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    ## no critic (BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval)
     eval $to_eval;
 
     my $e = $@;
