@@ -3,7 +3,7 @@ package App::perlimports::Sandbox;
 use strict;
 use warnings;
 
-our $VERSION = '0.000033';
+our $VERSION = '0.000034';
 
 use Data::UUID ();
 

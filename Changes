@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000033  2022-02-11 23:20:52Z
     - Update forked PPI to include PPI 1.272 (GH#64) (Olaf Alders)
     - Avoid exceptions when trying to unnest quotes (GH#65) (Olaf Alders)
