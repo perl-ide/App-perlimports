@@ -341,9 +341,14 @@ sub _build_includes {
                 && ( $_[1]->type eq 'use'
                 || $_[1]->type eq 'require' )
                 && !$self->_is_ignored( $_[1] )
-                && !$self->_has_import_switches( $_[1]->module );
+                && !$self->_has_import_switches( $_[1]->module )
+                && !App::perlimports::Sandbox::eval_pkg(
+                $_[1]->module,
+                "$_[1]"
+                );
         }
     ) || [];
+
 }
 
 sub _build_possible_imports {
