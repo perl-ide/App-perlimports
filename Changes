@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000034  2022-02-14 18:26:15Z
     - Don't try to rewrite an import that we can't eval (GH#66) (Olaf Alders)
 
 0.000033  2022-02-11 23:20:52Z

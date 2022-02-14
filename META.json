@@ -122,7 +122,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000033",
+   "version" : "0.000034",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030002"
@@ -677,7 +677,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000033",
+                  "tag" : "v0.000034",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
