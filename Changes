@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Don't try to rewrite an import that we can't eval (GH#66) (Olaf Alders)
 
 0.000033  2022-02-11 23:20:52Z
     - Update forked PPI to include PPI 1.272 (GH#64) (Olaf Alders)
