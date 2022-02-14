@@ -4,7 +4,7 @@ use Moo;
 use utf8;
 use feature qw( say );
 
-our $VERSION = '0.000034';
+our $VERSION = '0.000035';
 
 use App::perlimports           ();
 use App::perlimports::Document ();
