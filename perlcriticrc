@@ -32,7 +32,7 @@ modules = Moose Moose::Role MooseX::Role::Parameterized Moose::Util::TypeConstra
 cleaners = namespace::autoclean
 
 [NamingConventions::Capitalization]
-package_exemptions = [A-Z]\w+|main
+package_exemptions = *
 file_lexical_variables = [A-Z]\w+|[^A-Z]+
 global_variables = :starts_with_upper
 scoped_lexical_variables = [A-Z]\w+|[^A-Z]+
@@ -78,11 +78,6 @@ add_packages = Test::Builder
 [-RegularExpressions::RequireExtendedFormatting]
 [-RegularExpressions::RequireLineBoundaryMatching]
 
-# by concensus in standup 2015-05-12 we decided to allow return undef
-# this is mainly so bar can be written to return undef so that
-# foo( bar => bar(), bazz => baz() ) won't cause problems
-[-Subroutines::ProhibitExplicitReturnUndef]
-
 # This incorrectly thinks signatures are prototypes.
 [-Subroutines::ProhibitSubroutinePrototypes]
 
@@ -95,6 +90,3 @@ add_packages = Test::Builder
 [-ValuesAndExpressions::ProhibitVersionStrings]
 
 [-Subroutines::ProhibitExplicitReturnUndef]
-
-# Allow App::perlimports
-[-NamingConventions::Capitalization]
