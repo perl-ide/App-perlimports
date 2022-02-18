@@ -7,7 +7,12 @@ use lib 't/lib';
 
 use TestHelper qw( source2pi );
 use Test::More import => [qw( done_testing is is_deeply ok subtest )];
-use Test::Needs qw( Cpanel::JSON::XS LWP::UserAgent );
+use Test::Needs {
+    'Cpanel::JSON::XS' => 4.19,
+    'Getopt::Long'     => 2.40,
+    'LWP::UserAgent'   => 5.00,
+    'Test::Script'     => 1.27,
+};
 
 subtest 'with version' => sub {
     my $pi = source2pi(
