@@ -358,12 +358,8 @@ sub _build_imports {
     # preserve it, rather than risk altering the behaviour of the module.
     if ( $self->_export_inspector->has_import_flags ) {
         for my $arg ( @{ $self->_export_inspector->import_flags } ) {
-            if (
-                defined $self->_original_imports && (
-                    any { $_ eq $arg }
-                    @{ $self->_original_imports }
-                )
-            ) {
+            if ( defined $self->_original_imports
+                && ( any { $_ eq $arg } @{ $self->_original_imports } ) ) {
                 push @found, $arg;
             }
         }
