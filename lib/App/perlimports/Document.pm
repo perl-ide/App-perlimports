@@ -727,11 +727,9 @@ sub _has_import_switches {
     # We will leave this case as broken for the time being. I'm not sure how
     # common that invocation is.
 
-    if (
-        exists $self->original_imports->{$module_name}
+    if ( exists $self->original_imports->{$module_name}
         && any { $_ =~ m{^[\-]} }
-        @{ $self->original_imports->{$module_name} || [] }
-    ) {
+        @{ $self->original_imports->{$module_name} || [] } ) {
         return 1;
     }
     return 0;
