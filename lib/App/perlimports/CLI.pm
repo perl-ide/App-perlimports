@@ -252,59 +252,62 @@ sub run {
         ]
         );
 
-    my $filename = $opts->filename || shift @ARGV;
-    if ( !$filename ) {
+    my @files = ( $opts->filename || @ARGV );
+    unless (@files) {
         say STDERR q{Mandatory parameter 'filename' missing};
         print STDERR $self->_usage->text;
         exit(1);
     }
 
-    if ( !path($filename)->is_file ) {
-        say STDERR "$filename does not appear to be a file";
-        print STDERR $self->_usage->text;
-        exit(1);
-    }
-
-    $logger->notice( '🚀 Starting file: ' . $filename );
-
-    # Capture STDOUT here so that 3rd party code printing to STDOUT doesn't get
-    # piped back into vim.
-    my ( $stdout, $tidied ) = capture_stdout(
-        sub {
-            my $pi_doc = App::perlimports::Document->new(
-                cache    => $opts->cache,
-                filename => $filename,
-                @{ $self->_ignore_modules }
-                ? ( ignore_modules => $self->_ignore_modules )
-                : (),
-                @{ $self->_ignore_modules_pattern }
-                ? ( ignore_modules_pattern => $self->_ignore_modules_pattern )
-                : (),
-                @{ $self->_never_exports }
-                ? ( never_export_modules => $self->_never_exports )
-                : (),
-                logger              => $logger,
-                padding             => $opts->padding,
-                preserve_duplicates => $opts->preserve_duplicates,
-                preserve_unused     => $opts->preserve_unused,
-                tidy_whitespace     => $opts->tidy_whitespace,
-                $input ? ( selection => $input ) : (),
-            );
-
-            return $pi_doc->tidied_document;
+    foreach my $filename (@files) {
+        if ( !path($filename)->is_file ) {
+            say STDERR "$filename does not appear to be a file";
+            print STDERR $self->_usage->text;
+            exit(1);
         }
-    );
 
-    if ( $opts->read_stdin ) {
-        print $tidied;
-    }
-    elsif ( $opts->inplace_edit ) {
+        $logger->notice( '🚀 Starting file: ' . $filename );
 
-        # append() with truncate, because spew() can change file permissions
-        path($filename)->append( { truncate => 1 }, $tidied );
-    }
-    else {
-        print $tidied;
+        # Capture STDOUT here so that 3rd party code printing to STDOUT doesn't get
+        # piped back into vim.
+        my ( $stdout, $tidied ) = capture_stdout(
+            sub {
+                my $pi_doc = App::perlimports::Document->new(
+                    cache    => $opts->cache,
+                    filename => $filename,
+                    @{ $self->_ignore_modules }
+                    ? ( ignore_modules => $self->_ignore_modules )
+                    : (),
+                    @{ $self->_ignore_modules_pattern }
+                    ? ( ignore_modules_pattern =>
+                            $self->_ignore_modules_pattern )
+                    : (),
+                    @{ $self->_never_exports }
+                    ? ( never_export_modules => $self->_never_exports )
+                    : (),
+                    logger              => $logger,
+                    padding             => $opts->padding,
+                    preserve_duplicates => $opts->preserve_duplicates,
+                    preserve_unused     => $opts->preserve_unused,
+                    tidy_whitespace     => $opts->tidy_whitespace,
+                    $input ? ( selection => $input ) : (),
+                );
+
+                return $pi_doc->tidied_document;
+            }
+        );
+
+        if ( $opts->read_stdin ) {
+            print $tidied;
+        }
+        elsif ( $opts->inplace_edit ) {
+
+            # append() with truncate, because spew() can change file permissions
+            path($filename)->append( { truncate => 1 }, $tidied );
+        }
+        else {
+            print $tidied;
+        }
     }
 }
 
