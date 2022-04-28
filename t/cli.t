@@ -23,7 +23,10 @@ my %foo = (
 );
 EOF
 
-    local @ARGV = ( '-f', 'test-data/var-in-hash-key.pl', );
+    local @ARGV = (
+        '--no-config-file',
+        '-f' => 'test-data/var-in-hash-key.pl',
+    );
     my $cli = App::perlimports::CLI->new( logger => logger( [] ) );
     my ($stdout) = capture {
         $cli->run;
@@ -45,9 +48,10 @@ EOF
 
     my $file = Path::Tiny->tempfile;
     local @ARGV = (
-        '-f',             'test-data/var-in-hash-key.pl',
-        '--log-filename', $file,
-        '--log-level',    'info',
+        '-f'             => 'test-data/var-in-hash-key.pl',
+        '--log-filename' => "$file",
+        '--log-level'    => 'info',
+        '--no-config-file',
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture {
@@ -71,15 +75,12 @@ my %foo = (
 EOF
 
     local @ARGV = (
-        '--ignore-modules',
-        'Perl::Critic::Utils',
-        '-f',
-        'test-data/var-in-hash-key.pl',
+        '--no-config-file',
+        '--ignore-modules' => 'Perl::Critic::Utils',
+        '-f'               => 'test-data/var-in-hash-key.pl',
     );
     my $cli = App::perlimports::CLI->new;
-    my ($stdout) = capture {
-        $cli->run;
-    };
+    my ($stdout) = capture { $cli->run };
     is( $stdout, $expected, );
 };
 
@@ -96,15 +97,12 @@ my %foo = (
 EOF
 
     local @ARGV = (
-        '--ignore-modules-pattern',
-        '^Perl::.*',
-        '-f',
-        'test-data/var-in-hash-key.pl',
+        '--no-config-file',
+        '--ignore-modules-pattern' => '^Perl::.*',
+        '-f'                       => 'test-data/var-in-hash-key.pl',
     );
     my $cli = App::perlimports::CLI->new;
-    my ($stdout) = capture {
-        $cli->run;
-    };
+    my ($stdout) = capture { $cli->run };
     is( $stdout, $expected, );
 };
 
@@ -121,15 +119,12 @@ my %foo = (
 EOF
 
     local @ARGV = (
-        '--never-export-modules',
-        'Perl::Critic::Utils',
-        '-f',
-        'test-data/var-in-hash-key.pl',
+        '--no-config-file',
+        '--never-export-modules' => 'Perl::Critic::Utils',
+        '-f'                     => 'test-data/var-in-hash-key.pl',
     );
     my $cli = App::perlimports::CLI->new;
-    my ($stdout) = capture {
-        $cli->run;
-    };
+    my ($stdout) = capture { $cli->run };
     is( $stdout, $expected );
 };
 
@@ -145,11 +140,13 @@ my %foo = (
 );
 EOF
 
-    local @ARGV = ( '--no-padding', '-f', 'test-data/var-in-hash-key.pl', );
+    local @ARGV = (
+        '--no-config-file',
+        '--no-padding',
+        '-f' => 'test-data/var-in-hash-key.pl',
+    );
     my $cli = App::perlimports::CLI->new;
-    my ( $stdout, $stderr ) = capture {
-        $cli->run;
-    };
+    my ( $stdout, $stderr ) = capture { $cli->run };
     is( $stdout, $expected );
 };
 
@@ -165,11 +162,13 @@ BEGIN {
 }
 EOF
 
-    local @ARGV = ( '--libs', 'test-data/lib', '-f', 'test-data/stdout.pl', );
+    local @ARGV = (
+        '--no-config-file',
+        '--libs' => 'test-data/lib',
+        '-f'     => 'test-data/stdout.pl',
+    );
     my $cli = App::perlimports::CLI->new;
-    my ( $stdout, $stderr ) = capture {
-        $cli->run;
-    };
+    my ( $stdout, $stderr ) = capture { $cli->run };
 
     eq_or_diff( $stdout, $expected );
     diag $stderr;

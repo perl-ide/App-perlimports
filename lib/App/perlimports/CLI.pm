@@ -7,13 +7,15 @@ use feature qw( say );
 our $VERSION = '0.000038';
 
 use App::perlimports           ();
+use App::perlimports::Config   ();
 use App::perlimports::Document ();
 use Capture::Tiny qw( capture_stdout );
 use Getopt::Long::Descriptive qw( describe_options );
-use List::Util qw( uniq );
 use Log::Dispatch ();
 use Path::Tiny qw( path );
-use Types::Standard qw( ArrayRef HashRef InstanceOf Object Str );
+use Try::Tiny qw( catch try );
+use Types::Path::Tiny qw( Path );
+use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Object Str );
 
 has _args => (
     is      => 'ro',
@@ -22,25 +24,33 @@ has _args => (
     builder => '_build_args',
 );
 
-has _ignore_modules => (
+has _config => (
     is      => 'ro',
-    isa     => ArrayRef,
+    isa     => InstanceOf [App::perlimports::Config::],
     lazy    => 1,
-    builder => '_build_ignore_modules',
+    builder => '_build_config',
 );
 
-has _ignore_modules_pattern => (
-    is      => 'ro',
-    isa     => ArrayRef,
-    lazy    => 1,
-    builder => '_build_ignore_modules_pattern',
+has _config_file => (
+    is       => 'ro',
+    isa      => Path,
+    init_arg => 'config',
+    coerce   => Path->coercion,
+    builder  => '_build_config_file',
 );
 
-has _never_exports => (
+# off by default
+has _inplace_edit => (
     is      => 'ro',
-    isa     => ArrayRef,
+    isa     => Bool,
     lazy    => 1,
-    builder => '_build_never_exports',
+    default => sub {
+        my $self = shift;
+        return
+            defined $self->_opts->inplace_edit
+            ? $self->_opts->inplace_edit
+            : 0;
+    },
 );
 
 has _opts => (
@@ -48,6 +58,21 @@ has _opts => (
     isa     => InstanceOf ['Getopt::Long::Descriptive::Opts'],
     lazy    => 1,
     default => sub { $_[0]->_args->{opts} },
+);
+
+# off by default
+has _read_stdin => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return
+              defined $self->_opts->read_stdin ? $self->_opts->read_stdin
+            : defined $self->_config->{read_stdin}
+            ? $self->_config->{read_stdin}
+            : 0;
+    },
 );
 
 has _usage => (
@@ -63,12 +88,27 @@ sub _build_args {
     my $self = shift;
     my ( $opt, $usage ) = describe_options(
         'perlimports %o',
-        [ 'filename|f=s', 'The file containing the imports' ],
+        [
+            'filename|f=s',
+            'A file you would like to run perlimports on. Alternatively, just provide a list of one or more file names without a named parameter as the last arguments to this script: perlimports file1 file2 file3'
+        ],
+        [],
+        [
+            'config-file=s',
+            'Path to a perlimports config file. If this parameter is not supplied, we will look for a file called perlimports.toml or .perlimports.toml in the current directory and then look for a perlimports.toml in XDG_CONFIG_HOME (usually something like $HOME/perlimports/perlimports.toml). This behaviour can be disabled via --no-config-file as described below.'
+        ],
+        [],
+        [
+            'create-config-file=s',
+            'Create a sample config file using the supplied name and then exit.',
+            { shortcircuit => 1 }
+        ],
         [],
         [
             'ignore-modules=s',
             'Comma-separated list of modules to ignore.'
         ],
+        [],
         [
             'ignore-modules-pattern=s',
             'Regular expression that matches modules to ignore.'
@@ -76,14 +116,14 @@ sub _build_args {
         [],
         [
             'cache!',
-            '(Experimental.) Cache some objects in order to speed up subsequent runs. Defaults to no cache.',
-            { default => 0 },
+            '(Experimental and currently discouraged.) Cache some objects in order to speed up subsequent runs. Defaults to no cache.',
         ],
         [],
         [
             'ignore-modules-filename=s',
             'Path to file listing modules to ignore. One per line.'
         ],
+        [],
         [
             'ignore-modules-pattern-filename=s',
             'Path to file listing regular expressions that matches modules to ignore. One per line.'
@@ -99,7 +139,7 @@ sub _build_args {
             q{Path to file listing modules which don't export symbols. One per line.}
         ],
         [],
-        [ 'inplace-edit|i', 'edit the file in place' ],
+        [ 'inplace-edit|i', 'Edit the file in place.' ],
         [],
         [
             'libs=s',
@@ -108,39 +148,39 @@ sub _build_args {
         ],
         [],
         [
+            'no-config-file',
+            'Do not look for a perlimports config file.'
+        ],
+        [],
+        [
             'padding!',
-            'pad imports: qw( foo bar ) vs qw(foo bar). Defaults to true',
-            { default => 1 },
+            'Pad imports: qw( foo bar ) vs qw(foo bar). Defaults to true',
         ],
         [],
         [
             'read-stdin',
-            'Read statements to process from STDIN rather than the supplied file',
+            'Read statements to process from STDIN rather than the supplied file.',
         ],
         [],
         [
             'preserve-duplicates!',
-            'preserve duplicate use statements for the same module',
-            { default => 1 },
+            'Preserve duplicate use statements for the same module. This is the default behaviour. You are encouraged to disable it.',
         ],
         [],
         [
             'preserve-unused!',
-            'preserve use statements for modules which appear to be unused',
-            { default => 1 },
+            'Preserve use statements for modules which appear to be unused. This is the default behaviour. You are encouraged to disable it.',
         ],
         [],
         [
             'tidy-whitespace!',
-            'reformat use statements even when changes are only whitespace',
-            { default => 1 },
+            'Reformat use statements even when changes are only whitespace. This is the default behaviour.',
         ],
         [],
         [],
         [ 'version', 'Print installed version', { shortcircuit => 1 } ],
         [
             'log-level|l=s', 'Print messages to STDERR',
-            { default => 'error' }
         ],
         [
             'log-filename=s', 'Log messages to file rather than STDERR',
@@ -151,56 +191,87 @@ sub _build_args {
             { shortcircuit => 1 }
         ],
     );
+
     return { opts => $opt, usage => $usage, };
 }
 
-sub _build_ignore_modules {
+sub _build_config {
     my $self = shift;
-    my @ignore_modules
-        = $self->_opts->ignore_modules
-        ? split m{,}, $self->_opts->ignore_modules
-        : ();
+    my %config;
+    if ( !$self->_opts->no_config_file && $self->_config_file ) {
+        %config = %{ $self->_read_config_file };
 
-    if ( $self->_opts->ignore_modules_filename ) {
-        my @from_file
-            = path( $self->_opts->ignore_modules_filename )
-            ->lines( { chomp => 1 } );
-        @ignore_modules = uniq( @ignore_modules, @from_file );
+        # The Bool type provided by Types::Standard doesn't seem to like
+        # JSON::PP::Boolean
+        for my $key ( keys %config ) {
+            my $maybe_bool = $config{$key};
+            my $ref        = ref $maybe_bool;
+            next unless $ref;
+
+            if (   $ref eq 'JSON::PP::Boolean'
+                || $ref eq 'Types::Serializer::Boolean' ) {
+                $config{$key} = $$maybe_bool ? 1 : 0;
+            }
+        }
     }
-    return \@ignore_modules;
+
+    my @config_options = qw(
+        cache
+        ignore_modules_filename
+        ignore_modules_pattern
+        log_filename
+        log_level
+        never_export_modules_filename
+        padding
+        preserve_duplicates
+        preserve_unused
+        tidy_whitespace
+    );
+    my @config_option_lists
+        = ( 'ignore_modules', 'libs', 'never_export_modules' );
+
+    my %args = map { $_ => $self->_opts->$_ }
+        grep { defined $self->_opts->$_ } @config_options;
+
+    for my $list (@config_option_lists) {
+        my $val = $self->_opts->$list;
+        if ( defined $val ) {
+            $args{$list} = [ split m{,}, $val ];
+        }
+    }
+    return App::perlimports::Config->new( %config, %args );
 }
 
-sub _build_ignore_modules_pattern {
+sub _build_config_file {
     my $self = shift;
-    my @ignore_modules_pattern
-        = $self->_opts->ignore_modules_pattern
-        ? $self->_opts->ignore_modules_pattern
-        : ();
 
-    if ( $self->_opts->ignore_modules_pattern_filename ) {
-        my @from_file
-            = path( $self->_opts->ignore_modules_pattern_filename )
-            ->lines( { chomp => 1 } );
-        @ignore_modules_pattern = uniq( @ignore_modules_pattern, @from_file );
+    if ( $self->_opts->config_file ) {
+        if ( !-e $self->_opts->config_file ) {
+            warn $self->_opts->config_file . ' not found';
+            exit(1);
+        }
+        return $self->_opts->config_file;
     }
-    return \@ignore_modules_pattern;
+
+    my @filenames = ( 'perlimports.toml', '.perlimports.toml', );
+
+    for my $name (@filenames) {
+        return $name if -e $name;
+    }
+
+    require File::XDG;
+
+    my $xdg_config = File::XDG->new( name => 'perlimports', api => 1 );
+    my $file       = $xdg_config->config_home->child( $filenames[0] );
+    return -e $file ? $file : q{};
 }
 
-sub _build_never_exports {
+sub _read_config_file {
     my $self = shift;
 
-    my @never_exports
-        = $self->_opts->never_export_modules
-        ? split m{,}, $self->_opts->never_export_modules
-        : ();
-
-    if ( $self->_opts->never_export_modules_filename ) {
-        my @from_file
-            = path( $self->_opts->never_export_modules_filename )
-            ->lines( { chomp => 1 } );
-        @never_exports = uniq( @never_exports, @from_file );
-    }
-    return \@never_exports;
+    require TOML::Tiny;
+    my $config = TOML::Tiny::from_toml( path( $self->_config_file )->slurp );
+    return $config || {};
 }
 
 sub run {
@@ -217,34 +288,45 @@ sub run {
         return;
     }
 
+    if ( $opts->create_config_file ) {
+        try {
+            my $file
+                = App::perlimports::Config->create_config(
+                $opts->create_config_file );
+        }
+        catch {
+            print STDERR $_, "\n";
+            exit(1);
+        };
+        exit(0);
+    }
+
     my $input;
 
-    if ( $opts->read_stdin ) {
+    if ( $self->_read_stdin ) {
         local $/;
         $input = <STDIN>;
     }
 
-    if ( $opts->libs ) {
-        unshift @INC, ( split m{,}, $opts->libs );
-    }
+    unshift @INC, @{ $self->_config->libs };
 
     my $logger
         = $self->_has_logger
         ? $self->logger
         : Log::Dispatch->new(
         outputs => [
-            $opts->log_filename
+            $self->_config->log_filename
             ? [
                 'File',
                 binmode   => ':encoding(UTF-8)',
-                filename  => $opts->log_filename,
-                min_level => $opts->log_level,
+                filename  => $self->_config->log_filename,
+                min_level => $self->_config->log_level,
                 mode      => '>>',
                 newline   => 1,
                 ]
             : [
                 'Screen',
-                min_level => $opts->log_level,
+                min_level => $self->_config->log_level,
                 newline   => 1,
                 stderr    => 1,
                 utf8      => 1,
@@ -273,23 +355,24 @@ sub run {
         my ( $stdout, $tidied ) = capture_stdout(
             sub {
                 my $pi_doc = App::perlimports::Document->new(
-                    cache    => $opts->cache,
+                    cache    => $self->_config->cache,
                     filename => $filename,
-                    @{ $self->_ignore_modules }
-                    ? ( ignore_modules => $self->_ignore_modules )
+                    @{ $self->_config->ignore }
+                    ? ( ignore_modules => $self->_config->ignore )
                     : (),
-                    @{ $self->_ignore_modules_pattern }
+                    @{ $self->_config->ignore_pattern }
                     ? ( ignore_modules_pattern =>
-                            $self->_ignore_modules_pattern )
+                            $self->_config->ignore_pattern )
                     : (),
-                    @{ $self->_never_exports }
-                    ? ( never_export_modules => $self->_never_exports )
+                    @{ $self->_config->never_export }
+                    ? ( never_export_modules => $self->_config->never_export )
                     : (),
                     logger              => $logger,
-                    padding             => $opts->padding,
-                    preserve_duplicates => $opts->preserve_duplicates,
-                    preserve_unused     => $opts->preserve_unused,
-                    tidy_whitespace     => $opts->tidy_whitespace,
+                    padding             => $self->_config->padding,
+                    preserve_duplicates =>
+                        $self->_config->preserve_duplicates,
+                    preserve_unused => $self->_config->preserve_unused,
+                    tidy_whitespace => $self->_config->tidy_whitespace,
                     $input ? ( selection => $input ) : (),
                 );
 
@@ -297,16 +380,16 @@ sub run {
             }
         );
 
-        if ( $opts->read_stdin ) {
-            print $tidied;
+        if ( $self->_read_stdin ) {
+            print STDOUT $tidied;
         }
-        elsif ( $opts->inplace_edit ) {
+        elsif ( $self->_inplace_edit ) {
 
             # append() with truncate, because spew() can change file permissions
             path($filename)->append( { truncate => 1 }, $tidied );
         }
         else {
-            print $tidied;
+            print STDOUT $tidied;
         }
     }
 }
