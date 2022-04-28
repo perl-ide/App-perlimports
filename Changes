@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Bump PPI from 1.272 to 1.273
 
 0.000035  2022-02-23 00:35:26Z
     - Bump Perl::Tidy from 20211029 to 20220217 (GH#67) (Olaf Alders)
