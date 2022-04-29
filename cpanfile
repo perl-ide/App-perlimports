@@ -54,10 +54,11 @@ on 'test' => sub {
 
 on 'configure' => sub {
   requires "ExtUtils::MakeMaker" => "0";
-  requires "perl" => "5.010";
+  requires "perl" => "v5.10.0";
 };
 
 on 'develop' => sub {
+  requires "App::FatPacker::Simple" => "0.09";
   requires "Code::TidyAll" => "0.71";
   requires "Code::TidyAll::Plugin::SortLines::Naturally" => "0.000003";
   requires "Code::TidyAll::Plugin::Test::Vars" => "0.04";
