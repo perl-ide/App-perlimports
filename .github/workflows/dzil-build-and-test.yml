@@ -27,6 +27,7 @@ jobs:
           AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
           EXTENDED_TESTING: 1
+          HARNESS_OPTIONS: j2
           RELEASE_TESTING: 1
           TEST_TIDYALL_VERBOSE: 1
         run: auto-build-and-test-dist
@@ -116,6 +117,7 @@ jobs:
         run: cpan-install-dist-deps && test-dist
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+          HARNESS_OPTIONS: j2
           HARNESS_PERL_SWITCHES: "-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data"
   test-job:
     needs: build-job
@@ -155,7 +157,7 @@ jobs:
         with:
           cpanfile: "cpanfile"
           args: "--with-suggests --with-test --with-develop"
-      - run: prove -lr t
+      - run: prove -lr -j2 t
   without-test-needs-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
@@ -191,4 +193,4 @@ jobs:
         with:
           cpanfile: "cpanfile"
           args: "--with-test"
-      - run: prove -lr t
+      - run: prove -lr -j2 t
