@@ -46,6 +46,8 @@ Running perlimports on test files
 
 The above command:
 
+=over
+
 =item * finds all test files in C<./t>
 
 =item * pipes them to C<perlimports>
@@ -86,6 +88,8 @@ Running perlimports on modules:
       -i
 
 The above command:
+
+=over
 
 =item * finds all .pm files in C<./lib>
 
