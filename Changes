@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000037  2022-05-02 20:58:40Z
     - This distribution no longer includes a fatpacked PPI (GH#70) (Olaf
       Alders)
 
