@@ -8,7 +8,7 @@ use Data::Dumper qw( Dumper );
 use List::Util qw( any none uniq );
 use Memoize qw( memoize );
 use MooX::StrictConstructor;
-use PPI::Document 1.270 ();
+use PPI::Document ();
 use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;

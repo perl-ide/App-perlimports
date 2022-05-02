@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - This distribution no longer includes a fatpacked PPI (GH#70) (Olaf
+      Alders)
 
 0.000036  2022-04-29 13:09:44Z
     - Bump PPI from 1.272 to 1.273
