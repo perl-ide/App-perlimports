@@ -29,6 +29,7 @@ requires "Symbol::Get" => "0.10";
 requires "TOML::Tiny" => "0.15";
 requires "Text::SimpleTable::AutoWidth" => "0";
 requires "Try::Tiny" => "0";
+requires "Types::Path::Tiny" => "0";
 requires "Types::Standard" => "0";
 requires "feature" => "0";
 requires "perl" => "v5.18.0";

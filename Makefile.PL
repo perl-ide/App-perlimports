@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.012000;
+use 5.018000;
 
 use ExtUtils::MakeMaker;
 
@@ -18,7 +18,7 @@ my %WriteMakefileArgs = (
     "script/perlimports"
   ],
   "LICENSE" => "perl",
-  "MIN_PERL_VERSION" => "5.012000",
+  "MIN_PERL_VERSION" => "5.018000",
   "NAME" => "App::perlimports",
   "PREREQ_PM" => {
     "Capture::Tiny" => 0,
@@ -26,6 +26,7 @@ my %WriteMakefileArgs = (
     "Data::Dumper" => 0,
     "Data::UUID" => 0,
     "File::Basename" => 0,
+    "File::XDG" => 0,
     "Getopt::Long::Descriptive" => 0,
     "List::Util" => 0,
     "Log::Dispatch" => "2.70",
@@ -45,8 +46,10 @@ my %WriteMakefileArgs = (
     "Sereal::Encoder" => 0,
     "Sub::HandlesVia" => 0,
     "Symbol::Get" => "0.10",
+    "TOML::Tiny" => "0.15",
     "Text::SimpleTable::AutoWidth" => 0,
     "Try::Tiny" => 0,
+    "Types::Path::Tiny" => 0,
     "Types::Standard" => 0,
     "feature" => 0,
     "strict" => 0,
@@ -60,6 +63,7 @@ my %WriteMakefileArgs = (
     "PPI::Dumper" => 0,
     "Sub::Exporter" => 0,
     "Test::Differences" => 0,
+    "Test::Fatal" => 0,
     "Test::More" => 0,
     "Test::Needs" => 0,
     "Test::RequiresInternet" => 0,
@@ -82,6 +86,7 @@ my %FallbackPrereqs = (
   "ExtUtils::MakeMaker" => 0,
   "File::Basename" => 0,
   "File::Spec" => 0,
+  "File::XDG" => 0,
   "Getopt::Long::Descriptive" => 0,
   "List::Util" => 0,
   "Log::Dispatch" => "2.70",
@@ -104,7 +109,9 @@ my %FallbackPrereqs = (
   "Sub::Exporter" => 0,
   "Sub::HandlesVia" => 0,
   "Symbol::Get" => "0.10",
+  "TOML::Tiny" => "0.15",
   "Test::Differences" => 0,
+  "Test::Fatal" => 0,
   "Test::More" => 0,
   "Test::Needs" => 0,
   "Test::RequiresInternet" => 0,
@@ -112,6 +119,7 @@ my %FallbackPrereqs = (
   "Test::Warnings" => 0,
   "Text::SimpleTable::AutoWidth" => 0,
   "Try::Tiny" => 0,
+  "Types::Path::Tiny" => 0,
   "Types::Standard" => 0,
   "feature" => 0,
   "lib" => 0,
