@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Remove coercion which broke environments without config files (GH#71)
+      (Olaf Alders)
 
 0.000038  2022-05-05 20:45:48Z
     - This release adds (experimental and underdocumented) support for TOML
