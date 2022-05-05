@@ -86,7 +86,6 @@
             "TOML::Tiny" : "0.15",
             "Text::SimpleTable::AutoWidth" : "0",
             "Try::Tiny" : "0",
-            "Types::Path::Tiny" : "0",
             "Types::Standard" : "0",
             "feature" : "0",
             "perl" : "v5.18.0",
@@ -102,6 +101,7 @@
          "requires" : {
             "ExtUtils::MakeMaker" : "0",
             "File::Spec" : "0",
+            "File::pushd" : "0",
             "Log::Dispatch::Array" : "0",
             "PPI::Dumper" : "0",
             "Sub::Exporter" : "0",
@@ -129,7 +129,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000038",
+   "version" : "0.000039",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.034001"
@@ -684,7 +684,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000038",
+                  "tag" : "v0.000039",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
