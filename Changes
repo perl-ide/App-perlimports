@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - This release adds (experimental and underdocumented) support for TOML
+      config files (GH#69) (Olaf Alders)
+    - The use of TOML::Tiny means we're bumping the minimum Perl to 5.18
 
 0.000037  2022-05-02 20:58:40Z
     - This distribution no longer includes a fatpacked PPI (GH#70) (Olaf
