@@ -14,7 +14,6 @@ use Getopt::Long::Descriptive qw( describe_options );
 use Log::Dispatch ();
 use Path::Tiny qw( path );
 use Try::Tiny qw( catch try );
-use Types::Path::Tiny qw( Path );
 use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Object Str );
 
 has _args => (
@@ -33,9 +32,8 @@ has _config => (
 
 has _config_file => (
     is       => 'ro',
-    isa      => Path,
+    isa      => Str,
     init_arg => 'config',
-    coerce   => Path->coercion,
     builder  => '_build_config_file',
 );
 

@@ -5,11 +5,26 @@ use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny qw( capture );
+use File::pushd qw( pushd );
 use Path::Tiny ();
 use TestHelper qw( logger );
 use Test::Differences qw( eq_or_diff );
-use Test::More import => [qw( diag done_testing is ok subtest )];
+use Test::More import => [qw( diag done_testing is like ok subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
+
+# Emulate a user with no config file in the current dir and no config file in
+# $ENV{XDG_CONFIG_HOME}
+subtest 'no config file' => sub {
+    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    local $ENV{XDG_CONFIG_HOME} = "$dir";
+    local @ARGV = ('--version');
+
+    my $pushd = pushd("$dir");
+
+    my $cli = App::perlimports::CLI->new;
+    my ($stdout) = capture { $cli->run };
+    like( $stdout, qr{$App::perlimports::CLI::VERSION}, 'parses filename' );
+};
 
 subtest '--filename' => sub {
     my $expected = <<'EOF';
