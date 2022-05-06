@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Set minimum version of File::XDG to 1.01 (GH#73) (Olaf Alders)
 
 0.000039  2022-05-05 21:55:32Z
     - Remove coercion which broke environments without config files (GH#71)
