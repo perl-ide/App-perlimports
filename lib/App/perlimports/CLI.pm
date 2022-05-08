@@ -245,8 +245,7 @@ sub _build_config_file {
 
     if ( $self->_opts->config_file ) {
         if ( !-e $self->_opts->config_file ) {
-            warn $self->_opts->config_file . ' not found';
-            exit(1);
+            die $self->_opts->config_file . ' not found';
         }
         return $self->_opts->config_file;
     }
@@ -276,27 +275,35 @@ sub run {
     my $self = shift;
     my $opts = $self->_opts;
 
-    ( print $VERSION, "\n" )      && return if $opts->version;
-    ( print $self->_usage->text ) && return if $opts->help;
+    ( print $VERSION, "\n" )      && return 0 if $opts->version;
+    ( print $self->_usage->text ) && return 0 if $opts->help;
 
     if ( $opts->verbose_help ) {
-        print $self->_usage->text;
         require Pod::Usage;    ## no perlimports
-        Pod::Usage::pod2usage( ( { -exitval => 0 } ) );
-        return;
+        my $fh = \*STDOUT;
+        Pod::Usage::pod2usage(
+            (
+                {
+                    -exitval => 'NOEXIT',
+                    -message => $self->_usage->text,
+                    -output  => $fh,
+                }
+            )
+        );
+        return 0;
     }
 
     if ( $opts->create_config_file ) {
+        my $exit_code = 0;
         try {
-            my $file
-                = App::perlimports::Config->create_config(
+            App::perlimports::Config->create_config(
                 $opts->create_config_file );
         }
         catch {
             print STDERR $_, "\n";
-            exit(1);
+            $exit_code = 1;
         };
-        exit(0);
+        return $exit_code;
     }
 
     my $input;
@@ -336,14 +343,14 @@ sub run {
     unless (@files) {
         say STDERR q{Mandatory parameter 'filename' missing};
         print STDERR $self->_usage->text;
-        exit(1);
+        return 1;
     }
 
     foreach my $filename (@files) {
         if ( !path($filename)->is_file ) {
             say STDERR "$filename does not appear to be a file";
             print STDERR $self->_usage->text;
-            exit(1);
+            return 1;
         }
 
         $logger->notice( '🚀 Starting file: ' . $filename );
@@ -390,6 +397,7 @@ sub run {
             print STDOUT $tidied;
         }
     }
+    return 0;
 }
 
 1;
