@@ -4,9 +4,18 @@ use strict;
 use warnings;
 
 use App::perlimports::CLI ();
+use Try::Tiny qw( catch try );
 
-App::perlimports::CLI->new->run;
-exit(0);
+my $exit_code = 0;
+try {
+    $exit_code = App::perlimports::CLI->new->run;
+}
+catch {
+    print STDERR $_;
+    $exit_code = 1;
+};
+
+exit($exit_code);
 
 # PODNAME: perlimports
 # ABSTRACT: A command line utility for cleaning up imports in your Perl code

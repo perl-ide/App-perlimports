@@ -23,7 +23,30 @@ subtest 'no config file' => sub {
 
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    like( $stdout, qr{$App::perlimports::CLI::VERSION}, 'parses filename' );
+    like( $stdout, qr{$App::perlimports::CLI::VERSION}, 'prints version' );
+};
+
+subtest 'help' => sub {
+    local @ARGV = ('--help');
+
+    my $cli = App::perlimports::CLI->new;
+    my ($stdout) = capture { $cli->run };
+    like( $stdout, qr{filename STR}, 'prints help' );
+};
+
+subtest 'verbose help' => sub {
+    local @ARGV = ('--verbose-help');
+    use DDP;
+
+    # Verbose text on $0, which will differ when this is called from
+    # script/perlimports
+    local $0 = 'script/perlimports';
+    my $cli = App::perlimports::CLI->new;
+    my ($stdout) = capture { $cli->run };
+    like(
+        $stdout, qr{We can also make this slightly shorter},
+        'prints help'
+    );
 };
 
 subtest '--filename' => sub {
