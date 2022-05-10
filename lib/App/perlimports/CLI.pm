@@ -262,7 +262,7 @@ sub _build_config_file {
 
     my $xdg_config = File::XDG->new( name => 'perlimports', api => 1 );
     my $file       = $xdg_config->config_home->child( $filenames[0] );
-    return -e $file ? $file : q{};
+    return -e $file ? "$file" : q{};
 }
 
 sub _read_config_file {
