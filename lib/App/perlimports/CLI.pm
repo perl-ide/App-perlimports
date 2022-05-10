@@ -35,6 +35,7 @@ has _config => (
 has _config_file => (
     is       => 'ro',
     isa      => Str,
+    lazy     => 1,
     init_arg => 'config',
     builder  => '_build_config_file',
 );

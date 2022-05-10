@@ -9,11 +9,12 @@ use File::pushd qw( pushd );
 use Path::Tiny ();
 use TestHelper qw( logger );
 use Test::Differences qw( eq_or_diff );
+use Test::Fatal qw( exception );
 use Test::More import => [qw( diag done_testing is like ok subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
 
 # Emulate a user with no local or global config file
-subtest 'no config file' => sub {
+subtest 'no config files' => sub {
     my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
     local $ENV{XDG_CONFIG_HOME} = "$dir";
     local @ARGV = ('--version');
@@ -26,7 +27,7 @@ subtest 'no config file' => sub {
 };
 
 # Emulate a user with only a global config file
-subtest 'no config file' => sub {
+subtest 'no local config file' => sub {
     my $xdg_config_home = Path::Tiny->tempdir('testconfigXXXXXXXX');
     local $ENV{XDG_CONFIG_HOME} = "$xdg_config_home";
 
@@ -43,6 +44,17 @@ subtest 'no config file' => sub {
 
     my $cli = App::perlimports::CLI->new;
     is( $cli->_config_file, $global_config, 'config file found' );
+};
+
+subtest 'bad path to config file' => sub {
+    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    local $ENV{XDG_CONFIG_HOME} = "$dir";
+    local @ARGV = ( '--config-file', 'XXX' );
+
+    my $pushd = pushd("$dir");
+
+    ok( App::perlimports::CLI->new, '_config_file builder is lazy' );
+    like( exception { App::perlimports::CLI->new->run }, qr{XXX not found} );
 };
 
 subtest 'help' => sub {
