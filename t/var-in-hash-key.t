@@ -2,6 +2,9 @@ use strict;
 use warnings;
 
 use Test::More import => [qw( done_testing is )];
+use Test::Needs qw( Perl::Critic::Utils );
+
+use lib 't/lib';
 use TestHelper qw( source2pi );
 
 my $source_text = 'use Perl::Critic::Utils;';
