@@ -18,6 +18,7 @@ requires "MooX::StrictConstructor" => "0";
 requires "PPI" => "1.274";
 requires "PPI::Document" => "0";
 requires "PPIx::Utils::Classification" => "0";
+requires "Path::Iterator::Rule" => "0";
 requires "Path::Tiny" => "0";
 requires "Perl::Tidy" => "20220217";
 requires "Pod::Usage" => "0";
@@ -37,6 +38,7 @@ requires "utf8" => "0";
 requires "warnings" => "0";
 
 on 'test' => sub {
+  requires "DDP" => "0";
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
   requires "File::pushd" => "0";
