@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000041  2022-05-10 15:19:34Z
     - exit() from script rather than from module (GH#74) (Olaf Alders)
     - Find Perl files present in dirs, if they are passed as filename args
