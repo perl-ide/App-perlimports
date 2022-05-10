@@ -12,8 +12,7 @@ use Test::Differences qw( eq_or_diff );
 use Test::More import => [qw( diag done_testing is like ok subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
 
-# Emulate a user with no config file in the current dir and no config file in
-# $ENV{XDG_CONFIG_HOME}
+# Emulate a user with no local or global config file
 subtest 'no config file' => sub {
     my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
     local $ENV{XDG_CONFIG_HOME} = "$dir";
@@ -24,6 +23,26 @@ subtest 'no config file' => sub {
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
     like( $stdout, qr{$App::perlimports::CLI::VERSION}, 'prints version' );
+};
+
+# Emulate a user with only a global config file
+subtest 'no config file' => sub {
+    my $xdg_config_home = Path::Tiny->tempdir('testconfigXXXXXXXX');
+    local $ENV{XDG_CONFIG_HOME} = "$xdg_config_home";
+
+    my $global_config_dir = $xdg_config_home->child('perlimports');
+    $global_config_dir->mkpath;
+    my $global_config = $global_config_dir->child('perlimports.toml');
+
+    local @ARGV = ( '--create-config-file', $global_config );
+    is( App::perlimports::CLI->new->run, '0', 'clean exit code' );
+    ok( -e $global_config, 'file created' );
+
+    my $project_dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
+    my $pushd       = pushd("$project_dir");
+
+    my $cli = App::perlimports::CLI->new;
+    is( $cli->_config_file, $global_config, 'config file found' );
 };
 
 subtest 'help' => sub {
@@ -123,7 +142,6 @@ subtest 'no filename' => sub {
     my ( undef, $stderr ) = capture {
         $cli->run;
     };
-    ok(1);
     like( $stderr, qr{Mandatory parameter 'filename' missing} );
 };
 
