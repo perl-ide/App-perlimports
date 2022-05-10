@@ -44,6 +44,17 @@ subtest 'no local config file' => sub {
 
     my $cli = App::perlimports::CLI->new;
     is( $cli->_config_file, $global_config, 'config file found' );
+
+    # Try to recreate config file
+    local @ARGV = ( '--create-config-file', $global_config );
+    my $exit_code;
+    my ( undef, $stderr )
+        = capture { $exit_code = App::perlimports::CLI->new->run };
+    like(
+        $stderr, qr{perlimports.toml already exists},
+        'perlimports.toml already exists'
+    );
+    is( $exit_code, 1, 'non-zero exit code' );
 };
 
 subtest 'bad path to config file' => sub {
