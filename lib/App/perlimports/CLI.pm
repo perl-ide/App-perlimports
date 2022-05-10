@@ -11,7 +11,9 @@ use App::perlimports::Config   ();
 use App::perlimports::Document ();
 use Capture::Tiny qw( capture_stdout );
 use Getopt::Long::Descriptive qw( describe_options );
-use Log::Dispatch ();
+use List::Util qw( uniq );
+use Log::Dispatch        ();
+use Path::Iterator::Rule ();
 use Path::Tiny qw( path );
 use Try::Tiny qw( catch try );
 use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Object Str );
@@ -339,7 +341,10 @@ sub run {
         ]
         );
 
-    my @files = ( $opts->filename || @ARGV );
+    my @files = $self->_filter_paths(
+        $opts->filename ? $opts->filename : (),
+        @ARGV
+    );
     unless (@files) {
         say STDERR q{Mandatory parameter 'filename' missing};
         print STDERR $self->_usage->text;
@@ -398,6 +403,30 @@ sub run {
         }
     }
     return 0;
+}
+
+sub _filter_paths {
+    my $self  = shift;
+    my @paths = @_;
+    my @files;
+    my $rule = Path::Iterator::Rule->new->or(
+        Path::Iterator::Rule->new->perl_module,
+        Path::Iterator::Rule->new->perl_script,
+        Path::Iterator::Rule->new->perl_test,
+    );
+
+    foreach my $path (@paths) {
+        if ( -d $path ) {
+            my $iter = $rule->iter($path);
+            while ( defined( my $file = $iter->() ) ) {
+                push @files, $file;
+            }
+        }
+        else {
+            push @files, $path;
+        }
+    }
+    return uniq @files;
 }
 
 1;

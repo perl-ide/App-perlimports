@@ -28,6 +28,14 @@ Update a file in place. (Make sure you can revert the file if you need to.)
 
     perlimports -i foo.pl
 
+In place edits on directories
+
+    perlimports -i lib t xt
+
+In place edits on files and directories
+
+    perlimports -i foo.pl lib t xt
+
 Run C<perlimports> on a file and print the results to STDOUT.
 
     perlimports foo.pl
@@ -334,11 +342,13 @@ lines of code, but you have also reduced complexity.
 
 =head2 --filename|-f
 
-The absolute or relative path to a file to process.
+The absolute or relative path to a file (or directory) to process.
 
     --filename path/to/file
 
     -f path/to/file
+
+    -f path/to/dir
 
 Note that if you do not provide a C<--filename> we will fall back to checking
 C<@ARGV> for any remaining args. So,
@@ -349,9 +359,9 @@ is equivalent to
 
     perlimports path/to/file
 
-You may also pass multiple file names.
+You may also pass multiple file and dir names.
 
-    perlimports path/to/file path/to/other/file
+    perlimports path/to/file path/to/other/file lib t xt
 
 =head2 --ignore-modules
 

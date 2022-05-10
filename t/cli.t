@@ -49,6 +49,23 @@ subtest 'verbose help' => sub {
     );
 };
 
+subtest filter_paths => sub {
+    my $cli   = App::perlimports::CLI->new;
+    my @paths = sort $cli->_filter_paths(
+        'test-data/filter-paths',
+        'test-data/filter-paths/foo.t'
+    );
+    eq_or_diff(
+        \@paths,
+        [
+            'test-data/filter-paths/Foo.pl',
+            'test-data/filter-paths/Foo.pm',
+            'test-data/filter-paths/foo',
+            'test-data/filter-paths/foo.t',
+        ]
+    );
+};
+
 subtest '--filename' => sub {
     my $expected = <<'EOF';
 use strict;
@@ -98,6 +115,16 @@ EOF
     is( $stdout, $expected, 'parses filename' );
 
     ok( $file->lines, 'something was logged to file' );
+};
+
+subtest 'no filename' => sub {
+    local @ARGV;
+    my $cli = App::perlimports::CLI->new;
+    my ( undef, $stderr ) = capture {
+        $cli->run;
+    };
+    ok(1);
+    like( $stderr, qr{Mandatory parameter 'filename' missing} );
 };
 
 subtest '--ignore-modules' => sub {

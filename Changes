@@ -2,6 +2,8 @@ Revision history for App-perlimports
 
 {{$NEXT}}
     - exit() from script rather than from module (GH#74) (Olaf Alders)
+    - Find Perl files present in dirs, if they are passed as filename args
+      (GH#75) (Olaf Alders)
 
 0.000040  2022-05-06 13:25:15Z
     - Set minimum version of File::XDG to 1.01 (GH#73) (Olaf Alders)
