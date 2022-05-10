@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000042  2022-05-10 19:24:12Z
     - Fix exception which was thrown when only global config existed (GH#77)
       (Olaf Alders)
 
