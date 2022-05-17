@@ -84,7 +84,7 @@
             "Sereal::Encoder" : "0",
             "Sub::HandlesVia" : "0",
             "Symbol::Get" : "0.10",
-            "TOML::Tiny" : "0.15",
+            "TOML::Tiny" : "0",
             "Text::SimpleTable::AutoWidth" : "0",
             "Try::Tiny" : "0",
             "Types::Standard" : "0",
