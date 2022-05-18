@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Relax TOML::Tiny version (GH#78) (James Raspass)
 
 0.000042  2022-05-10 19:24:12Z
     - Fix exception which was thrown when only global config existed (GH#77)
