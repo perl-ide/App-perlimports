@@ -222,6 +222,7 @@ ignore_modules_filename         = ""
 ignore_modules_pattern          = "" # regex like "^(Foo|Foo::Bar)"
 ignore_modules_pattern_filename = ""
 libs                            = ["lib", "t/lib"]
+log_filename                    = ""
 log_level                       = "warn"
 never_export_modules            = []
 never_export_modules_filename   = ""
