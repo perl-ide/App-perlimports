@@ -390,7 +390,10 @@ EOF
     my $logger_cb = sub {
         my $msg   = shift;
         my $level = 'info';
-        if ( $msg =~ qr{Can't locate} ) {
+
+        # Mojo classes tend to throw "Can't locate :all.pm in @INC". This is
+        # expected and shouldn't be raised to the warning level.
+        if ( $msg =~ qr{Can't locate} && $msg !~ m{\:all\.pm in \@INC} ) {
             $level = 'warning';
         }
 
