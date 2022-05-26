@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add log_filename to default config file content (GH#79) (Olaf Alders)
+    - Don't raise some expected Mojo eval problems to the warning level (GH#80)
+      (Olaf Alders)
 
 0.000043  2022-05-18 13:28:01Z
     - Relax TOML::Tiny version (GH#78) (James Raspass)
