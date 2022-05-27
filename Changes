@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000044  2022-05-27 18:01:51Z
     - Add log_filename to default config file content (GH#79) (Olaf Alders)
     - Don't raise some expected Mojo eval problems to the warning level (GH#80)
       (Olaf Alders)
