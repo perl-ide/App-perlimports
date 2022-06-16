@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use PPI::Document ();
-use TestHelper qw( doc );
+use TestHelper    qw( doc );
 use Test::More import => [qw( done_testing is ok )];
 
 my ( $doc, $log ) = doc(

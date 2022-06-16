@@ -5,14 +5,14 @@ use Moo;
 our $VERSION = '0.000045';
 
 use Data::Dumper qw( Dumper );
-use List::Util qw( any none uniq );
-use Memoize qw( memoize );
+use List::Util   qw( any none uniq );
+use Memoize      qw( memoize );
 use MooX::StrictConstructor;
-use PPI::Document ();
+use PPI::Document               ();
 use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
-use Ref::Util qw( is_plain_arrayref is_plain_hashref );
+use Ref::Util                   qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
-use Try::Tiny qw( catch try );
+use Try::Tiny       qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 
 with 'App::perlimports::Role::Logger';

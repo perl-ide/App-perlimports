@@ -4,10 +4,10 @@ use warnings;
 use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::CLI ();
-use Capture::Tiny qw( capture );
-use Path::Tiny ();
-use TestHelper qw( logger );
-use Test::Differences qw( eq_or_diff );
+use Capture::Tiny         qw( capture );
+use Path::Tiny            ();
+use TestHelper            qw( logger );
+use Test::Differences     qw( eq_or_diff );
 use Test::More import => [qw( diag done_testing is like subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
 

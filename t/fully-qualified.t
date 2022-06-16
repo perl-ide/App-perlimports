@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use Test::Differences qw( eq_or_diff );
-use TestHelper qw( doc );
+use TestHelper        qw( doc );
 use Test::More import => [qw( diag done_testing ok )];
 use Test::Needs qw( HTTP::Tiny );
 

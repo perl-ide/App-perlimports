@@ -3,7 +3,7 @@ use warnings;
 
 use lib 't/lib';
 
-use TestHelper qw( inspector );
+use TestHelper  qw( inspector );
 use Test::Needs qw( Test::HTML::Lint );
 use Test::More import => [qw( done_testing ok )];
 

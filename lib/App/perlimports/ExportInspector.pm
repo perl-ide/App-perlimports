@@ -8,10 +8,10 @@ our $VERSION = '0.000045';
 
 use App::perlimports::Sandbox ();
 use Class::Inspector          ();
-use List::Util qw( any );
-use Module::Runtime qw( require_module );
+use List::Util                qw( any );
+use Module::Runtime           qw( require_module );
 use Sub::HandlesVia;
-use Try::Tiny qw( catch try );
+use Try::Tiny       qw( catch try );
 use Types::Standard qw(ArrayRef Bool HashRef Int InstanceOf Str);
 
 with 'App::perlimports::Role::Logger';

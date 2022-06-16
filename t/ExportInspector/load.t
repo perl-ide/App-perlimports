@@ -4,9 +4,9 @@ use warnings;
 use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::ExportInspector ();
-use TestHelper qw( logger );
+use TestHelper                        qw( logger );
 use Test::More import => [qw( done_testing is_deeply ok subtest )];
-use Test::Needs qw( Import::Into Moose Test::Most );
+use Test::Needs    qw( Import::Into Moose Test::Most );
 use Test::Warnings ();
 
 sub ei {

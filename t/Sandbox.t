@@ -4,8 +4,8 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use App::perlimports::Sandbox ();
-use TestHelper qw( doc );
-use Test::Differences qw( eq_or_diff );
+use TestHelper                qw( doc );
+use Test::Differences         qw( eq_or_diff );
 use Test::More import => [qw( cmp_ok done_testing ok subtest )];
 
 my $pkg1 = App::perlimports::Sandbox::pkg_for('fakeblock');

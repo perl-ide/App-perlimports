@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
-use TestHelper qw( doc );
+use TestHelper        qw( doc );
 use Test::More import => [qw( diag done_testing )];
 use Test::Needs {
     'Cpanel::JSON::XS' => 4.19,

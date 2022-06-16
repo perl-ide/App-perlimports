@@ -5,8 +5,8 @@ use warnings;
 
 use App::perlimports::Config ();
 use Path::Tiny               ();
-use Test::Differences qw( eq_or_diff );
-use Test::Fatal qw( exception );
+use Test::Differences        qw( eq_or_diff );
+use Test::Fatal              qw( exception );
 use Test::More import => [qw( done_testing is like ok subtest )];
 use TOML::Tiny qw( from_toml );
 

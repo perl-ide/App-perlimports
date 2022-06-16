@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use App::perlimports::CLI ();
-use Capture::Tiny qw( capture );
+use Capture::Tiny         qw( capture );
 use Test::More import => [qw( done_testing is )];
 
 my $expected = <<'EOF';
