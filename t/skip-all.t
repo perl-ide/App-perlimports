@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use lib 't/lib';
-use TestHelper qw( source2pi );
+use TestHelper        qw( source2pi );
 use Test::Differences qw( eq_or_diff );
 use Test::More import => [qw( done_testing ok )];
 

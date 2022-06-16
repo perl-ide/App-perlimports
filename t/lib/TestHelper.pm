@@ -6,9 +6,9 @@ use warnings;
 use App::perlimports::Document ();
 use App::perlimports::Include  ();
 use Log::Dispatch::Array       ();
-use Path::Tiny qw( path );
-use PPI::Document ();
-use PPI::Dumper   ();
+use Path::Tiny                 qw( path );
+use PPI::Document              ();
+use PPI::Dumper                ();
 
 use Sub::Exporter -setup => {
     exports => [

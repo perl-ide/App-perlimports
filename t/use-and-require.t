@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use App::perlimports::Document ();
-use TestHelper qw( logger );
+use TestHelper                 qw( logger );
 use Test::More import => [qw( done_testing is )];
 
 my @log;

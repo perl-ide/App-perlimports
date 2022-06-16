@@ -5,7 +5,7 @@ use lib 't/lib';
 
 use App::perlimports::Annotations ();
 use PPI::Document                 ();
-use TestHelper qw( doc );
+use TestHelper                    qw( doc );
 use Test::More import => [qw( done_testing is ok subtest )];
 
 subtest 'mixed' => sub {

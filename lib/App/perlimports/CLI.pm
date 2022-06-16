@@ -9,13 +9,13 @@ our $VERSION = '0.000045';
 use App::perlimports           ();
 use App::perlimports::Config   ();
 use App::perlimports::Document ();
-use Capture::Tiny qw( capture_stdout );
-use Getopt::Long::Descriptive qw( describe_options );
-use List::Util qw( uniq );
-use Log::Dispatch        ();
-use Path::Iterator::Rule ();
-use Path::Tiny qw( path );
-use Try::Tiny qw( catch try );
+use Capture::Tiny              qw( capture_stdout );
+use Getopt::Long::Descriptive  qw( describe_options );
+use List::Util                 qw( uniq );
+use Log::Dispatch              ();
+use Path::Iterator::Rule       ();
+use Path::Tiny                 qw( path );
+use Try::Tiny                  qw( catch try );
 use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Object Str );
 
 has _args => (

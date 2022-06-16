@@ -9,12 +9,12 @@ use App::perlimports::Annotations     ();
 use App::perlimports::ExportInspector ();
 use App::perlimports::Include         ();
 use App::perlimports::Sandbox         ();
-use File::Basename qw( fileparse );
-use List::Util qw( any uniq );
-use Module::Runtime qw( module_notional_filename );
+use File::Basename                    qw( fileparse );
+use List::Util                        qw( any uniq );
+use Module::Runtime                   qw( module_notional_filename );
 use MooX::StrictConstructor;
-use Path::Tiny qw( path );
-use PPI::Document ();
+use Path::Tiny                  qw( path );
+use PPI::Document               ();
 use PPIx::Utils::Classification qw(
     is_function_call
     is_hash_key
@@ -22,7 +22,7 @@ use PPIx::Utils::Classification qw(
 );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
-use Try::Tiny qw( catch try );
+use Try::Tiny       qw( catch try );
 use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Maybe Object Str );
 
 with 'App::perlimports::Role::Logger';

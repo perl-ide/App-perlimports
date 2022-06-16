@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Path::Tiny ();
+use Path::Tiny        ();
 use Test::Differences qw( eq_or_diff );
 use Test::More import => [qw( done_testing subtest )];
 use Test::Needs qw( Moose );

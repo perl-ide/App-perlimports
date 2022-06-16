@@ -4,7 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use Test::More import => [qw( done_testing is )];
-use TestHelper qw( source2pi );
+use TestHelper  qw( source2pi );
 use Test::Needs qw( Perl::Critic::Utils );
 
 my $source_text = 'use Perl::Critic::Utils qw( $BACKTICK $PERIOD );';
