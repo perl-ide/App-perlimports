@@ -580,6 +580,22 @@ The above statement will allow you to visually select one or more lines of code
 and have them updated in place by C<perlimports>. Once you have selected the
 code enter C<im> to have your imports (re)formatted.
 
+=head2 VIM and ALE
+
+If you use ALE with vim, you can add something like this to your C<vim>
+configuration. Note that this function will save your buffer before running
+C<perlimports>.
+
+    function! Perlimports(buffer) abort
+      write
+      return {
+      \   'command': 'perlimports --read-stdin -f %s'
+      \}
+    endfunction
+
+    let ale_fixers.perl = ['perlimports', 'perltidy']
+    execute ale#fix#registry#Add('perlimports', 'Perlimports', ['perl'], 'Tidy Perl imports')
+
 =head2 Code::TidyAll
 
 If you're a L<Code::TidyAll> user, you can configure C<perlimports> as a
