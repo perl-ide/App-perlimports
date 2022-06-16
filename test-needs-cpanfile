@@ -20,10 +20,12 @@ on 'test' => sub {
     requires 'MooseX::Types' => 0;
     requires 'MooseX::Types::Moose' => 0;
     requires 'MooseX::Types::Path::Class' => 0;
+    requires 'MooseX::Types::UUID' => 0;
     requires 'Object::Tap' => 0;
     requires 'Perl::Critic::Utils' => 0;
     requires 'Pithub' => '0';
     requires 'Test2::V0' => '0';
     requires 'Test::HTML::Lint' => '0';
     requires 'Test::Most' => '0';
+    requires 'UUID' => '0';
 };
