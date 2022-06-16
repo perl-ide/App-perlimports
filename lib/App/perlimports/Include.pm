@@ -6,7 +6,7 @@ our $VERSION = '0.000045';
 
 use Data::Dumper qw( Dumper );
 use List::Util   qw( any none uniq );
-use Memoize      qw( memoize );
+use Memoize      qw( flush_cache memoize );
 use MooX::StrictConstructor;
 use PPI::Document               ();
 use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
@@ -18,6 +18,10 @@ use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
 with 'App::perlimports::Role::Logger';
 
 memoize('is_function_call');
+
+sub BUILD {
+    flush_cache('is_function_call');
+}
 
 has _explicit_exports => (
     is          => 'ro',

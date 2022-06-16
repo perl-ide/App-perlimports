@@ -306,7 +306,7 @@ sub _list_to_hash {
     }
 
     # Specifically for File::chdir, which exports a typeglob, but doesn't
-    # implement eery possibility.
+    # implement every possibility.
     for my $key ( keys %hash ) {
         if ( substr( $key, 0, 1 ) eq '*' ) {
             my $thing = substr( $key, 1 );
