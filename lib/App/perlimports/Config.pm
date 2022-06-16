@@ -3,7 +3,7 @@ package App::perlimports::Config;
 use Moo;
 use MooX::StrictConstructor;
 
-our $VERSION = '0.000045';
+our $VERSION = '0.000046';
 
 use List::Util      qw( uniq );
 use Path::Tiny      qw( path );
