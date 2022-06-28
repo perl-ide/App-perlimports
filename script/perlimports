@@ -35,19 +35,20 @@ For system-wide defaults, you can create a file in C<$XDG_HOME>. Something like:
 After you have set up the config file to your liking, you can do away with most
 command line switches, other than C<-i> or C<--read-stdin>.
 
-Update a file in place. (Make sure you can revert the file if you need to.)
+Update a file in place. (Make sure you can revert the file if you need to, as
+C<perlimports> will not make a backup.)
 
     perlimports -i foo.pl
 
-In place edits on directories
+In-place edits on directories:
 
     perlimports -i lib t xt
 
-In place edits on files and directories
+In-place edits on files and directories
 
     perlimports -i foo.pl lib t xt
 
-Run C<perlimports> on a file and print the results to STDOUT.
+Run C<perlimports> on a file and only print the results to STDOUT.
 
     perlimports foo.pl
 
@@ -59,93 +60,6 @@ hints as to where to find them:
 Redirect output to a new file:
 
     perlimports foo.pl > foo.new.pl
-
-Following are some examples to use if you want to employ your own file finding
-logic or prefer not to use config files. If this does not apply to you, you can
-safely skip down to the next section.
-
-Running perlimports on test files
-
-    find t -type f |              \
-      grep .t$ |                  \
-      xargs perlimports           \
-      --libs lib,t/lib            \
-      --ignore-modules Test::More \
-      --no-preserve-unused        \
-      --no-preserve-duplicates    \
-      --log-level debug           \
-      -i
-
-The above command:
-
-=over
-
-=item * finds all test files in C<./t>
-
-=item * pipes them to C<perlimports>
-
-=item * adds C<lib> and C<t/lib> to C<@INC>
-
-=item * ignores the L<Test::More> module
-
-=item * removes unused modules
-
-=item * removes duplicated use statements
-
-=item * displays debugging info
-
-=item * edits files in place (C<-i>)
-
-=back
-
-Users of L<ack> can make this a touch simpler:
-
-      ack -f --perltest           \
-      xargs perlimports           \
-      --libs lib,t/lib            \
-      --ignore-modules Test::More \
-      --no-preserve-unused        \
-      --no-preserve-duplicates    \
-      --log-level debug           \
-      -i
-
-Running perlimports on modules:
-
-    find lib -type f |         \
-      grep .pm$ |              \
-      xargs perlimports        \
-      --libs lib               \
-      --no-preserve-unused     \
-      --no-preserve-duplicates \
-      -i
-
-The above command:
-
-=over
-
-=item * finds all .pm files in C<./lib>
-
-=item * pipes them to C<perlimports>
-
-=item * adds C<lib> to C<@INC>
-
-=item * removes unused modules
-
-=item * removes duplicated use statements
-
-=item * edits files in place (C<-i>)
-
-=back
-
-We can also make this slightly shorter by using L<ack>:
-
-      ack -f --perl lib        \
-      xargs perlimports        \
-      --libs lib               \
-      --no-preserve-unused     \
-      --no-preserve-duplicates \
-      -i
-
 
 =head1 DESCRIPTION
 
@@ -264,8 +178,8 @@ of resources. Removing entire modules from your code base can decrease the
 number of dependencies which you need to manage and decrease friction in your
 your deployment process.
 
-C<perlimports> does not remove unused modules for you, but using it to actively
-tidy your imports can make this manual process much easier to manage.
+C<perlimports> can remove unused modules for you, making dependency management
+much easier.
 
 =item Enforcing a consistent style
 
@@ -689,6 +603,96 @@ might revert.
 
 For an up to date example, see the config file which this repository uses:
 L<https://github.com/oalders/App-perlimports/blob/main/precious.toml>
+
+=head1 RECIPES
+
+Included are some examples to use if you want to employ your own file finding
+logic or prefer not to use config files. If this does not apply to you, you can
+safely skip this section.
+
+Running perlimports on test files
+
+    find t -type f |              \
+      grep .t$ |                  \
+      xargs perlimports           \
+      --libs lib,t/lib            \
+      --ignore-modules Test::More \
+      --no-preserve-unused        \
+      --no-preserve-duplicates    \
+      --log-level debug           \
+      -i
+
+The above command:
+
+=over
+
+=item * finds all test files in C<./t>
+
+=item * pipes them to C<perlimports>
+
+=item * adds C<lib> and C<t/lib> to C<@INC>
+
+=item * ignores the L<Test::More> module
+
+=item * removes unused modules
+
+=item * removes duplicated use statements
+
+=item * displays debugging info
+
+=item * edits files in place (C<-i>)
+
+=back
+
+Users of L<ack> can make this a touch simpler:
+
+      ack -f --perltest           \
+      xargs perlimports           \
+      --libs lib,t/lib            \
+      --ignore-modules Test::More \
+      --no-preserve-unused        \
+      --no-preserve-duplicates    \
+      --log-level debug           \
+      -i
+
+Running perlimports on modules:
+
+    find lib -type f |         \
+      grep .pm$ |              \
+      xargs perlimports        \
+      --libs lib               \
+      --no-preserve-unused     \
+      --no-preserve-duplicates \
+      -i
+
+The above command:
+
+=over
+
+=item * finds all .pm files in C<./lib>
+
+=item * pipes them to C<perlimports>
+
+=item * adds C<lib> to C<@INC>
+
+=item * removes unused modules
+
+=item * removes duplicated use statements
+
+=item * edits files in place (C<-i>)
+
+=back
+
+We can also make this slightly shorter by using L<ack>:
+
+      ack -f --perl lib        \
+      xargs perlimports        \
+      --libs lib               \
+      --no-preserve-unused     \
+      --no-preserve-duplicates \
+      -i
+
+
 
 =head1 CAVEATS
 

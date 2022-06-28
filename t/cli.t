@@ -86,7 +86,7 @@ subtest 'verbose help' => sub {
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
     like(
-        $stdout, qr{We can also make this slightly shorter},
+        $stdout, qr{Create a sample config file},
         'prints help'
     );
 };
