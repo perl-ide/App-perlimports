@@ -70,3 +70,10 @@ tidy_flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
 ok_exit_codes = 0
 lint_failure_exit_codes = 2
 expect_stderr = true
+
+[commands.perlcritic]
+type = "lint"
+include = [ "**/*.{pl,pm,t,psgi}" ]
+cmd = [ "perlcritic", "--profile=$PRECIOUS_ROOT/perlcriticrc" ]
+ok_exit_codes = 0
+lint_failure_exit_codes = 2
