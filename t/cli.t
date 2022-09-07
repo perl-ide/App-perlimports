@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -29,7 +31,7 @@ subtest 'no config files' => sub {
 # Emulate a user with only a global config file
 subtest 'no local config file' => sub {
     my $xdg_config_home = Path::Tiny->tempdir('testconfigXXXXXXXX');
-    local $ENV{XDG_CONFIG_HOME} = "$xdg_config_home";
+    local $ENV{XDG_CONFIG_HOME} = $xdg_config_home->stringify;
 
     my $global_config_dir = $xdg_config_home->child('perlimports');
     $global_config_dir->mkpath;
@@ -160,7 +162,7 @@ EOF
 };
 
 subtest 'no filename' => sub {
-    local @ARGV;
+    local @ARGV = ();
     my $cli = App::perlimports::CLI->new;
     my ( undef, $stderr ) = capture {
         $cli->run;
