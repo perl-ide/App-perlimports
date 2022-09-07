@@ -312,6 +312,7 @@ sub run {
     my $input;
 
     if ( $self->_read_stdin ) {
+        ## no critic (Variables::RequireInitializationForLocalVars)
         local $/;
         $input = <>;
     }

@@ -409,8 +409,9 @@ EOF
 
     local $SIG{__WARN__} = $logger_cb;
 
-    local $@;
+    local $@ = undef;
     ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
     eval $to_eval;
 
     if ($@) {

@@ -67,7 +67,10 @@ subtest 'bad path to config file' => sub {
     my $pushd = pushd("$dir");
 
     ok( App::perlimports::CLI->new, '_config_file builder is lazy' );
-    like( exception { App::perlimports::CLI->new->run }, qr{XXX not found} );
+    like(
+        exception { App::perlimports::CLI->new->run }, qr{XXX not found},
+        'not found'
+    );
 };
 
 subtest 'help' => sub {
@@ -167,7 +170,10 @@ subtest 'no filename' => sub {
     my ( undef, $stderr ) = capture {
         $cli->run;
     };
-    like( $stderr, qr{Mandatory parameter 'filename' missing} );
+    like(
+        $stderr, qr{Mandatory parameter 'filename' missing},
+        'filename missing'
+    );
 };
 
 subtest '--ignore-modules' => sub {
@@ -189,7 +195,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected, );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--ignore-modules-pattern' => sub {
@@ -211,7 +217,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected, );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--never-export-modules' => sub {
@@ -233,7 +239,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--no-padding' => sub {
@@ -255,7 +261,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
-    is( $stdout, $expected );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--stdout' => sub {

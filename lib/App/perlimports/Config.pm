@@ -108,7 +108,7 @@ has padding => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    default => 1
+    default => 1,
 );
 
 has preserve_duplicates => (

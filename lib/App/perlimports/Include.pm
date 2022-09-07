@@ -714,6 +714,7 @@ sub _sort_symbols {
     my $self = shift;
     my @list = @_;
 
+    ## no critic (BuiltinFunctions::RequireSimpleSortBlock)
     my @sorted = sort {
         my $A = _transform_before_cmp($a);
         my $B = _transform_before_cmp($b);
