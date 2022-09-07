@@ -176,9 +176,9 @@ sub _options {
             'log-level|l=s', 'Print messages to STDERR',
             { default => 'warning' }
         ],
-        [ 'help', "Print usage message and exit", { shortcircuit => 1 } ],
+        [ 'help', 'Print usage message and exit', { shortcircuit => 1 } ],
         [
-            'verbose-help', "Print usage message and documentation ",
+            'verbose-help', 'Print usage message and documentation ',
             { shortcircuit => 1 }
         ],
     );

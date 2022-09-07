@@ -22,7 +22,7 @@ ok( !$e->_is_ignored, 'no longer ignored' );
 is_deeply( $e->_imports, [qw($Bin)], 'found import' );
 eq_or_diff(
     $e->formatted_ppi_statement . q{},
-    q{use FindBin qw( $Bin );},
+    'use FindBin qw( $Bin );',
     'formatted_ppi_statement'
 );
 

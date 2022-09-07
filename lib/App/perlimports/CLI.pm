@@ -312,8 +312,9 @@ sub run {
     my $input;
 
     if ( $self->_read_stdin ) {
+        ## no critic (Variables::RequireInitializationForLocalVars)
         local $/;
-        $input = <STDIN>;
+        $input = <>;
     }
 
     unshift @INC, @{ $self->_config->libs };

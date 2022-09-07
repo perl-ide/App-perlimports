@@ -24,7 +24,7 @@ set_themes = core
 
 [InputOutput::RequireCheckedSyscalls]
 functions = :builtins
-exclude_functions = sleep
+exclude_functions = print say sleep
 severity = 3
 
 [Moose::RequireCleanNamespace]

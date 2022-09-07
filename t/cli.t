@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -15,7 +17,7 @@ use Test::Needs qw( Perl::Critic::Utils );
 
 # Emulate a user with no local or global config file
 subtest 'no config files' => sub {
-    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    my $dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
     local $ENV{XDG_CONFIG_HOME} = "$dir";
     local @ARGV = ('--version');
 
@@ -29,7 +31,7 @@ subtest 'no config files' => sub {
 # Emulate a user with only a global config file
 subtest 'no local config file' => sub {
     my $xdg_config_home = Path::Tiny->tempdir('testconfigXXXXXXXX');
-    local $ENV{XDG_CONFIG_HOME} = "$xdg_config_home";
+    local $ENV{XDG_CONFIG_HOME} = $xdg_config_home->stringify;
 
     my $global_config_dir = $xdg_config_home->child('perlimports');
     $global_config_dir->mkpath;
@@ -58,14 +60,17 @@ subtest 'no local config file' => sub {
 };
 
 subtest 'bad path to config file' => sub {
-    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    my $dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
     local $ENV{XDG_CONFIG_HOME} = "$dir";
     local @ARGV = ( '--config-file', 'XXX' );
 
     my $pushd = pushd("$dir");
 
     ok( App::perlimports::CLI->new, '_config_file builder is lazy' );
-    like( exception { App::perlimports::CLI->new->run }, qr{XXX not found} );
+    like(
+        exception { App::perlimports::CLI->new->run }, qr{XXX not found},
+        'not found'
+    );
 };
 
 subtest 'help' => sub {
@@ -160,12 +165,15 @@ EOF
 };
 
 subtest 'no filename' => sub {
-    local @ARGV;
+    local @ARGV = ();
     my $cli = App::perlimports::CLI->new;
     my ( undef, $stderr ) = capture {
         $cli->run;
     };
-    like( $stderr, qr{Mandatory parameter 'filename' missing} );
+    like(
+        $stderr, qr{Mandatory parameter 'filename' missing},
+        'filename missing'
+    );
 };
 
 subtest '--ignore-modules' => sub {
@@ -187,7 +195,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected, );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--ignore-modules-pattern' => sub {
@@ -209,7 +217,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected, );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--never-export-modules' => sub {
@@ -231,7 +239,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ($stdout) = capture { $cli->run };
-    is( $stdout, $expected );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--no-padding' => sub {
@@ -253,7 +261,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
-    is( $stdout, $expected );
+    is( $stdout, $expected, 'stdout' );
 };
 
 subtest '--stdout' => sub {

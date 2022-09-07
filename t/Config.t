@@ -10,7 +10,7 @@ use Test::Fatal              qw( exception );
 use Test::More import => [qw( done_testing is like ok subtest )];
 use TOML::Tiny qw( from_toml );
 
-my $dir  = Path::Tiny->tempdir("testconfigXXXXXXXX");
+my $dir  = Path::Tiny->tempdir('testconfigXXXXXXXX');
 my $file = $dir->child('perlimports.toml');
 
 ok( App::perlimports::Config->create_config($file), 'create_config' );
