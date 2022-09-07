@@ -17,7 +17,7 @@ use Test::Needs qw( Perl::Critic::Utils );
 
 # Emulate a user with no local or global config file
 subtest 'no config files' => sub {
-    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    my $dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
     local $ENV{XDG_CONFIG_HOME} = "$dir";
     local @ARGV = ('--version');
 
@@ -60,7 +60,7 @@ subtest 'no local config file' => sub {
 };
 
 subtest 'bad path to config file' => sub {
-    my $dir = Path::Tiny->tempdir("testconfigXXXXXXXX");
+    my $dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
     local $ENV{XDG_CONFIG_HOME} = "$dir";
     local @ARGV = ( '--config-file', 'XXX' );
 
