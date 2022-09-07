@@ -313,7 +313,7 @@ sub run {
 
     if ( $self->_read_stdin ) {
         local $/;
-        $input = <STDIN>;
+        $input = <>;
     }
 
     unshift @INC, @{ $self->_config->libs };
