@@ -27,9 +27,9 @@ subtest 'replace top level require via snippet' => sub {
 };
 
 my $content = path($filename)->slurp;
-my ($doc) = PPI::Document->new( \$content );
+my ($require_doc) = PPI::Document->new( \$content );
 
-my $includes = $doc->find(
+my $includes = $require_doc->find(
     sub {
         $_[1]->isa('PPI::Statement::Include');
     }

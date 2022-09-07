@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -31,6 +33,6 @@ my $raw_include = 'use Local::Explodes qw( foo );';
 my $inc         = PPI::Document->new( \$raw_include );
 my $found       = $inc->find('PPI::Statement::Include')->[0];
 
-ok( $doc->_is_ignored($found) );
+ok( $doc->_is_ignored($found), '_is_ignored' );
 
 done_testing;

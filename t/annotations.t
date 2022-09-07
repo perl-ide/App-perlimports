@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -17,25 +19,25 @@ subtest 'mixed' => sub {
 
     my $includes = $doc->find('PPI::Statement::Include');
 
-    is( $includes->[0]->module, 'strict' );
+    is( $includes->[0]->module, 'strict', 'strict' );
     ok( !$anno->is_ignored( $includes->[0] ), 'pragma not ignored' );
 
-    is( $includes->[1]->module, 'warnings' );
+    is( $includes->[1]->module, 'warnings', 'warnings' );
     ok( !$anno->is_ignored( $includes->[1] ), 'pragma not ignored' );
 
-    is( $includes->[2]->module, 'Carp' );
+    is( $includes->[2]->module, 'Carp', 'Carp' );
     ok( $anno->is_ignored( $includes->[2] ), 'Carp is ignored' );
 
-    is( $includes->[3]->module, 'POSIX' );
+    is( $includes->[3]->module, 'POSIX', 'POSIX' );
     ok( !$anno->is_ignored( $includes->[3] ), 'POSIX is not ignored' );
 
-    is( $includes->[4]->module, 'Cwd' );
+    is( $includes->[4]->module, 'Cwd', 'Cwd' );
     ok( $anno->is_ignored( $includes->[4] ), 'Cwd is ignored' );
 
-    is( $includes->[5]->module, 'Digest' );
+    is( $includes->[5]->module, 'Digest', 'Digest' );
     ok( $anno->is_ignored( $includes->[5] ), 'Digest is ignored' );
 
-    is( $includes->[6]->module, 'Encode' );
+    is( $includes->[6]->module, 'Encode', 'Encode' );
     ok( !$anno->is_ignored( $includes->[6] ), 'Encode is not ignored' );
 };
 

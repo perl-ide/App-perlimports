@@ -46,6 +46,7 @@ EOF
     is(
         $doc->tidied_document,
         $expected,
+        'tidied_document'
     );
 };
 
@@ -69,6 +70,7 @@ EOF
     is(
         $doc->tidied_document,
         $expected,
+        'tidied_document'
     );
 };
 

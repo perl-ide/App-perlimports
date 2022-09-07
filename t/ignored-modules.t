@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!perl
 
 use strict;
 use warnings;
@@ -46,7 +46,7 @@ EOF
         'module ignored'
     );
     my $includes = $doc->ppi_document->find('PPI::Statement::Include');
-    is( $includes->[2]->module, 'Geo::IP' );
+    is( $includes->[2]->module, 'Geo::IP', 'Geo::IP is an include' );
     ok( $doc->_is_ignored( $includes->[2] ), 'Geo::IP flagged as ignored' );
 }
 

@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -16,7 +18,8 @@ is(
 
 is_deeply(
     $include->_document->interpolated_symbols,
-    { '$REQUIRE_ORDER' => 1, '$RETURN_IN_ORDER' => 1, }
+    { '$REQUIRE_ORDER' => 1, '$RETURN_IN_ORDER' => 1, },
+    'interpolated_symbols'
 );
 
 done_testing();

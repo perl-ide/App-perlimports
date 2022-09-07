@@ -1,8 +1,12 @@
+#!perl
+
 use strict;
 use warnings;
 
 use App::perlimports::Include ();
 use Test::More import => [qw( done_testing is )];
+
+## no critic (Subroutines::ProtectPrivateSubs)
 
 {
     my $AA = 'use Foo     qw( bar );';
