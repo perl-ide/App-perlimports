@@ -161,6 +161,7 @@ sub _build_explicit_exports {
         : $self->_export_inspector->implicit_exports;
 }
 
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _build_imports {
     my $self = shift;
 
@@ -377,6 +378,8 @@ sub _build_imports {
     return \@found;
 }
 
+## use critic
+
 sub _build_is_ignored {
     my $self = shift;
 
@@ -437,6 +440,7 @@ sub _build_is_translatable {
     return 1;
 }
 
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _build_formatted_ppi_statement {
     my $self = shift;
 
@@ -599,6 +603,8 @@ sub _build_formatted_ppi_statement {
 
     return $self->_maybe_get_new_include($statement);
 }
+
+## use critic
 
 sub _imports_remain {
     my $self  = shift;
