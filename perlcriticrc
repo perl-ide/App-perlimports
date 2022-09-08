@@ -24,7 +24,7 @@ set_themes = core
 
 [InputOutput::RequireCheckedSyscalls]
 functions = :builtins
-exclude_functions = print say sleep
+exclude_functions = binmode print say sleep
 severity = 3
 
 [Moose::RequireCleanNamespace]
@@ -90,3 +90,6 @@ add_packages = Test::Builder
 [-ValuesAndExpressions::ProhibitVersionStrings]
 
 [-Subroutines::ProhibitExplicitReturnUndef]
+
+# Too many false positives
+[-ValuesAndExpressions::ProhibitAccessOfPrivateData]

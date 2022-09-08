@@ -22,6 +22,7 @@ use PPIx::Utils::Classification qw(
 );
 use Ref::Util qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
+use Text::Diff      ();
 use Try::Tiny       qw( catch try );
 use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Maybe Object Str );
 
@@ -103,6 +104,13 @@ has interpolated_symbols => (
     isa     => HashRef,
     lazy    => 1,
     builder => '_build_interpolated_symbols',
+);
+
+has lint => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
 );
 
 has my_own_inspector => (
@@ -200,12 +208,6 @@ has _sub_names => (
     },
     lazy    => 1,
     builder => '_build_sub_names',
-);
-
-has tidied_document => (
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_tidied_document',
 );
 
 has _tidy_whitespace => (
@@ -839,21 +841,46 @@ sub inspector_for {
     return $self->_get_inspector_for($module);
 }
 
-sub _build_tidied_document {
+sub tidied_document {
+    return shift->_lint_or_tidy_document;
+}
+
+sub linter_success {
+    return shift->_lint_or_tidy_document;
+}
+
+# Kind of on odd interface, but right now we return either a tidied document or
+# the result of linting. Could probably clean this up at some point, but I'm
+# not sure yet how much the linting will change.
+sub _lint_or_tidy_document {
     my $self = shift;
 
+    my $linter_error = 0;
     my %processed;
 
+INCLUDE:
     foreach my $include ( $self->all_includes ) {
 
         # If a module is used more than once, that's usually a mistake.
         if ( !$self->_preserve_duplicates
             && exists $processed{ $include->module } ) {
+
+            if ( $self->lint ) {
+                $self->_warn_diff_for_linter(
+                    'has already been used and should be removed',
+                    $include,
+                    $include->content,
+                    q{}
+                );
+                $linter_error = 1;
+                next INCLUDE;
+            }
+
             $self->logger->info( $include->module
                     . ' has already been used. Removing at line '
                     . $include->line_number );
             $self->_remove_with_trailing_characters($include);
-            next;
+            next INCLUDE;
         }
 
         $self->logger->notice( '📦 ' . "Processing include: $include" );
@@ -877,7 +904,7 @@ sub _build_tidied_document {
             $self->logger->error( 'Error is: ' . $error );
         };
 
-        next unless $elem;
+        next INCLUDE unless $elem;
 
         # If this is a module with bare imports which is not used anywhere,
         # maybe we can just remove it.
@@ -887,11 +914,23 @@ sub _build_tidied_document {
             if (   $args[0]
                 && $args[0] eq '()'
                 && !$self->_is_used_fully_qualified( $include->module ) ) {
+
+                if ( $self->lint ) {
+                    $self->_warn_diff_for_linter(
+                        'appears to be unused and should be removed',
+                        $include, $include->content,
+                        q{}
+                    );
+                    $linter_error = 1;
+                    next INCLUDE;
+                }
+
                 $self->logger->info( 'Removing '
                         . $include->module
                         . ' as it appears to be unused' );
                 $self->_remove_with_trailing_characters($include);
-                next;
+
+                next INCLUDE;
             }
         }
 
@@ -904,7 +943,7 @@ sub _build_tidied_document {
                     'New include (%s) triggers error (%s)', $elem, $err
                 )
             );
-            next;
+            next INCLUDE;
         }
 
         my $inserted = $include->replace($elem);
@@ -912,8 +951,24 @@ sub _build_tidied_document {
             $self->logger->error( 'Could not insert ' . $elem );
         }
         else {
-            $include->remove;
             $processed{ $include->module } = 1;
+
+            if ( $self->lint ) {
+                my $before = join q{ },
+                    map { $_->content } $include->arguments;
+                my $after = join q{ }, map { $_->content } $elem->arguments;
+
+                if ( $before ne $after ) {
+                    $self->_warn_diff_for_linter(
+                        'import arguments have changed',
+                        $include,
+                        $include->content,
+                        $elem->content
+                    );
+                    $linter_error = 1;
+                    next INCLUDE;
+                }
+            }
 
             $self->logger->info("resetting imports for |$elem|");
 
@@ -939,9 +994,39 @@ sub _build_tidied_document {
 
     $self->_maybe_cache_inspectors;
 
-    # We need to do this in order to preserve HEREDOCs.
+    # We need to do serialize in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
-    return $self->_ppi_selection->serialize;
+    return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
+}
+
+sub _warn_diff_for_linter {
+    my $self          = shift;
+    my $reason        = shift;
+    my $include       = shift;
+    my $before        = shift;
+    my $after         = shift;
+    my $after_deleted = !$after;
+
+    my $justification = sprintf(
+        '❌ %s (%s) at %s line %i',
+        $include->module, $reason, $self->_filename, $include->line_number
+    );
+    $self->logger->error($justification);
+
+    my $padding = $include->line_number - 1;
+    $before = sprintf( "%s%s\n", "\n" x $padding, $before );
+    $after  = sprintf( "%s%s\n", "\n" x $padding, $after );
+    chomp $after if $after_deleted;
+
+    my $diff = Text::Diff::diff(
+        \$before, \$after,
+        {
+            CONTEXT => 0,
+            STYLE   => 'Unified',
+        }
+    );
+
+    $self->logger->error($diff);
 }
 
 sub _remove_with_trailing_characters {
@@ -1015,9 +1100,18 @@ sub _maybe_cache_inspectors {
 
 =pod
 
+=head1 MOTIVATION
+
+This module is to be used internally by L<perlimports>. It shouldn't be relied
+upon by anything else.
+
 =head2 inspector_for( $module_name )
 
 Returns an L<App::perlimports::ExporterInspector> object for the given module.
+
+=head2 linter_success
+
+Returns true if document was linted without errors, otherwise false.
 
 =head2 tidied_document
 
