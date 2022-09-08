@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -6,8 +8,6 @@ use lib 't/lib';
 use List::Util qw( none );
 use TestHelper qw( doc );
 use Test::More import => [qw( done_testing ok )];
-
-my @errors;
 
 my ( $doc, $logs ) = doc(
     filename => 'test-data/unnest-quotes.pl',

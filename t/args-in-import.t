@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -15,6 +17,7 @@ my ($doc) = doc(
 
 is_deeply(
     $doc->original_imports->{'Test2::V0'},
-    [ '-no_pragmas', '!meta', 'diag', 'done_testing', 'is' ]
+    [ '-no_pragmas', '!meta', 'diag', 'done_testing', 'is' ],
+    'original_imports'
 );
 done_testing();

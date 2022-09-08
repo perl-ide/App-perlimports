@@ -274,6 +274,7 @@ sub _read_config_file {
     return $config || {};
 }
 
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub run {
     my $self = shift;
     my $opts = $self->_opts;
@@ -406,6 +407,8 @@ sub run {
     }
     return 0;
 }
+
+## use critic
 
 sub _filter_paths {
     my $self  = shift;

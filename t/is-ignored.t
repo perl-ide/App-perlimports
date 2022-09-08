@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!perl
 
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ my ($doc) = doc(
     filename => 'test-data/lib/Local/UsesTypesStandard.pm',
 );
 
-my $expected = <<EOF;
+my $expected = <<'EOF';
 package Local::UsesTypesStandard;
 
 use Types::Standard;

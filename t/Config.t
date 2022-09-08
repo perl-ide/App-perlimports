@@ -15,8 +15,10 @@ my $file = $dir->child('perlimports.toml');
 
 ok( App::perlimports::Config->create_config($file), 'create_config' );
 
-my $config = from_toml( $file->slurp );
-eq_or_diff( $config->{libs}, [ 'lib', 't/lib' ], 'default libs' );
+{
+    my $config = from_toml( $file->slurp );
+    eq_or_diff( $config->{libs}, [ 'lib', 't/lib' ], 'default libs' );
+}
 
 like(
     exception {

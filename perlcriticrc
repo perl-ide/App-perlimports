@@ -32,7 +32,7 @@ modules = Moose Moose::Role MooseX::Role::Parameterized Moose::Util::TypeConstra
 cleaners = namespace::autoclean
 
 [NamingConventions::Capitalization]
-package_exemptions = *
+package_exemptions = perlimports
 file_lexical_variables = [A-Z]\w+|[^A-Z]+
 global_variables = :starts_with_upper
 scoped_lexical_variables = [A-Z]\w+|[^A-Z]+

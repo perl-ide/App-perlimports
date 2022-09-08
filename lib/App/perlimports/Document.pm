@@ -907,8 +907,7 @@ sub _build_tidied_document {
             next;
         }
 
-        # https://github.com/Perl-Critic/PPI/issues/189
-        my $inserted = $include->insert_before($elem);
+        my $inserted = $include->replace($elem);
         if ( !$inserted ) {
             $self->logger->error( 'Could not insert ' . $elem );
         }
