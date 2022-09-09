@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000046  2022-09-09 22:26:52Z
     - Add a --lint flag to force perlimports to behave as a linter (GH#85)
       (Olaf Alders)
