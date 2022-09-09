@@ -12,8 +12,22 @@ use Path::Tiny            ();
 use TestHelper            qw( logger );
 use Test::Differences     qw( eq_or_diff );
 use Test::Fatal           qw( exception );
-use Test::More import => [qw( diag done_testing is like ok subtest )];
+use Test::More import => [qw( done_testing is like ok subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
+
+subtest 'bad path to config file' => sub {
+    local @ARGV = (
+        '--config-file',
+        'test-data/XXX',
+        'test-data/a.pl',
+    );
+
+    ok( App::perlimports::CLI->new, '_config_file builder is lazy' );
+    like(
+        exception { App::perlimports::CLI->new->run }, qr{XXX not found},
+        'not found'
+    );
+};
 
 # Emulate a user with no local or global config file
 subtest 'no config files' => sub {
@@ -57,20 +71,6 @@ subtest 'no local config file' => sub {
         'perlimports.toml already exists'
     );
     is( $exit_code, 1, 'non-zero exit code' );
-};
-
-subtest 'bad path to config file' => sub {
-    my $dir = Path::Tiny->tempdir('testconfigXXXXXXXX');
-    local $ENV{XDG_CONFIG_HOME} = "$dir";
-    local @ARGV = ( '--config-file', 'XXX' );
-
-    my $pushd = pushd("$dir");
-
-    ok( App::perlimports::CLI->new, '_config_file builder is lazy' );
-    like(
-        exception { App::perlimports::CLI->new->run }, qr{XXX not found},
-        'not found'
-    );
 };
 
 subtest 'help' => sub {
@@ -134,6 +134,115 @@ EOF
         $cli->run;
     };
     is( $stdout, $expected, 'parses filename' );
+};
+
+subtest 'invalid --filename' => sub {
+    local @ARGV = (
+        '--no-config-file',
+        '-f' => 'test-data/does-not-exist.pl',
+    );
+    my $cli = App::perlimports::CLI->new();
+    my ( $stdout, $stderr, $exit_code ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+    like(
+        $stderr,
+        qr{test-data/does-not-exist.pl does not appear to be a file},
+        'STDERR contains appropriate error message'
+    );
+    is( $exit_code, 1, 'exit code is error' );
+};
+
+subtest '--lint success' => sub {
+    local @ARGV = (
+        '--lint',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is(
+        $stderr,
+        "test-data/lint-success.pl OK\n",
+        'success message on STDERR'
+    );
+    is( $stdout, q{}, 'no STDOUT' );
+    is( $exit,   0,   'exit code is success' );
+};
+
+subtest '--lint failure import args' => sub {
+    local @ARGV = (
+        '--lint',
+        '--no-config-file',
+        '-f' => 'test-data/lint-failure-import-args.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $expected = <<'EOF';
+❌ Perl::Critic::Utils (import arguments have changed) at test-data/lint-failure-import-args.pl line 4
+@@ -4 +4 @@
+-use Perl::Critic::Utils;
++use Perl::Critic::Utils qw( $QUOTE );
+
+EOF
+
+    is( $stderr, $expected, 'STDERR' );
+    is( $exit,   1,         'exit code is error' );
+};
+
+subtest '--lint failure unused import' => sub {
+    local @ARGV = (
+        '--lint',
+        '--no-config-file',
+        '--no-preserve-unused',
+        '-f' => 'test-data/lint-failure-unused-import.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $expected = <<'EOF';
+❌ Carp (appears to be unused and should be removed) at test-data/lint-failure-unused-import.pl line 6
+@@ -6 +5,0 @@
+-use Carp;
+
+EOF
+
+    is( $stderr, $expected, 'STDERR' );
+    is( $exit,   1,         'exit code is error' );
+};
+
+subtest '--lint failure duplicate import' => sub {
+    local @ARGV = (
+        '--lint',
+        '--no-config-file',
+        '--no-preserve-duplicates',
+        '-f' => 'test-data/lint-failure-duplicate-import.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $expected = <<'EOF';
+❌ Carp (has already been used and should be removed) at test-data/lint-failure-duplicate-import.pl line 7
+@@ -7 +6,0 @@
+-use Carp;
+
+EOF
+
+    is( $stderr, $expected, 'STDERR' );
+    is( $exit,   1,         'exit code is error' );
 };
 
 subtest '--log-filename' => sub {
@@ -285,7 +394,6 @@ EOF
     my ( $stdout, $stderr ) = capture { $cli->run };
 
     eq_or_diff( $stdout, $expected );
-    diag $stderr;
 };
 
 done_testing();

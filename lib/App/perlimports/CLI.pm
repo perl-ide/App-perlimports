@@ -54,6 +54,18 @@ has _inplace_edit => (
     },
 );
 
+has _lint => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return defined $self->_opts->lint
+            ? $self->_opts->lint
+            : 0;
+    },
+);
+
 has _opts => (
     is      => 'ro',
     isa     => InstanceOf ['Getopt::Long::Descriptive::Opts'],
@@ -146,6 +158,11 @@ sub _build_args {
             'libs=s',
             'Comma-separated list of library paths to include (eg --libs lib,t/lib,dev/lib)',
 
+        ],
+        [],
+        [
+            'lint',
+            'Act as a linter only. Do not edit any files.',
         ],
         [],
         [
@@ -344,51 +361,79 @@ sub run {
         ]
         );
 
+    if ( $self->_lint && $self->_inplace_edit ) {
+        $logger->error('Cannot lint if inplace edit has been enabled');
+        return 1;
+    }
+
     my @files = $self->_filter_paths(
         $opts->filename ? $opts->filename : (),
         @ARGV
     );
+
     unless (@files) {
-        say STDERR q{Mandatory parameter 'filename' missing};
-        print STDERR $self->_usage->text;
+        $logger->error(q{Mandatory parameter 'filename' missing});
+        $logger->error( $self->_usage->text );
         return 1;
     }
 
+    my %doc_args = (
+        cache => $self->_config->cache,
+        @{ $self->_config->ignore }
+        ? ( ignore_modules => $self->_config->ignore )
+        : (),
+        @{ $self->_config->ignore_pattern }
+        ? ( ignore_modules_pattern => $self->_config->ignore_pattern )
+        : (),
+        @{ $self->_config->never_export }
+        ? ( never_export_modules => $self->_config->never_export )
+        : (),
+        lint                => $self->_lint,
+        logger              => $logger,
+        padding             => $self->_config->padding,
+        preserve_duplicates => $self->_config->preserve_duplicates,
+        preserve_unused     => $self->_config->preserve_unused,
+        tidy_whitespace     => $self->_config->tidy_whitespace,
+        $input ? ( selection => $input ) : (),
+    );
+
+    my $exit_code = 0;
+FILENAME:
     foreach my $filename (@files) {
         if ( !path($filename)->is_file ) {
-            say STDERR "$filename does not appear to be a file";
-            print STDERR $self->_usage->text;
+            $logger->error("$filename does not appear to be a file");
+            $logger->error( $self->_usage->text );
             return 1;
         }
 
         $logger->notice( '🚀 Starting file: ' . $filename );
 
+        my $pi_doc = App::perlimports::Document->new(
+            %doc_args,
+            filename => $filename,
+        );
+
         # Capture STDOUT here so that 3rd party code printing to STDOUT doesn't get
         # piped back into vim.
-        my ( $stdout, $tidied ) = capture_stdout(
-            sub {
-                my $pi_doc = App::perlimports::Document->new(
-                    cache    => $self->_config->cache,
-                    filename => $filename,
-                    @{ $self->_config->ignore }
-                    ? ( ignore_modules => $self->_config->ignore )
-                    : (),
-                    @{ $self->_config->ignore_pattern }
-                    ? ( ignore_modules_pattern =>
-                            $self->_config->ignore_pattern )
-                    : (),
-                    @{ $self->_config->never_export }
-                    ? ( never_export_modules => $self->_config->never_export )
-                    : (),
-                    logger              => $logger,
-                    padding             => $self->_config->padding,
-                    preserve_duplicates =>
-                        $self->_config->preserve_duplicates,
-                    preserve_unused => $self->_config->preserve_unused,
-                    tidy_whitespace => $self->_config->tidy_whitespace,
-                    $input ? ( selection => $input ) : (),
-                );
+        my ( $stdout, $tidied, $linter_success );
 
+        if ( $self->_lint ) {
+            ( $stdout, $linter_success ) = capture_stdout(
+                sub {
+                    return $pi_doc->linter_success;
+                }
+            );
+            if ($linter_success) {
+                $logger->error( $filename . ' OK' );
+            }
+            else {
+                $exit_code = 1;
+            }
+            next FILENAME;
+        }
+
+        ( $stdout, $tidied ) = capture_stdout(
+            sub {
                 return $pi_doc->tidied_document;
             }
         );
@@ -401,11 +446,12 @@ sub run {
             # append() with truncate, because spew() can change file permissions
             path($filename)->append( { truncate => 1 }, $tidied );
         }
+
         else {
             print STDOUT $tidied;
         }
     }
-    return 0;
+    return $exit_code;
 }
 
 ## use critic
