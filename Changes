@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add a --lint flag to force perlimports to behave as a linter (GH#85)
+      (Olaf Alders)
 
 0.000045  2022-06-16 21:18:31Z
     - Document config file creation and Vim + ALE configuration (GH#83) (Olaf
