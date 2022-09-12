@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000047  2022-09-12 15:31:01Z
     - Bump PPI from 1.274 to 1.276 (GH#87) (Olaf Alders)
 
 0.000046  2022-09-09 22:26:52Z

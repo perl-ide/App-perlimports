@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/oalders/App-perlimports/actions/workflows/dzil%20build%20and%20test/badge.svg)](https://github.com/oalders/App-perlimports/actions)
+[![Actions Status](https://github.com/oalders/App-perlimports/actions/workflows/dzil-build-and-test.yml/badge.svg)](https://github.com/oalders/App-perlimports/actions)
 [![codecov](https://codecov.io/gh/oalders/App-perlimports/branch/master/graph/badge.svg)](https://codecov.io/gh/oalders/App-perlimports)
 [![Kwalitee status](https://cpants.cpanauthors.org/dist/App-perlimports.png)](https://cpants.cpanauthors.org/dist/App-perlimports)
 [![GitHub tag](https://img.shields.io/github/tag/oalders/App-perlimports.svg)]()
@@ -10,7 +10,7 @@ App::perlimports - Make implicit imports explicit
 
 # VERSION
 
-version 0.000046
+version 0.000047
 
 # DESCRIPTION
 
