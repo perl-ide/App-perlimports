@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Bump PPI from 1.274 to 1.276 (GH#87) (Olaf Alders)
 
 0.000046  2022-09-09 22:26:52Z
     - Add a --lint flag to force perlimports to behave as a linter (GH#85)
