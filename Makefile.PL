@@ -74,7 +74,7 @@ my %WriteMakefileArgs = (
     "Test::Warnings" => 0,
     "lib" => 0
   },
-  "VERSION" => "0.000047",
+  "VERSION" => "0.000048",
   "test" => {
     "TESTS" => "t/*.t t/ExportInspector/*.t t/cpan-modules/*.t"
   }
