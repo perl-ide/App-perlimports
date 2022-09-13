@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Make diagnostic message from linter less confusing (GH#88) (Olaf Alders)
 
 0.000047  2022-09-12 15:31:01Z
     - Bump PPI from 1.274 to 1.276 (GH#87) (Olaf Alders)
