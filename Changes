@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000048  2022-09-13 21:49:19Z
     - Make diagnostic message from linter less confusing (GH#88) (Olaf Alders)
 
 0.000047  2022-09-12 15:31:01Z
