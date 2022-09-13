@@ -960,7 +960,7 @@ INCLUDE:
 
                 if ( $before ne $after ) {
                     $self->_warn_diff_for_linter(
-                        'import arguments have changed',
+                        'import arguments need tidying',
                         $include,
                         $include->content,
                         $elem->content
