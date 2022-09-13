@@ -186,7 +186,7 @@ subtest '--lint failure import args' => sub {
     is( $stdout, q{}, 'no STDOUT' );
 
     my $expected = <<'EOF';
-❌ Perl::Critic::Utils (import arguments have changed) at test-data/lint-failure-import-args.pl line 4
+❌ Perl::Critic::Utils (import arguments need tidying) at test-data/lint-failure-import-args.pl line 4
 @@ -4 +4 @@
 -use Perl::Critic::Utils;
 +use Perl::Critic::Utils qw( $QUOTE );

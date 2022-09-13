@@ -51,7 +51,7 @@ subtest lint => sub {
             {
                 level   => 'error',
                 message => "\x{274c}"
-                    . ' IO::Socket::INET (import arguments have changed) at test-data/socket.pl line 4',
+                    . ' IO::Socket::INET (import arguments need tidying) at test-data/socket.pl line 4',
             },
             {
                 level   => 'error',
@@ -63,7 +63,7 @@ subtest lint => sub {
             {
                 level   => 'error',
                 message => "\x{274c}"
-                    . ' Socket (import arguments have changed) at test-data/socket.pl line 5',
+                    . ' Socket (import arguments need tidying) at test-data/socket.pl line 5',
             },
             {
                 level   => 'error',
