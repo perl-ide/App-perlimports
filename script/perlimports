@@ -24,19 +24,24 @@ exit($exit_code);
 
 =head1 SYNOPSIS
 
-Create a config file at the top level of your application or repository:
+Create a config file called C<perlimports.toml> at the top level of your
+application or repository:
 
     perlimports --create-config-file perlimports.toml
+
+You can also have a config file with a leading C<.>.
+
+    perlimports --create-config-file .perlimports.toml
 
 For system-wide defaults, you can create a file in C<$XDG_HOME>. Something like:
 
     perlimports --create-config-file ~/.config/perlimports/perlimports.toml
 
 After you have set up the config file to your liking, you can do away with most
-command line switches, other than C<-i> or C<--read-stdin>.
+command line switches, other than C<-i>, C<--lint> or C<--read-stdin>.
 
-Update a file in place. (Make sure you can revert the file if you need to, as
-C<perlimports> will not make a backup.)
+Now, let's update a file in place. (Make sure you can revert the file if you
+need to, as C<perlimports> will not make a backup.)
 
     perlimports -i foo.pl
 
@@ -276,6 +281,33 @@ lines of code, but you have also reduced complexity.
 =back
 
 =head1 COMMAND LINE PARAMETERS
+
+=head2 --create-config-file
+
+Expects a path to a C<.toml> file which does not yet exist.
+
+    --create-config-file perlimports.toml
+    --create-config-file .perlimports.toml
+
+For system-wide defaults, you can create a file in C<$XDG_HOME>. Something like:
+
+    perlimports --create-config-file ~/.config/perlimports/perlimports.toml
+
+All of the above are default file locations which L<perlimports> will search,
+unless C<--config-file> has been provided as an argument.
+
+=head2 --config-file
+
+Path to a perlimports config file. If this parameter is not supplied, we will
+look for a file called C<perlimports.toml> or C<.perlimports.toml> in the
+current directory and then look for a perlimports.toml in XDG_CONFIG_HOME
+(usually something like C<$HOME/perlimports/perlimports.toml>). This behaviour
+can be disabled via C<--no-config-file> as described below.
+
+=head2 --no-config-file
+
+Prevents L<perlimports> from automatically using a config file which is in one
+of the standard locations. Use this option if you want to define all of your behaviours on the command line.
 
 =head2 --filename|-f
 
