@@ -54,6 +54,18 @@ has _inplace_edit => (
     },
 );
 
+has _json => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return defined $self->_opts->json
+            ? $self->_opts->json
+            : 0;
+    },
+);
+
 has _lint => (
     is      => 'ro',
     isa     => Bool,
@@ -140,6 +152,11 @@ sub _build_args {
         [
             'ignore-modules-pattern-filename=s',
             'Path to file listing regular expressions that matches modules to ignore. One per line.'
+        ],
+        [],
+        [
+            'json',
+            '(Experimental) Emit linting results as JSON rather than plain text'
         ],
         [],
         [
@@ -361,6 +378,11 @@ sub run {
         ]
         );
 
+    if ( $self->_json && !$self->_lint ) {
+        $logger->error('--json can only be used with --lint');
+        return 1;
+    }
+
     if ( $self->_lint && $self->_inplace_edit ) {
         $logger->error('Cannot lint if inplace edit has been enabled');
         return 1;
@@ -388,6 +410,7 @@ sub run {
         @{ $self->_config->never_export }
         ? ( never_export_modules => $self->_config->never_export )
         : (),
+        json                => $self->_json,
         lint                => $self->_lint,
         logger              => $logger,
         padding             => $self->_config->padding,
