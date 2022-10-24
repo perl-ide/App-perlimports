@@ -351,6 +351,7 @@ sub _build_includes {
     #
     # We check for type so that we can filter out undef types or "no".
 
+    ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
     return $self->_ppi_selection->find(
         sub {
             $_[1]->isa('PPI::Statement::Include')
@@ -367,7 +368,7 @@ sub _build_includes {
                 );
         }
     ) || [];
-
+    ## use critic
 }
 
 sub _build_possible_imports {
@@ -951,6 +952,7 @@ INCLUDE:
             }
         }
 
+        ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
         # Let's see if the import itself might break something
         if ( my $err
             = App::perlimports::Sandbox::eval_pkg( $elem->module, "$elem" ) )
@@ -962,6 +964,7 @@ INCLUDE:
             );
             next INCLUDE;
         }
+        ## use critic
 
         my $inserted = $include->replace($elem);
         if ( !$inserted ) {
