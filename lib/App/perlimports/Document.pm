@@ -270,6 +270,7 @@ my %default_ignore = (
     'Exporter'                       => 1,
     'Exporter::Lite'                 => 1,
     'Feature::Compat::Try'           => 1,
+    'Filter::Simple'                 => 1,
     'Git::Sub'                       => 1,
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
     'Import::Into'                   => 1,
