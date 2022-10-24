@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add an experimental --json flag to be used when --lint is enabled (GH#90)
+      (Olaf Alders)
 
 0.000048  2022-09-13 21:49:19Z
     - Make diagnostic message from linter less confusing (GH#88) (Olaf Alders)

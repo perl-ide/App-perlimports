@@ -7,6 +7,7 @@ use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::CLI ();
 use Capture::Tiny         qw( capture );
+use Cpanel::JSON::XS      qw( decode_json );
 use File::pushd           qw( pushd );
 use Path::Tiny            ();
 use TestHelper            qw( logger );
@@ -245,6 +246,44 @@ EOF
     is( $exit,   1,         'exit code is error' );
 };
 
+subtest '--lint --json failure duplicate import' => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--no-config-file',
+        '--no-preserve-duplicates',
+        '-f' => 'test-data/lint-failure-duplicate-import.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $parsed_stderr = decode_json($stderr);
+    eq_or_diff(
+        $parsed_stderr,
+        {
+            diff     => "@@ -7 +6,0 @@\n-use Carp;\n",
+            filename => 'test-data/lint-failure-duplicate-import.pl',
+            location => {
+                end => {
+                    column => 9,
+                    line   => 7,
+                },
+                start => {
+                    column => 1,
+                    line   => 7,
+                },
+            },
+            module => 'Carp',
+            reason => 'has already been used and should be removed',
+        },
+        'lint failure as JSON'
+    );
+    is( $exit, 1, 'exit code is error' );
+};
+
 subtest '--log-filename' => sub {
     my $expected = <<'EOF';
 use strict;
@@ -282,6 +321,18 @@ subtest 'no filename' => sub {
     like(
         $stderr, qr{Mandatory parameter 'filename' missing},
         'filename missing'
+    );
+};
+
+subtest '--json without --lint' => sub {
+    local @ARGV = ( '--json', 'test-data/var-in-hash-key.pl' );
+    my $cli = App::perlimports::CLI->new;
+    my ( undef, $stderr ) = capture {
+        $cli->run;
+    };
+    like(
+        $stderr, qr{--json can only be used with --lint},
+        'meaningless --json flag'
     );
 };
 

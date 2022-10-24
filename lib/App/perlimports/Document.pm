@@ -106,6 +106,23 @@ has interpolated_symbols => (
     builder => '_build_interpolated_symbols',
 );
 
+has json => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
+);
+
+has _json_encoder => (
+    is      => 'ro',
+    isa     => InstanceOf ['Cpanel::JSON::XS'],
+    lazy    => 1,
+    default => sub {
+        require Cpanel::JSON::XS;
+        return Cpanel::JSON::XS->new;
+    },
+);
+
 has lint => (
     is      => 'ro',
     isa     => Bool,
@@ -1007,11 +1024,34 @@ sub _warn_diff_for_linter {
     my $after         = shift;
     my $after_deleted = !$after;
 
-    my $justification = sprintf(
-        '❌ %s (%s) at %s line %i',
-        $include->module, $reason, $self->_filename, $include->line_number
-    );
-    $self->logger->error($justification);
+    my $json;
+    my $justification;
+
+    if ( $self->json ) {
+
+        my $loc     = { start => { line => $include->line_number } };
+        my $content = $include->content;
+        my @lines   = split( m{\n}, $content );
+
+        if ( $lines[0] =~ m{[^\s]} ) {
+            $loc->{start}->{column} = @-;
+        }
+        $loc->{end}->{line}   = $include->line_number + @lines - 1;
+        $loc->{end}->{column} = length( $lines[-1] );
+
+        $json = {
+            filename => $self->_filename,
+            location => $loc,
+            module   => $include->module,
+            reason   => $reason,
+        };
+    }
+    else {
+        $justification = sprintf(
+            '❌ %s (%s) at %s line %i',
+            $include->module, $reason, $self->_filename, $include->line_number
+        );
+    }
 
     my $padding = $include->line_number - 1;
     $before = sprintf( "%s%s\n", "\n" x $padding, $before );
@@ -1026,7 +1066,14 @@ sub _warn_diff_for_linter {
         }
     );
 
-    $self->logger->error($diff);
+    if ( $self->json ) {
+        $json->{diff} = $diff;
+        $self->logger->error( $self->_json_encoder->encode($json) );
+    }
+    else {
+        $self->logger->error($justification);
+        $self->logger->error($diff);
+    }
 }
 
 sub _remove_with_trailing_characters {

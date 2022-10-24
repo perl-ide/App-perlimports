@@ -392,6 +392,13 @@ have a backup copy first.
 Edit the file in place rather than printing the result to STDOUT. Make sure you
 have a backup copy first.
 
+=head2 --json
+
+(Experimental). If enabled, linting errors will be emitted as JSON objects with
+one object per error. This is intended to make it easier for editors to parse
+line numbers and column numbers as well as the error message. This flag can
+only be used in tandem with C<--lint>.
+
 =head2 --lint
 
 If this argument is passed, C<perlimports> will act as a linter, rather than a
