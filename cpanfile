@@ -3,6 +3,7 @@
 
 requires "Capture::Tiny" => "0";
 requires "Class::Inspector" => "1.36";
+requires "Cpanel::JSON::XS" => "0";
 requires "Data::Dumper" => "0";
 requires "Data::UUID" => "0";
 requires "File::Basename" => "0";

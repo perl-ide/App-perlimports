@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000049  2022-10-24 21:19:17Z
     - Add an experimental --json flag to be used when --lint is enabled (GH#90)
       (Olaf Alders)
     - Ignore Filter::Simple (GH#91) (Olaf Alders)
