@@ -2,7 +2,7 @@ package App::perlimports::ExportInspector;
 
 use Moo;
 
-## no critic (TestingAndDebugging::ProhibitNoStrict)
+## no critic (Modules::RequireExplicitInclusion, Subroutines::ProhibitCallsToUnexportedSubs, TestingAndDebugging::ProhibitNoStrict)
 
 our $VERSION = '0.000050';
 
