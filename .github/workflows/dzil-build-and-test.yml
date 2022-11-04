@@ -29,7 +29,6 @@ jobs:
           EXTENDED_TESTING: 1
           HARNESS_OPTIONS: j2
           RELEASE_TESTING: 1
-          TEST_TIDYALL_VERBOSE: 1
         run: auto-build-and-test-dist
       - uses: actions/upload-artifact@v3
         with:
