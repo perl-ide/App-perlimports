@@ -4,7 +4,7 @@ name: dzil build and test
 on:
   push:
     branches:
-      - "*"
+      - "main"
   pull_request:
     branches:
       - "*"
@@ -20,6 +20,12 @@ jobs:
       image: perldocker/perl-tester:5.36
     steps:
       - uses: actions/checkout@v3
+      - name: Install ubi
+        run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
+      - name: Install omegasort
+        run: ubi --project houseabsolute/omegasort --in /usr/local/bin
+      - name: Install precious
+        run: ubi --project houseabsolute/precious --in /usr/local/bin
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
       - name: Run Tests
@@ -30,6 +36,8 @@ jobs:
           HARNESS_OPTIONS: j2
           RELEASE_TESTING: 1
         run: auto-build-and-test-dist
+      - name: Run precious
+        run: precious lint --all
       - uses: actions/upload-artifact@v3
         with:
           name: build_dir
