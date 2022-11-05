@@ -1,7 +1,5 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
-use strict;
-use warnings;
+set -eux -o pipefail
 
-use Code::TidyAll::Git::Precommit;
-Code::TidyAll::Git::Precommit->check( no_stash => 1 );
+precious lint --staged
