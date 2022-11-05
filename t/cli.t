@@ -461,4 +461,47 @@ EOF
     eq_or_diff( $stdout, $expected );
 };
 
+subtest 'range without end' => sub {
+    local @ARGV = (
+        '--range-begin', 1,
+        'test-data/stdout.pl',
+    );
+
+    my $expected = 'You most supply range_begin and range_end';
+    my $cli      = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+    chomp($stderr);
+
+    eq_or_diff( $stderr, $expected );
+};
+
+subtest 'range without begin' => sub {
+    local @ARGV = (
+        '--range-end', 1,
+        'test-data/stdout.pl',
+    );
+
+    my $expected = 'You most supply range_begin and range_end';
+    my $cli      = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+    chomp($stderr);
+
+    eq_or_diff( $stderr, $expected );
+};
+
+subtest 'range without --read-stdin' => sub {
+    local @ARGV = (
+        '--range-begin', 1,
+        '--range-end',   1,
+        'test-data/stdout.pl',
+    );
+
+    my $expected = 'You must specify --read-stdin if you provide a range';
+    my $cli      = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+    chomp($stderr);
+
+    eq_or_diff( $stderr, $expected );
+};
+
 done_testing();

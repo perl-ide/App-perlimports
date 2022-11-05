@@ -206,6 +206,16 @@ sub _build_args {
         ],
         [],
         [
+            'range-begin=i',
+            'First line of range to tidy or lint. Mostly useful for editors.',
+        ],
+        [],
+        [
+            'range-end=i',
+            'Last line of range to tidy or lint. Mostly useful for editors.',
+        ],
+        [],
+        [
             'tidy-whitespace!',
             'Reformat use statements even when changes are only whitespace. This is the default behaviour.',
         ],
@@ -343,11 +353,20 @@ sub run {
     }
 
     my $input;
+    my $selection;
 
     if ( $self->_read_stdin ) {
         ## no critic (Variables::RequireInitializationForLocalVars)
         local $/;
         $input = <>;
+        if ( $opts->range_begin && $opts->range_end ) {
+            my @lines = split( qr{\n}, $input );
+            $selection = join "\n",
+                @lines[ $opts->range_begin - 1 .. $opts->range_end - 1 ];
+        }
+        else {
+            $selection = $input;
+        }
     }
 
     unshift @INC, @{ $self->_config->libs };
@@ -386,6 +405,18 @@ sub run {
         return 1;
     }
 
+    if (   ( $opts->range_begin && !$opts->range_end )
+        || ( $opts->range_end && !$opts->range_begin ) ) {
+        $logger->error('You most supply range_begin and range_end');
+        return 1;
+    }
+
+    if ( $opts->range_begin && !$self->_read_stdin ) {
+        $logger->error(
+            'You must specify --read-stdin if you provide a range');
+        return 1;
+    }
+
     my @files = _filter_paths(
         $opts->filename ? $opts->filename : (),
         @ARGV
@@ -415,7 +446,7 @@ sub run {
         preserve_duplicates => $self->_config->preserve_duplicates,
         preserve_unused     => $self->_config->preserve_unused,
         tidy_whitespace     => $self->_config->tidy_whitespace,
-        $input ? ( selection => $input ) : (),
+        $selection ? ( selection => $selection ) : (),
     );
 
     my $exit_code = 0;
