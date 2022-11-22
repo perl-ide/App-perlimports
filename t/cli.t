@@ -433,6 +433,7 @@ EOF
     );
     my $cli = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stderr, q{},       'no STDERR' );
     is( $stdout, $expected, 'stdout' );
     is( $stderr, q{},       'no STDERR' );
 };
@@ -467,9 +468,10 @@ subtest 'range without end' => sub {
         'test-data/stdout.pl',
     );
 
-    my $expected = 'You most supply range_begin and range_end';
+    my $expected = 'You must supply both range_begin and range_end';
     my $cli      = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stdout, q{}, 'no STDOUT' );
     chomp($stderr);
 
     eq_or_diff( $stderr, $expected );
@@ -481,9 +483,10 @@ subtest 'range without begin' => sub {
         'test-data/stdout.pl',
     );
 
-    my $expected = 'You most supply range_begin and range_end';
+    my $expected = 'You must supply both range_begin and range_end';
     my $cli      = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stdout, q{}, 'no STDOUT' );
     chomp($stderr);
 
     eq_or_diff( $stderr, $expected );
@@ -499,9 +502,75 @@ subtest 'range without --read-stdin' => sub {
     my $expected = 'You must specify --read-stdin if you provide a range';
     my $cli      = App::perlimports::CLI->new;
     my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stdout, q{}, 'no STDOUT' );
     chomp($stderr);
 
     eq_or_diff( $stderr, $expected );
+};
+
+subtest 'range correct' => sub {
+    local @ARGV = (
+        '--range-begin', 1,
+        '--range-end',   1,
+        '--read-stdin',
+        'test-data/stdout.pl',
+    );
+
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+
+    eq_or_diff( $stderr, q{},           'no STDERR' );
+    eq_or_diff( $stdout, 'use strict;', 'range returned on STDOUT' );
+};
+
+subtest 'entire document range' => sub {
+    local @ARGV = (
+        '--range-begin', 1,
+        '--range-end',   8,
+        '--read-stdin',
+        'test-data/stdout.pl',
+    );
+
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+
+BEGIN {
+    print "perlimports should trap this";
+}
+EOF
+
+    chomp $expected;
+
+    eq_or_diff( $stderr, q{},       'no STDERR' );
+    eq_or_diff( $stdout, $expected, 'range returned on STDOUT' );
+};
+
+subtest 'STDIN without document range' => sub {
+    local @ARGV = (
+        '--read-stdin',
+        '--filename', 'test-data/stdout.pl',
+    );
+
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+
+BEGIN {
+    print "perlimports should trap this";
+}
+EOF
+
+    eq_or_diff( $stderr, q{},       'no STDERR' );
+    eq_or_diff( $stdout, $expected, 'range returned on STDOUT' );
 };
 
 done_testing();

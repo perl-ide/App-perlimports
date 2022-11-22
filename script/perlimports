@@ -475,17 +475,17 @@ setting with care.
 
 =head2 --range-begin
 
-First line of a range to tidy or lint. The line ranges begin at 1 (not 0). This
-will select the appropriate range of lines from C<STDIN>. Requires
-C<--read-stdin>. Mostly useful for editors. Unless you're writing an editor
-plugin or extension, you can probably ignor this.
+Experimental. First line of a range to tidy or lint. The line ranges begin at 1
+(not 0). This will select the appropriate range of lines from C<STDIN>.
+Requires C<--read-stdin>. Mostly useful for editors. Unless you're writing an
+editor plugin or extension, you can probably ignore this.
 
 =head2 --range-end
 
-Last line of a range to tidy or lint. The line ranges begin at 1 (not 0). This
-will select the appropriate range of lines from C<STDIN>. Requires
-C<--read-stdin>. Mostly useful for editors. Unless you're writing an editor
-plugin or extension, you can probably ignor this.
+Experimental. Last line of a range to tidy or lint. The line ranges begin at 1
+(not 0). This will select the appropriate range of lines from C<STDIN>.
+Requires C<--read-stdin>. Mostly useful for editors. Unless you're writing an
+editor plugin or extension, you can probably ignore this.
 
 =head2 --read-stdin
 

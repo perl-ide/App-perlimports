@@ -207,12 +207,12 @@ sub _build_args {
         [],
         [
             'range-begin=i',
-            'First line of range to tidy or lint. Mostly useful for editors.',
+            'Experimental. First line of range to tidy or lint. Mostly useful for editors.',
         ],
         [],
         [
             'range-end=i',
-            'Last line of range to tidy or lint. Mostly useful for editors.',
+            'Experimental. Last line of range to tidy or lint. Mostly useful for editors.',
         ],
         [],
         [
@@ -354,15 +354,22 @@ sub run {
 
     my $input;
     my $selection;
+    my $tmp_file;
 
     if ( $self->_read_stdin ) {
         ## no critic (Variables::RequireInitializationForLocalVars)
         local $/;
         $input = <>;
         if ( $opts->range_begin && $opts->range_end ) {
+            $tmp_file = Path::Tiny->tempfile('perlimportsXXXXXXXX');
+            $tmp_file->spew($input);
             my @lines = split( qr{\n}, $input );
+            my $end   = $opts->range_end;
+            if ( $end > scalar @lines + 1 ) {
+                $end = scalar @lines + 1;
+            }
             $selection = join "\n",
-                @lines[ $opts->range_begin - 1 .. $opts->range_end - 1 ];
+                @lines[ $opts->range_begin - 1 .. $end - 1 ];
         }
         else {
             $selection = $input;
@@ -407,7 +414,7 @@ sub run {
 
     if (   ( $opts->range_begin && !$opts->range_end )
         || ( $opts->range_end && !$opts->range_begin ) ) {
-        $logger->error('You most supply range_begin and range_end');
+        $logger->error('You must supply both range_begin and range_end');
         return 1;
     }
 
@@ -417,7 +424,7 @@ sub run {
         return 1;
     }
 
-    my @files = _filter_paths(
+    my @files = $tmp_file ? ("$tmp_file") : _filter_paths(
         $opts->filename ? $opts->filename : (),
         @ARGV
     );
