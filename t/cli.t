@@ -337,7 +337,7 @@ subtest '--json without --lint' => sub {
 };
 
 subtest '--lint with -i' => sub {
-    local @ARGV = ( '--lint','-i', 'test-data/var-in-hash-key.pl' );
+    local @ARGV = ( '--lint', '-i', 'test-data/var-in-hash-key.pl' );
     my $cli = App::perlimports::CLI->new;
     my ( undef, $stderr ) = capture {
         $cli->run;

@@ -1093,13 +1093,12 @@ sub _remove_with_trailing_characters {
 }
 
 sub _build_cache_dir {
-    my $cache_dir;
     my $base_path
         = defined $ENV{HOME} && -d path( $ENV{HOME}, '.cache' )
         ? path( $ENV{HOME}, '.cache' )
         : path('/tmp');
 
-    $cache_dir = $base_path->child( 'perlimports', $VERSION );
+    my $cache_dir = $base_path->child( 'perlimports', $VERSION );
     $cache_dir->mkpath;
 
     return $cache_dir;
