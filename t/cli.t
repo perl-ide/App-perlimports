@@ -336,6 +336,18 @@ subtest '--json without --lint' => sub {
     );
 };
 
+subtest '--lint with -i' => sub {
+    local @ARGV = ( '--lint','-i', 'test-data/var-in-hash-key.pl' );
+    my $cli = App::perlimports::CLI->new;
+    my ( undef, $stderr ) = capture {
+        $cli->run;
+    };
+    like(
+        $stderr, qr{Cannot lint if inplace edit has been enabled},
+        'trying to edit and lint at once'
+    );
+};
+
 subtest '--ignore-modules' => sub {
     my $expected = <<'EOF';
 use strict;
