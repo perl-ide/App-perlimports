@@ -9,7 +9,7 @@ use PPI::Document ();
 use TestHelper    qw( doc );
 use Test::More import => [qw( done_testing is ok )];
 
-my ( $doc, $log ) = doc(
+my ($doc) = doc(
     filename        => 'test-data/explodes.pl',
     preserve_unused => 0,
 );

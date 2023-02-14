@@ -9,7 +9,7 @@ use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
 use Test::More import => [qw( done_testing )];
 
-my ( $doc, $log ) = doc(
+my ($doc) = doc(
     filename        => 'test-data/preserve-some-padding.pl',
     tidy_whitespace => 1,
 );

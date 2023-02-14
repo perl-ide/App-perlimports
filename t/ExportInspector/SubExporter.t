@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -16,9 +18,8 @@ use Test::Needs qw(
 );
 
 subtest 'Moose Type Library' => sub {
-    my $log         = [];
     my ($inspector) = inspector('Local::MooseTypeLibrary');
-    my $exports     = $inspector->explicit_exports;
+    my $exports = $inspector->explicit_exports;
 
     is( $exports->{is_Bool}, 'Bool', 'is_ aliased' );
     is( $exports->{to_File}, 'File', 'to_ aliased' );
@@ -29,8 +30,6 @@ subtest 'Moose Type Library' => sub {
 };
 
 subtest 'Moo' => sub {
-    my $module = 'Moo';
-
     my ($inspection) = inspector('Moo');
 
     is_deeply(
@@ -60,7 +59,7 @@ subtest 'ViaSubExporter' => sub {
 };
 
 subtest 'MyOwnMoose' => sub {
-    my ( $inspector, $log ) = inspector('Local::MyOwnMoose');
+    my ($inspector) = inspector('Local::MyOwnMoose');
 
     is_deeply(
         $inspector->implicit_exports,

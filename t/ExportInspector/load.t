@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -23,7 +25,7 @@ sub ei {
 
 # Check ISA here
 subtest 'Local::MyOwnMoose' => sub {
-    my ( $ei, $log ) = ei('Local::MyOwnMoose');
+    my ($ei) = ei('Local::MyOwnMoose');
     is_deeply(
         $ei->explicit_exports,
         {
@@ -59,7 +61,7 @@ subtest 'Test::Most' => sub {
 };
 
 subtest 'List::Util' => sub {
-    my ( $ei, $log ) = ei('List::Util');
+    my ($ei) = ei('List::Util');
 
     # It does override $a and $b, but I'm not sure if that's helpful for our
     # purposes.
@@ -90,7 +92,7 @@ subtest 'Local::UsesMoo' => sub {
 };
 
 subtest 'IO::Socket' => sub {
-    my ( $ei, $log ) = ei('IO::Handle');
+    my ($ei) = ei('IO::Handle');
     ok( !$ei->is_moose_class, 'Not a Moose class' );
     is_deeply( $ei->class_isa, ['Exporter'], 'ISA Exporter' );
     is_deeply( $ei->at_export, [],           'at_export' );
@@ -102,7 +104,7 @@ subtest 'IO::Socket' => sub {
 };
 
 subtest 'Local::ViaSubExporter' => sub {
-    my ( $ei, $log ) = ei('Local::ViaSubExporter');
+    my ($ei) = ei('Local::ViaSubExporter');
     ok( !$ei->is_moose_class, 'Not a Moose class' );
     is_deeply( $ei->class_isa, [], 'no ISA' );
     is_deeply( $ei->at_export, [], 'at_export' );
@@ -117,7 +119,7 @@ subtest 'Local::ViaSubExporter' => sub {
 };
 
 subtest 'IO::Socket::INET' => sub {
-    my ( $ei, $log ) = ei('IO::Socket::INET');
+    my ($ei) = ei('IO::Socket::INET');
     ok( !$ei->is_moose_class, 'Not a Moose class' );
     is_deeply( $ei->class_isa,      ['IO::Socket'], 'ISA IO::Socket' );
     is_deeply( $ei->at_export,      [],             'at_export' );
@@ -128,7 +130,7 @@ subtest 'IO::Socket::INET' => sub {
 };
 
 subtest 'Local::Explodes' => sub {
-    my ( $ei, $log ) = ei('Local::Explodes');
+    my ($ei) = ei('Local::Explodes');
     ok( $ei->has_fatal_error, 'has_fatal_error' );
 };
 

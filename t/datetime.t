@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -7,7 +9,7 @@ use TestHelper qw( doc );
 use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( DateTime );
 
-my ( $doc, $logs ) = doc( filename => 'test-data/datetime.pl' );
+my ($doc) = doc( filename => 'test-data/datetime.pl' );
 
 my $expected = <<'EOF';
 use strict;

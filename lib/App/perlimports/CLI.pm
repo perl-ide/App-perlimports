@@ -2,7 +2,6 @@ package App::perlimports::CLI;
 
 use Moo;
 use utf8;
-use feature qw( say );
 
 our $VERSION = '0.000050';
 
@@ -110,7 +109,6 @@ has _usage => (
 with 'App::perlimports::Role::Logger';
 
 sub _build_args {
-    my $self = shift;
     my ( $opt, $usage ) = describe_options(
         'perlimports %o',
         [
@@ -388,7 +386,7 @@ sub run {
         return 1;
     }
 
-    my @files = $self->_filter_paths(
+    my @files = _filter_paths(
         $opts->filename ? $opts->filename : (),
         @ARGV
     );
@@ -480,7 +478,6 @@ FILENAME:
 ## use critic
 
 sub _filter_paths {
-    my $self  = shift;
     my @paths = @_;
     my @files;
     my $rule = Path::Iterator::Rule->new->or(

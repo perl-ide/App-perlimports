@@ -11,7 +11,6 @@ use Test::More import => [qw( done_testing is_deeply subtest )];
 
 subtest 'verbose' => sub {
     my ($doc) = doc( filename => 'test-data/carp.pl' );
-    my $source_text = 'use Carp qw( croak verbose );';
 
     my $expected = <<'EOF';
 use strict;
