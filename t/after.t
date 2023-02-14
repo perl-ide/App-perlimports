@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -7,7 +9,7 @@ use TestHelper qw( doc );
 use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( List::AllUtils );
 
-my ( $doc, $logs ) = doc(
+my ($doc) = doc(
     filename => 'test-data/lib/Local/After.pm',
 );
 

@@ -370,7 +370,7 @@ sub _build_imports {
         }
     }
 
-    @found = uniq $self->_sort_symbols(@found);
+    @found = uniq _sort_symbols(@found);
     if ( $self->_original_imports ) {
         my @preserved = grep { m{\A[!_]} } @{ $self->_original_imports };
         @found = uniq( @preserved, @found );
@@ -717,7 +717,6 @@ sub _is_already_imported {
 }
 
 sub _sort_symbols {
-    my $self = shift;
     my @list = @_;
 
     ## no critic (BuiltinFunctions::RequireSimpleSortBlock)
@@ -726,6 +725,7 @@ sub _sort_symbols {
         my $B = _transform_before_cmp($b);
         "\L$A" cmp "\L$B";
     } @list;
+    return @sorted;
 }
 
 # This looks a little weird, but basically we want to maintain a stable sort

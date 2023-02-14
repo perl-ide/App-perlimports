@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -29,7 +31,7 @@ sub one ( $continue  = HTTP_CONTINUE, $foo = 'bar', $two = HTTP_OK() ) {
 sub two ( $cwd = $Bin ) { }
 EOF
 
-my ( $doc, $logs )
+my ($doc)
     = doc( filename => 'test-data/signatures.pl', preserve_unused => 0 );
 eq_or_diff( $doc->tidied_document, $expected, 'tidied_document' );
 

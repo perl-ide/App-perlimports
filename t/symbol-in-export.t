@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -7,7 +9,7 @@ use TestHelper qw( doc );
 use Test::More import => [qw( done_testing is )];
 use Test::Needs qw( HTTP::Status );
 
-my ( $doc, $log ) = doc(
+my ($doc) = doc(
     filename  => 'test-data/lib/Local/SymbolInExport.pm',
     selection => 'use HTTP::Request::Common;',
 );

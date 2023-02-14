@@ -466,7 +466,7 @@ sub _build_original_imports {
 
         # If a module has been included multiple times, we want to have a
         # cumulative tally of what has been explicitly imported.
-        my $found_for_include = $self->_imports_for_include($include);
+        my $found_for_include = _imports_for_include($include);
         if ($found_for_include) {
             if ( $imports{$pkg} ) {
                 push @{ $imports{$pkg} }, @{$found_for_include};
@@ -511,7 +511,6 @@ sub _build_sub_exporter_export_list {
 }
 
 sub _imports_for_include {
-    my $self    = shift;
     my $include = shift;
 
     my $imports = undef;
@@ -525,7 +524,6 @@ sub _imports_for_include {
             && !$child->isa('PPI::Token::Quote::Single') ) {
             next;
         }
-        my @imports = $child->literal;
         if ( defined $imports ) {
             push( @{$imports}, $child->literal );
         }
@@ -537,7 +535,6 @@ sub _imports_for_include {
 }
 
 sub _extract_symbols_from_snippet {
-    my $self    = shift;
     my $snippet = shift;
     return () unless defined $snippet;
 
@@ -594,7 +591,7 @@ sub _unnest_quotes {
         return @words;
     }
 
-    push @words, $self->_extract_symbols_from_snippet( $token->string );
+    push @words, _extract_symbols_from_snippet( $token->string );
 
     my $doc = PPI::Document->new( \$token->string );
     return @words unless $doc;
@@ -603,7 +600,7 @@ sub _unnest_quotes {
     return @words unless $quotes;
 
     for my $q (@$quotes) {
-        push @words, $self->_extract_symbols_from_snippet("$q");
+        push @words, _extract_symbols_from_snippet("$q");
         push @words, $self->_unnest_quotes($q);
     }
 
@@ -634,7 +631,7 @@ sub _build_interpolated_symbols {
                 $token->get_match_string,
                 $token->get_substitute_string,
             ) {
-                push @symbols, $self->_extract_symbols_from_snippet($snippet);
+                push @symbols, _extract_symbols_from_snippet($snippet);
             }
         }
 
@@ -654,7 +651,7 @@ sub _build_interpolated_symbols {
     ) {
         my $content = join "\n", $heredoc->heredoc;
         next if $heredoc =~ m{'};
-        push @symbols, $self->_extract_symbols_from_snippet($content);
+        push @symbols, _extract_symbols_from_snippet($content);
     }
 
     # Catch vars like ${FOO_BAR}. This is probably not good enough.
@@ -898,7 +895,7 @@ INCLUDE:
             $self->logger->info( $include->module
                     . ' has already been used. Removing at line '
                     . $include->line_number );
-            $self->_remove_with_trailing_characters($include);
+            _remove_with_trailing_characters($include);
             next INCLUDE;
         }
 
@@ -947,7 +944,7 @@ INCLUDE:
                 $self->logger->info( 'Removing '
                         . $include->module
                         . ' as it appears to be unused' );
-                $self->_remove_with_trailing_characters($include);
+                _remove_with_trailing_characters($include);
 
                 next INCLUDE;
             }
@@ -1007,7 +1004,7 @@ INCLUDE:
 
                 $self->_reset_original_import(
                     $include->module,
-                    $self->_imports_for_include( $new_include->[0] )
+                    _imports_for_include( $new_include->[0] )
                 );
             }
         }
@@ -1081,7 +1078,6 @@ sub _warn_diff_for_linter {
 }
 
 sub _remove_with_trailing_characters {
-    my $self    = shift;
     my $include = shift;
 
     while ( my $next = $include->next_sibling ) {
@@ -1097,15 +1093,12 @@ sub _remove_with_trailing_characters {
 }
 
 sub _build_cache_dir {
-    my $self = shift;
-
-    my $cache_dir;
     my $base_path
         = defined $ENV{HOME} && -d path( $ENV{HOME}, '.cache' )
         ? path( $ENV{HOME}, '.cache' )
         : path('/tmp');
 
-    $cache_dir = $base_path->child( 'perlimports', $VERSION );
+    my $cache_dir = $base_path->child( 'perlimports', $VERSION );
     $cache_dir->mkpath;
 
     return $cache_dir;

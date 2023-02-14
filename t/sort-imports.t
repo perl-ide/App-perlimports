@@ -1,3 +1,5 @@
+#!perl
+
 use strict;
 use warnings;
 
@@ -7,7 +9,7 @@ use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
 use Test::More import => [qw( done_testing )];
 
-my ( $doc, $log ) = doc( filename => 'test-data/sort.pl' );
+my ($doc) = doc( filename => 'test-data/sort.pl' );
 
 my $expected = <<'EOF';
 use strict;

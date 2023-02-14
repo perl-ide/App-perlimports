@@ -176,7 +176,7 @@ sub _aggregate {
 }
 
 sub create_config {
-    my $class    = shift;
+    shift;                         # $class
     my $filename = shift;
 
     if ( -e $filename ) {
