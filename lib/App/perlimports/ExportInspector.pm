@@ -64,7 +64,13 @@ has has_fatal_error => (
     is      => 'ro',
     isa     => Bool,
     lazy    => 1,
-    default => sub { shift->_implicit->{fatal_error} ? 1 : 0 },
+    default => sub {
+        my $self = shift;
+        (          $self->_implicit->{fatal_error}
+                || $self->explicit_exports->{fatal_error} )
+            ? 1
+            : 0;
+    },
 );
 
 has _implicit => (
@@ -225,7 +231,12 @@ sub _build_explicit_exports {
     # If this is Sub::Exporter, we can cheat and see what's in the :all tag
     my $pkg           = $self->_random_pkg_name;
     my $use_statement = sprintf( 'use %s qw(:all);', $self->_module_name );
-    my ($exports)     = $self->_exports_for_include( $pkg, $use_statement );
+    my ( $exports, $fatal_error )
+        = $self->_exports_for_include( $pkg, $use_statement );
+    if ($fatal_error) {
+        return { fatal_error => $fatal_error };
+    }
+
     return $self->_list_to_hash( $pkg, $exports );
 
     # If this module uses something other than Exporter or Sub::Exporter, we
@@ -393,6 +404,7 @@ EOF
 
         # Mojo classes tend to throw "Can't locate :all.pm in @INC". This is
         # expected and shouldn't be raised to the warning level.
+
         if ( $msg =~ qr{Can't locate} && $msg !~ m{\:all\.pm in \@INC} ) {
             $level = 'warning';
         }
