@@ -3,6 +3,8 @@ Revision history for App-perlimports
 {{$NEXT}}
     - Add experimental --range-begin and --range-end flags, to be used for
       editor integration (GH#93) (Olaf Alders)
+    - Remove unused variables (GH#95) (Olaf Alders)
+    - Ignore more modules which don't eval (GH#94) (Olaf Alders)
 
 0.000049  2022-10-24 21:19:17Z
     - Add an experimental --json flag to be used when --lint is enabled (GH#90)
