@@ -473,6 +473,20 @@ Enabling this may remove modules which are only present for the purposes of
 preloading or which aren't being detected for other reasons, so use this
 setting with care.
 
+=head2 --range-begin
+
+Experimental. First line of a range to tidy or lint. The line ranges begin at 1
+(not 0). This will select the appropriate range of lines from C<STDIN>.
+Requires C<--read-stdin>. Mostly useful for editors. Unless you're writing an
+editor plugin or extension, you can probably ignore this.
+
+=head2 --range-end
+
+Experimental. Last line of a range to tidy or lint. The line ranges begin at 1
+(not 0). This will select the appropriate range of lines from C<STDIN>.
+Requires C<--read-stdin>. Mostly useful for editors. Unless you're writing an
+editor plugin or extension, you can probably ignore this.
+
 =head2 --read-stdin
 
 Read statements to process from STDIN rather than processing the entire file.
