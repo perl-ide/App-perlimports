@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Bump TOML::Tiny version from 0 to 0.16 (GH#98) (Olaf Alders)
 
 0.000050  2023-02-14 19:50:33Z
     - Add experimental --range-begin and --range-end flags, to be used for
