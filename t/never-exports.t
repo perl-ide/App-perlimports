@@ -17,13 +17,13 @@ use Test::Needs {
 subtest 'with version' => sub {
     my $pi = source2pi(
         'test-data/with-version.pl',
-        'use LWP::UserAgent 6.49;',
+        'use LWP::UserAgent 5.00;',
     );
 
     ok( !$pi->_is_ignored, '_is_ignored' );
     is(
         $pi->formatted_ppi_statement,
-        'use LWP::UserAgent 6.49 ();',
+        'use LWP::UserAgent 5.00 ();',
         'formatted_ppi_statement'
     );
 
