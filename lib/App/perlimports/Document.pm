@@ -20,7 +20,8 @@ use PPIx::Utils::Classification qw(
     is_hash_key
     is_method_call
 );
-use Ref::Util qw( is_plain_arrayref is_plain_hashref );
+use Ref::Util    qw( is_plain_arrayref is_plain_hashref );
+use Scalar::Util qw( refaddr );
 use Sub::HandlesVia;
 use Text::Diff      ();
 use Try::Tiny       qw( catch try );
@@ -396,21 +397,9 @@ sub _build_possible_imports {
         # sub any {}
         next if $self->is_sub_name("$word");
 
-        my $isa_symbol = $word->isa('PPI::Token::Symbol');
+        next if !$word->isa('PPI::Token::Symbol') && is_method_call($word);
 
-        next if !$isa_symbol && is_method_call($word);
-
-        # A hash key might, for example, be a variable.
-        if (
-            !$isa_symbol
-            && !(
-                   $word->statement
-                && $word->statement->isa('PPI::Statement::Variable')
-            )
-            && is_hash_key($word)
-        ) {
-            next;
-        }
+        next if $self->_is_word_interpreted_as_string($word);
 
         push @after, $word;
     }
@@ -1136,6 +1125,33 @@ sub _maybe_cache_inspectors {
         );
     }
     return;
+}
+
+sub _is_word_interpreted_as_string {
+    my ( $self, $word ) = @_;
+
+    return unless $word->statement && $word->isa('PPI::Token::Word');
+    my @children = $word->statement->schildren;
+
+    # https://perldoc.perl.org/perlref#Not-so-symbolic-references
+    return 1 if is_hash_key($word) && @children == 1;
+
+    # The => operator (sometimes pronounced "fat comma") is a synonym for
+    # the comma except that it causes a word on its left to be interpreted
+    # as a string if it begins with a letter or underscore and is composed
+    # only of letters, digits and underscores. This includes operands that
+    # might otherwise be interpreted as operators, constants, single number
+    # v-strings or function calls.
+    # https://perldoc.perl.org/perlop#Comma-Operator
+    return unless $word->content =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+    while ( my $current = shift @children ) {
+        last if refaddr($current) == refaddr($word);
+    }
+    return unless ( my $current = shift @children );
+    return 1
+        if $current->isa('PPI::Token::Operator')
+        && $current->content eq '=>';
 }
 
 1;
