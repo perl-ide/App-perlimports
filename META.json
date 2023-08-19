@@ -80,6 +80,7 @@
             "Perl::Tidy" : "20220613",
             "Pod::Usage" : "0",
             "Ref::Util" : "0",
+            "Scalar::Util" : "0",
             "Sereal::Decoder" : "0",
             "Sereal::Encoder" : "0",
             "Sub::HandlesVia" : "0",
@@ -131,7 +132,7 @@
          "web" : "https://github.com/oalders/App-perlimports"
       }
    },
-   "version" : "0.000051",
+   "version" : "0.000052",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.036000"
@@ -533,7 +534,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "repo_root" : "."
                }
             },
@@ -544,7 +545,7 @@
             "class" : "Dist::Zilla::Plugin::Git::Contributors",
             "config" : {
                "Dist::Zilla::Plugin::Git::Contributors" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "include_authors" : 0,
                   "include_releaser" : 1,
                   "order_by" : "name",
@@ -664,7 +665,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -681,12 +682,12 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000051",
+                  "tag" : "v0.000052",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -737,7 +738,7 @@
                   "changelog" : "Changes"
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "repo_root" : "."
                },
                "Dist::Zilla::Role::Git::StringFormatter" : {
@@ -757,7 +758,7 @@
                   "remotes_must_exist" : 1
                },
                "Dist::Zilla::Role::Git::Repo" : {
-                  "git_version" : "2.40.1",
+                  "git_version" : "2.41.0",
                   "repo_root" : "."
                }
             },
@@ -867,7 +868,9 @@
       }
    },
    "x_contributors" : [
+      "E. Choroba <choroba@matfyz.cz>",
       "James Raspass <jraspass@gmail.com>",
+      "Jos\u00e9 Manuel Rodri\u0301guez D <jose93rd@gmail.com>",
       "Kenichi Ishigaki <ishigaki@cpan.org>",
       "Nicolas Mendoza <mendoza@pvv.ntnu.no>",
       "Olaf Alders <olaf.alders@gmail.com>",

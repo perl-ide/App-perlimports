@@ -24,6 +24,7 @@ requires "Path::Tiny" => "0";
 requires "Perl::Tidy" => "20220613";
 requires "Pod::Usage" => "0";
 requires "Ref::Util" => "0";
+requires "Scalar::Util" => "0";
 requires "Sereal::Decoder" => "0";
 requires "Sereal::Encoder" => "0";
 requires "Sub::HandlesVia" => "0";
