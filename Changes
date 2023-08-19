@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000052  2023-08-19 19:03:55Z
     - Allow PPI::Statement::Expression in hash key (GH#102) (José Manuel
       Rodríguez D.)
