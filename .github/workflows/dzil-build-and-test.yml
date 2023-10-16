@@ -17,7 +17,7 @@ jobs:
     container:
       image: perldocker/perl-tester:5.38
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install ubi
         run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
       - name: Install omegasort
@@ -58,7 +58,7 @@ jobs:
         #run: cpm install -g --cpanfile test-needs-cpanfile
       #- name: Install deps and test
         #run: cpan-install-dist-deps && test-dist
-      #- uses: actions/checkout@v3
+      #- uses: actions/checkout@v4
         #with:
           #repository: mojolicious/mojo
           #path: mojo
@@ -110,7 +110,7 @@ jobs:
     container:
       image: perldocker/perl-tester:5.38
     steps:
-      - uses: actions/checkout@v3 # codecov wants to be inside a Git repository
+      - uses: actions/checkout@v4 # codecov wants to be inside a Git repository
       - uses: actions/download-artifact@v3
         with:
           name: build_dir
