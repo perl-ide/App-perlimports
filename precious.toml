@@ -22,7 +22,6 @@ lint_flags = "--check"
 tidy_flags = "--in-place"
 ok_exit_codes = 0
 lint_failure_exit_codes = 1
-expect_stderr = true
 
 # If you have an external stopwords file for use with Test::Spelling
 [commands.omegasort-stopwords]
@@ -33,7 +32,6 @@ lint_flags = "--check"
 tidy_flags = "--in-place"
 ok_exit_codes = 0
 lint_failure_exit_codes = 1
-expect_stderr = true
 
 [commands.perlimports]
 type = "both"
@@ -42,7 +40,6 @@ cmd = [ "perl", "-Ilib", "script/perlimports" ]
 lint_flags = ["--lint" ]
 tidy_flags = ["-i" ]
 ok_exit_codes = 0
-expect_stderr = true
 
 [commands.perltidy]
 type = "both"
@@ -52,7 +49,6 @@ lint_flags = [ "--assert-tidy", "--no-standard-output", "--outfile=/dev/null" ]
 tidy_flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
 ok_exit_codes = 0
 lint_failure_exit_codes = 2
-expect_stderr = true
 
 [commands.perlcritic]
 type = "lint"
