@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-# This is a regression test for an error which occurrs when using
+# This is a regression test for an error which occurs when using
 # "memoize('is_function_call')" in Include.pm. It appears only in cases where
 # the CLI is processing multiple files in a specific order. In the bug
 # scenario, "use MooseX::Types::UUID ();" in test-data/b.pl is transformed to
