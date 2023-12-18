@@ -36,7 +36,7 @@ jobs:
         run: auto-build-and-test-dist
       - name: Run precious
         run: precious lint --all
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build_dir
           path: build_dir
