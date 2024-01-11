@@ -50,7 +50,7 @@ jobs:
     #strategy:
       #fail-fast: false
     #steps:
-      #- uses: actions/download-artifact@v3
+      #- uses: actions/download-artifact@v4
         #with:
           #name: build_dir
           #path: .
@@ -111,7 +111,7 @@ jobs:
       image: perldocker/perl-tester:5.38
     steps:
       - uses: actions/checkout@v4 # codecov wants to be inside a Git repository
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build_dir
           path: .
@@ -151,7 +151,7 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl-version }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build_dir
           path: .
@@ -191,7 +191,7 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl-version }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build_dir
           path: .
