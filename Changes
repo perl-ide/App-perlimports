@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Don't log a non-JSON message to STDERR on linting success when --json is
+      enabled (GH#107) (Olaf Alders)
 
 0.000052  2023-08-19 19:03:55Z
     - Allow PPI::Statement::Expression in hash key (GH#102) (José Manuel
