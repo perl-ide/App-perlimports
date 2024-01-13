@@ -1,7 +1,7 @@
-[![Actions Status](https://github.com/oalders/App-perlimports/actions/workflows/dzil-build-and-test.yml/badge.svg)](https://github.com/oalders/App-perlimports/actions)
-[![codecov](https://codecov.io/gh/oalders/App-perlimports/branch/master/graph/badge.svg)](https://codecov.io/gh/oalders/App-perlimports)
+[![Actions Status](https://github.com/perl-ide/App-perlimports/actions/workflows/dzil-build-and-test.yml/badge.svg)](https://github.com/perl-ide/App-perlimports/actions)
+[![codecov](https://codecov.io/gh/perl-ide/App-perlimports/branch/master/graph/badge.svg)](https://codecov.io/gh/perl-ide/App-perlimports)
 [![Kwalitee status](https://cpants.cpanauthors.org/dist/App-perlimports.png)](https://cpants.cpanauthors.org/dist/App-perlimports)
-[![GitHub tag](https://img.shields.io/github/tag/oalders/App-perlimports.svg)]()
+[![GitHub tag](https://img.shields.io/github/tag/perl-ide/App-perlimports.svg)]()
 [![Cpan license](https://img.shields.io/cpan/l/App-perlimports.svg)](https://metacpan.org/release/App-perlimports)
 
 # NAME
@@ -10,7 +10,7 @@ App::perlimports - Make implicit imports explicit
 
 # VERSION
 
-version 0.000052
+version 0.000053
 
 # DESCRIPTION
 

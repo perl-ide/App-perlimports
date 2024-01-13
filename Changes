@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000053  2024-01-13 20:12:59Z
     - Don't log a non-JSON message to STDERR on linting success when --json is
       enabled (GH#107) (Olaf Alders)
 
