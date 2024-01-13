@@ -482,10 +482,10 @@ FILENAME:
                     return $pi_doc->linter_success;
                 }
             );
-            if ($linter_success) {
+            if ( $linter_success && !$self->_json ) {
                 $logger->error( $filename . ' OK' );
             }
-            else {
+            elsif ( !$linter_success ) {
                 $exit_code = 1;
             }
             next FILENAME;
