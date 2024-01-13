@@ -174,6 +174,22 @@ subtest '--lint success' => sub {
     is( $exit,   0,   'exit code is success' );
 };
 
+subtest '--lint --json success' => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stderr, q{}, 'success message on STDERR' );
+    is( $stdout, q{}, 'no STDOUT' );
+    is( $exit,   0,   'exit code is success' );
+};
+
 subtest '--lint failure import args' => sub {
     local @ARGV = (
         '--lint',
