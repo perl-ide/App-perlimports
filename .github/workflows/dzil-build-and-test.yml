@@ -125,7 +125,7 @@ jobs:
           HARNESS_OPTIONS: j2
           HARNESS_PERL_SWITCHES: "-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data"
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
   test-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
