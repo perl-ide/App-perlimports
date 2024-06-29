@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000054  2024-06-29 19:32:58Z
     - Don't treat locally defined subs as importable symbols (GH#110) (Olaf
       Alders). Reported by Glenn Rice.
