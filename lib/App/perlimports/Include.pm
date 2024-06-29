@@ -340,7 +340,8 @@ sub _build_imports {
                 $self->_document->my_own_inspector->explicit_export_names
             )
         ) {
-            if ( $self->_is_importable($symbol) ) {
+            if ( $self->_is_importable($symbol)
+                && !$self->_document->is_sub_name("$symbol") ) {
                 $found{$symbol} = 1;
             }
         }
