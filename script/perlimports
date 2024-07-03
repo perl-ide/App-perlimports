@@ -490,7 +490,8 @@ editor plugin or extension, you can probably ignore this.
 =head2 --read-stdin
 
 Read statements to process from STDIN rather than processing the entire file.
-This is intended for use by editors, like C<vim>. See the C<vim> heading below
+This is intended for use by editors, like C<vim>. See the
+L</INTEGRATIONS> section below
 for more information on how to set up an integration with your editor.
 
 If this option is enabled, then C<--inplace-edit|-i> is not available.
@@ -582,6 +583,11 @@ C<perlimports>.
 
     let ale_fixers.perl = ['perlimports', 'perltidy']
     execute ale#fix#registry#Add('perlimports', 'Perlimports', ['perl'], 'Tidy Perl imports')
+
+=head2 Emacs and Flycheck
+
+L<Flycheck|https://www.flycheck.org/> 35 and newer will suggest changes
+from C<perlimports> automatically if it finds that it is installed.
 
 =head2 precious
 
