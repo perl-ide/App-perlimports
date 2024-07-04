@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000055  2024-07-04 16:16:22Z
     - Document that Emacs users can get "perlimports --lint" via Flycheck
       (GH#112) (Peter Oliver)
