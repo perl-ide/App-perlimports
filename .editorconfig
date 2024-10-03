@@ -10,18 +10,8 @@ trim_trailing_whitespace = true
 charset = utf-8
 indent_size = 4
 
-[*.{html}]
-charset = utf-8
+[*.yml]
 indent_size = 2
-
-[*.{json}]
-indent_size = 3
-
-[*.{yaml}]
-indent_size = 2
-
-[Makefile]
-indent_style = tab
 
 [cpanfile]
 indent_size = 2
