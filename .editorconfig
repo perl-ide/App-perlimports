@@ -12,6 +12,3 @@ indent_size = 4
 
 [*.yml]
 indent_size = 2
-
-[cpanfile]
-indent_size = 2
