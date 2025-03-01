@@ -118,7 +118,7 @@ sub _build_args {
         [],
         [
             'config-file=s',
-            'Path to a perlimports config file. If this parameter is not supplied, we will look for a file called perlimports.toml or .perlimports.toml in the current directory and then look for a perlimports.toml in XDG_CONFIG_HOME (usually something like $HOME/perlimports/perlimports.toml). This behaviour can be disabled via --no-config-file'
+            'Path to a perlimports config file. If this parameter is not supplied, we will look for a file called perlimports.toml or .perlimports.toml in the current directory and then look for a perlimports.toml in XDG_CONFIG_HOME (usually something like $HOME/.config/perlimports/perlimports.toml). This behaviour can be disabled via --no-config-file'
         ],
         [],
         [
