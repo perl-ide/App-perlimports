@@ -4,7 +4,7 @@ use Moo;
 
 ## no critic (Modules::RequireExplicitInclusion, Subroutines::ProhibitCallsToUnexportedSubs, TestingAndDebugging::ProhibitNoStrict)
 
-our $VERSION = '0.000056';
+our $VERSION = '0.000057';
 
 use App::perlimports::Sandbox ();
 use Class::Inspector          ();
