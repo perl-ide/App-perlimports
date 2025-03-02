@@ -1,6 +1,7 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Update example path for` XDG_CONFIG_HOME` in CLI.pm (GH#120) (Nelo Onyiah
 
 0.000055  2024-07-04 16:16:22Z
     - Document that Emacs users can get "perlimports --lint" via Flycheck
