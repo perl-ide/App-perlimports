@@ -85,7 +85,7 @@ on 'develop' => sub {
   requires "Test::Pod" => "1.41";
   requires "Test::Pod::Coverage" => "1.08";
   requires "Test::Portability::Files" => "0";
-  requires "Test::Spelling" => "0.12";
+  requires "Test::Spelling" => "0.17";
   requires "Test::Vars" => "0.014";
   requires "Test::Version" => "1";
 };
