@@ -16,7 +16,7 @@ my ($doc) = doc(
 
 is(
     $doc->tidied_document,
-    'use MooseX::Types::Moose qw( ArrayRef );',
+    'use MooseX::Types::Moose qw( ArrayRef Str );',
     'imported types found'
 );
 
