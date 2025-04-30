@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Update test expectations for MooseX::Types::Moose 0.51 (GH#122) (Olaf
+      Alders)
 
 0.000056  2025-03-02 23:34:13Z
     - Update example path for` XDG_CONFIG_HOME` in CLI.pm (GH#120) (Nelo Onyiah
