@@ -265,6 +265,7 @@ my %default_ignore = (
     'Data::Printer'                  => 1,
     'DDP'                            => 1,
     'Devel::Confess'                 => 1,
+    'DynaLoader'                     => 1,
     'Encode::Guess'                  => 1,
     'Env'                            => 1,    # see t/env.t
     'Exception::Class'               => 1,
