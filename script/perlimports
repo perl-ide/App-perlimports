@@ -425,6 +425,21 @@ parentheses.
     # --no-padding
     use Foo qw(bar baz);
 
+=head2 --[no-]skip-empty-imports
+
+C<--skip-empty-imports> is disabled by default. This means that empty import
+statements will always get added to use statements. This setting skips adding
+a import stanza if there is nothing to import.
+
+    # --no-skip-empty-imports
+    use Foo qw();
+
+The C<--skip-empty-imports> arg allows you to disable outputting an empty
+import list.
+
+    # --skip-empty-imports
+    use Foo;
+
 =head2 --[no-]tidy-whitespace
 
 C<--tidy-whitespace> is enabled by default. This means that use statements will

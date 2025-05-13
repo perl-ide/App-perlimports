@@ -39,6 +39,7 @@ EOF
         '--log-level'    => 'info',
         '--no-cache',
         '--no-padding',
+        '--skip-empty-imports',
         '--no-preserve-duplicates',
         '--no-preserve-unused',
         '--no-tidy-whitespace',
@@ -70,6 +71,7 @@ EOF
         'never_export'
     );
     is( $c->padding,             0, 'padding' );
+    is( $c->skip_empty_imports,  1, 'skip_empty_imports' );
     is( $c->preserve_duplicates, 0, 'preserve_duplicates' );
     is( $c->tidy_whitespace,     0, 'tidy_whitespace' );
 };
