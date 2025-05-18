@@ -261,6 +261,7 @@ around BUILDARGS => sub {
 
 my %default_ignore = (
     'Carp::Always'                   => 1,
+    'Class::XSAccessor'              => 1,
     'Constant::Generate'             => 1,
     'Data::Printer'                  => 1,
     'DDP'                            => 1,
@@ -294,6 +295,7 @@ my %default_ignore = (
     'MooseX::Types'                                       => 1,
     'MooX::StrictConstructor'                             => 1,
     'namespace::autoclean'                                => 1,
+    'namespace::clean'                                    => 1,
     'PerlIO::gzip'                                        => 1,
     'Regexp::Common'                                      => 1,
     'Sort::ByExample'                                     => 1,
