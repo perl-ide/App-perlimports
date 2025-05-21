@@ -191,6 +191,11 @@ sub _build_args {
         ],
         [],
         [
+            'skip-empty-imports!',
+            'Skip empty imports: Foo qw(); vs Foo;. Defaults to false',
+        ],
+        [],
+        [
             'read-stdin',
             'Read statements to process from STDIN rather than the supplied file.',
         ],
@@ -266,6 +271,7 @@ sub _build_config {
         log_level
         never_export_modules_filename
         padding
+        skip_empty_imports
         preserve_duplicates
         preserve_unused
         tidy_whitespace
@@ -450,6 +456,7 @@ sub run {
         lint                => $self->_lint,
         logger              => $logger,
         padding             => $self->_config->padding,
+        skip_empty_imports  => $self->_config->skip_empty_imports,
         preserve_duplicates => $self->_config->preserve_duplicates,
         preserve_unused     => $self->_config->preserve_unused,
         tidy_whitespace     => $self->_config->tidy_whitespace,

@@ -111,6 +111,13 @@ has padding => (
     default => 1,
 );
 
+has skip_empty_imports => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
+);
+
 has preserve_duplicates => (
     is      => 'ro',
     isa     => Bool,
@@ -230,3 +237,4 @@ padding                         = true
 preserve_duplicates             = false
 preserve_unused                 = false
 tidy_whitespace                 = true
+skip_empty_imports              = false
