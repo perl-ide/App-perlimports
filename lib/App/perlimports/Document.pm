@@ -766,7 +766,7 @@ sub _is_used_fully_qualified {
                     )
                 )
                 || ( $_[1]->isa('PPI::Token::Symbol')
-                && $_[1] =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z0-9_]} );
+                && $_[1] =~ m{\A[&*\$\@\%]+${module_name}::[a-zA-Z0-9_]} );
         }
     );
 
@@ -774,7 +774,7 @@ sub _is_used_fully_qualified {
     for my $key ( keys %{ $self->interpolated_symbols } ) {
 
         # package level variable
-        return 1 if $key =~ m{\A[*\$\@\%]+${module_name}::[a-zA-Z0-9_]+\z};
+        return 1 if $key =~ m{\A[&*\$\@\%]+${module_name}::[a-zA-Z0-9_]+\z};
 
         # function
         return 1 if $key =~ m/\A${module_name}::[a-zA-Z0-9_]+\z/;
