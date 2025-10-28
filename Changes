@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000058  2025-10-28 17:06:33Z
     - Fix: Recognize function references (\&Module::func) as valid module usage
       (GH#131) (Copilot)
