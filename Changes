@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Fix: Recognize function references (\&Module::func) as valid module usage
+      (GH#131) (Copilot)
 
 0.000057  2025-04-30 12:12:23Z
     - Update test expectations for MooseX::Types::Moose 0.51 (GH#122) (Olaf
