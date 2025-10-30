@@ -592,6 +592,17 @@ sub _unnest_quotes {
     return @words unless $quotes;
 
     for my $q (@$quotes) {
+        # Skip quotes that are false positives from PPI misinterpreting
+        # content. For example, when parsing the content "q" from a double
+        # quoted string, PPI may interpret it as a quote operator even though
+        # it's just the letter q. A real quote operator needs delimiters.
+        # We check if the stringified token matches a valid quote pattern.
+        my $quote_str = "$q";
+        
+        # Valid quote patterns start with q/qq/qw/qx/qr/m/s/tr/y followed by
+        # a delimiter. If it's just "q" or "qq" without delimiters, skip it.
+        next if $quote_str =~ m/\A(?:qq?|qw|qx|qr|m|s|tr|y)\z/;
+        
         push @words, _extract_symbols_from_snippet("$q");
         push @words, $self->_unnest_quotes($q);
     }
