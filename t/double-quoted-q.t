@@ -7,7 +7,7 @@ use lib 't/lib';
 
 use List::Util qw( none );
 use TestHelper qw( doc );
-use Test::More import => [qw( done_testing is ok )];
+use Test::More import => [qw( done_testing like ok )];
 
 # Test the minimal example from the issue
 my ( $doc1, $logs1 ) = doc(
@@ -23,7 +23,10 @@ ok(
     'no errors in logs for double-quoted "q"'
 );
 
-ok( defined $tidied1, 'tidied_document returns a result for double-quoted "q"' );
+ok(
+    defined $tidied1,
+    'tidied_document returns a result for double-quoted "q"'
+);
 
 # Test the real-world pack("qq") example
 my ( $doc2, $logs2 ) = doc(
@@ -58,6 +61,9 @@ ok(
     'no errors in logs for various quote-like strings'
 );
 
-ok( defined $tidied3, 'tidied_document returns a result for various quote-like strings' );
+ok(
+    defined $tidied3,
+    'tidied_document returns a result for various quote-like strings'
+);
 
 done_testing;
