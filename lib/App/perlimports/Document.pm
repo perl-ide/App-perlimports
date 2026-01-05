@@ -170,6 +170,13 @@ has _padding => (
     default  => 1,
 );
 
+has _skip_empty_imports => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'skip_empty_imports',
+    default  => 0,
+);
+
 has ppi_document => (
     is      => 'ro',
     isa     => Object,
@@ -899,7 +906,8 @@ INCLUDE:
             logger           => $self->logger,
             original_imports => $self->original_imports->{ $include->module },
             pad_imports      => $self->_padding,
-            tidy_whitespace  => $self->_tidy_whitespace,
+            skip_empty_imports => $self->_skip_empty_imports,
+            tidy_whitespace    => $self->_tidy_whitespace,
         );
         my $elem;
         try {

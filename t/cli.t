@@ -454,6 +454,50 @@ EOF
     is( $stderr, q{},       'no STDERR' );
 };
 
+subtest '--skip-empty-imports' => sub {
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Carp;
+use Data::Dumper;
+use POSIX;
+EOF
+
+    local @ARGV = (
+        '--no-config-file',
+        '--skip-empty-imports',
+        '-f' => 'test-data/original-imports.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stderr, q{},       'no STDERR' );
+    is( $stdout, $expected, 'stdout' );
+    is( $stderr, q{},       'no STDERR' );
+};
+
+subtest '--no-skip-empty-imports' => sub {
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Carp ();
+use Data::Dumper ();
+use POSIX ();
+EOF
+
+    local @ARGV = (
+        '--no-config-file',
+        '--no-skip-empty-imports',
+        '-f' => 'test-data/original-imports.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr ) = capture { $cli->run };
+    is( $stderr, q{},       'no STDERR' );
+    is( $stdout, $expected, 'stdout' );
+    is( $stderr, q{},       'no STDERR' );
+};
+
 subtest '--stdout' => sub {
     my $expected = <<'EOF';
 use strict;
