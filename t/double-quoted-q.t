@@ -88,7 +88,7 @@ ok(
 );
 
 # Verify that real quote operators are preserved in output
-like( $tidied3, qr/q\{single quoted string\}/, 'q{} operator preserved' );
+like( $tidied3, qr/q\{single quoted string\}/,  'q{} operator preserved' );
 like( $tidied3, qr/qq\[double quoted string\]/, 'qq[] operator preserved' );
 like( $tidied3, qr/qw\(list of words\)/,        'qw() operator preserved' );
 
