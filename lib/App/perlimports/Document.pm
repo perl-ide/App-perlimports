@@ -543,9 +543,12 @@ sub _extract_symbols_from_snippet {
     my $casts = $doc->find('PPI::Token::Cast') || [];
     for my $cast ( @{$casts} ) {
 
-        # Optimistically avoid misinterpreting regex assertions as casts
-        # We don't want to match on "A" in the following example:
-        # if ( $thing =~ m{ \A b }x ) { ... }
+        # PPI Edge Case: False positive casts from regex assertions
+        #
+        # PPI can misinterpret regex assertions like \A as casts. We don't
+        # want to match on "A" in: if ( $thing =~ m{ \A b }x ) { ... }
+        #
+        # See also: Similar PPI edge case for quote operators at line ~596
         next if $cast eq '\\';
 
         my $full_cast   = $cast . $cast->snext_sibling;
@@ -593,15 +596,20 @@ sub _unnest_quotes {
 
     for my $q (@$quotes) {
 
-        # Skip quotes that are false positives from PPI misinterpreting
-        # content. For example, when parsing the content "q" from a double
-        # quoted string, PPI may interpret it as a quote operator even though
-        # it's just the letter q. A real quote operator needs delimiters.
-        # We check if the stringified token matches a valid quote pattern.
+        # PPI Edge Case: False positive quote operators
+        #
+        # PPI sometimes misinterprets content inside double-quoted strings as
+        # quote operators. For example, when parsing pack("qq", ...), PPI may
+        # identify the bare "qq" as a PPI::Token::Quote even though it's just
+        # a string literal. Calling ->string on these false positives causes
+        # "Use of uninitialized value" errors because they lack actual content.
+        #
+        # Detection: Real quote operators have delimiters (e.g., q{}, qq[],
+        # qw()). False positives are just the bare operator name.
+        #
+        # See also: Similar PPI edge case handling for casts at line ~546
+        # where regex assertions like \A can be misinterpreted as casts.
         my $quote_str = "$q";
-
-        # Valid quote patterns start with q/qq/qw/qx/qr/m/s/tr/y followed by
-        # a delimiter. If it's just "q" or "qq" without delimiters, skip it.
         next if $quote_str =~ m/\A(?:qq?|qw|qx|qr|m|s|tr|y)\z/;
 
         push @words, _extract_symbols_from_snippet("$q");

@@ -27,3 +27,11 @@ my $str11 = pack("qq", 10, 0);
 my $str12 = "quest";
 my $str13 = "query";
 my $str14 = "queue";
+
+# Real quote operators that should still be processed correctly
+my $str15 = q{single quoted string};
+my $str16 = qq[double quoted string];
+my @str17  = qw(list of words);
+my $str18 = qr/regex pattern/;
+my $str19 = q(nested (parens) work);
+my $str20 = qq|alternative delimiters|;

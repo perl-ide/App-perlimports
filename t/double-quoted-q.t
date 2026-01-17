@@ -24,6 +24,13 @@ ok(
 );
 
 ok(
+    do {
+        none { $_->{message} && $_->{message} =~ /undefined value/ } @$logs1;
+    },
+    'no undefined value errors for double-quoted "q"'
+);
+
+ok(
     defined $tidied1,
     'tidied_document returns a result for double-quoted "q"'
 );
@@ -40,6 +47,13 @@ ok(
         none { $_->{level} eq 'error' } @$logs2;
     },
     'no errors in logs for pack("qq")'
+);
+
+ok(
+    do {
+        none { $_->{message} && $_->{message} =~ /undefined value/ } @$logs2;
+    },
+    'no undefined value errors for pack("qq")'
 );
 
 ok( defined $tidied2, 'tidied_document returns a result for pack("qq")' );
@@ -62,8 +76,20 @@ ok(
 );
 
 ok(
+    do {
+        none { $_->{message} && $_->{message} =~ /undefined value/ } @$logs3;
+    },
+    'no undefined value errors for various quote-like strings'
+);
+
+ok(
     defined $tidied3,
     'tidied_document returns a result for various quote-like strings'
 );
+
+# Verify that real quote operators are preserved in output
+like( $tidied3, qr/q\{single quoted string\}/, 'q{} operator preserved' );
+like( $tidied3, qr/qq\[double quoted string\]/, 'qq[] operator preserved' );
+like( $tidied3, qr/qw\(list of words\)/,        'qw() operator preserved' );
 
 done_testing;
