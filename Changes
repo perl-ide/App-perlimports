@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add experimental --skip-empty-imports flag, to allow following style
+      guides that do not want an empty `qw()` import list in use statements.
+      (GH#118) (Thomas Lamprecht)
 
 0.000058  2025-10-28 17:06:33Z
     - Fix: Recognize function references (\&Module::func) as valid module usage

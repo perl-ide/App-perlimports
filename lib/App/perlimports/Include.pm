@@ -128,6 +128,13 @@ has _pad_imports => (
     default  => sub { 1 },
 );
 
+has _skip_empty_imports => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'skip_empty_imports',
+    default  => sub { 0 },
+);
+
 has _tidy_whitespace => (
     is       => 'ro',
     isa      => Bool,
@@ -464,11 +471,10 @@ sub _build_formatted_ppi_statement {
     if (   $self->_will_never_export
         || $self->_is_translatable
         || !@{ $self->_imports } ) {
+        my $template
+            = $self->_skip_empty_imports() ? 'use %s%s;' : 'use %s%s ();';
         return $self->_maybe_get_new_include(
-            sprintf(
-                'use %s%s ();', $self->module_name, $maybe_module_version
-            )
-        );
+            sprintf( $template, $self->module_name, $maybe_module_version ) );
     }
 
     my $statement;
