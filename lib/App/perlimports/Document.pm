@@ -16,9 +16,11 @@ use MooX::StrictConstructor;
 use Path::Tiny                  qw( path );
 use PPI::Document               ();
 use PPIx::Utils::Classification qw(
+    is_class_name
     is_function_call
     is_hash_key
     is_method_call
+    is_package_declaration
 );
 use Ref::Util    qw( is_plain_arrayref is_plain_hashref );
 use Scalar::Util qw( refaddr );
@@ -96,9 +98,11 @@ has constants => (
     handles     => {
         is_constant_name => 'exists',
         all_constants    => 'keys',
+        _set_constants   => 'set',
     },
-    lazy    => 1,
-    builder => '_build_constants',
+    predicate => '_has_constants',
+    lazy      => 1,
+    builder   => '_build_constants',
 );
 
 has _inspectors => (
@@ -466,6 +470,7 @@ sub _parse_constant {
     return \%data;
 }
 
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _build_possible_imports {
     my $self   = shift;
     my $before = $self->ppi_document->find(
@@ -476,6 +481,9 @@ sub _build_possible_imports {
                 || $_[1]->isa('PPI::Token::Prototype');
         }
     ) || [];
+
+    # remember referenced package namespaces and constants
+    my ( %pack, %const );
 
     my @after;
     for my $word ( @{$before} ) {
@@ -490,15 +498,55 @@ sub _build_possible_imports {
         # sub any {}
         next if $self->is_sub_name("$word");
 
+        # cant validate class/instance method names:
         next if !$word->isa('PPI::Token::Symbol') && is_method_call($word);
 
         next if $self->_is_word_interpreted_as_string($word);
 
+        next if is_package_declaration($word);
+
+        if ( my $stm = $word->statement ) {
+            my $first = $stm->schild(0);    # PPI:Element
+            if ( $stm->isa('PPI::Statement::Package') ) {
+                next if $word eq 'package' && $word == $first;
+
+            }
+            elsif ( $stm->isa('PPI::Statement::Include') ) {
+                if ( my $packname = $stm->module ) {
+                    $pack{$packname} ||= 1;    # even if its a pragma
+
+                    if ($packname eq 'constant') {
+                        next unless my $data = $self->_parse_constant($stm);
+                        $const{ $data->{name} } ||= $data;
+                        next if $word == $data->{token};
+                    }
+
+                    my $package_bareword = $stm->schild(1);
+                    next if $word == $package_bareword;
+                }
+
+                next if $word eq 'use' && $word == $first;
+                next if $stm->pragma && $word eq 'no' && $word == $first;
+            }
+        }
+
+        next
+            if $const{"$word"}
+            && ( is_hash_key($word) || is_function_call($word) );
+        next if $pack{"$word"} && is_class_name($word);   # class method calls
+
         push @after, $word;
+    }
+
+    # safe to assume our search encountered every 'use constant' statement
+    if ( %const && !$self->_has_constants ) {
+        $self->_set_constants(%const);
+        $self->logger->debug("constants found: @{[sort keys %const]}");
     }
 
     return \@after;
 }
+## use critic
 
 sub _build_ppi_document {
     my $self = shift;
