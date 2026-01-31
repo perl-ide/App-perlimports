@@ -1047,6 +1047,24 @@ INCLUDE:
     return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
 }
 
+# given PPI:Element, returns hashref describing location, e.g.:
+#   {start => {line => 3, column => 4}, end => {...}}
+sub _elem_loc {
+    my ($elem) = @_;
+
+    my $loc     = { start => { line => $elem->line_number } };
+    my $content = $elem->content;
+    my @lines   = split( m{\n}, $content );
+
+    if ( $lines[0] =~ m{[^\s]} ) {
+        $loc->{start}->{column} = @-;
+    }
+    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
+    $loc->{end}->{column} = length( $lines[-1] );
+
+    return $loc;
+}
+
 sub _warn_diff_for_linter {
     my $self          = shift;
     my $reason        = shift;
@@ -1060,19 +1078,9 @@ sub _warn_diff_for_linter {
 
     if ( $self->json ) {
 
-        my $loc     = { start => { line => $include->line_number } };
-        my $content = $include->content;
-        my @lines   = split( m{\n}, $content );
-
-        if ( $lines[0] =~ m{[^\s]} ) {
-            $loc->{start}->{column} = @-;
-        }
-        $loc->{end}->{line}   = $include->line_number + @lines - 1;
-        $loc->{end}->{column} = length( $lines[-1] );
-
         $json = {
             filename => $self->_filename,
-            location => $loc,
+            location => _elem_loc($include),
             module   => $include->module,
             reason   => $reason,
         };
