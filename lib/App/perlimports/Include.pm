@@ -683,8 +683,13 @@ sub _maybe_get_new_include {
 
 sub _is_already_imported {
     my $self      = shift;
-    my $symbol    = shift;
+    my $symbol    = shift;    # a string, not an object
     my $duplicate = 0;
+
+    if ( $self->_document->is_constant_name($symbol) ) {
+        $self->logger->debug("$symbol is defined as a constant");
+        return 1;
+    }
 
     foreach my $module (
         grep { $_ ne $self->module_name }
