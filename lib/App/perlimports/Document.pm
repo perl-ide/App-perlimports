@@ -21,6 +21,10 @@ use PPIx::Utils::Classification qw(
     is_hash_key
     is_method_call
     is_package_declaration
+    is_perl_bareword
+    is_perl_builtin
+    is_perl_filehandle
+    is_qualified_name
 );
 use PPIx::Utils::Traversal qw( split_nodes_on_comma );
 use Ref::Util              qw( is_plain_arrayref is_plain_hashref );
@@ -104,6 +108,17 @@ has constants => (
     predicate => '_has_constants',
     lazy      => 1,
     builder   => '_build_constants',
+);
+
+has unknown_words => (
+    is          => 'ro',
+    isa         => ArrayRef [Object],    # PPI::Token::Word
+    handles_via => 'Array',
+    handles     => {
+        all_unknowns => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_unknowns',
 );
 
 has _inspectors => (
@@ -598,6 +613,44 @@ sub _build_possible_imports {
     return \@after;
 }
 ## use critic
+
+# array of PPI::Token::Word that are not known to be defined.
+# not every unknown word, just the first occurrence of each.
+sub _build_unknowns {
+    my $self = shift;
+    my %unknown;
+
+    my $imports = $self->found_imports;
+    my %imported_symbol;    # invert the found_imports hash
+    foreach my $pkg ( keys %$imports ) {
+        next unless my $foundlist = $self->found_imports_from($pkg);
+        $imported_symbol{$_} = $pkg for @$foundlist;
+    }
+
+    # method calls and known package name used in class-method call
+    # were already excluded.
+
+    # we're looking only for undefined functions
+    foreach my $word ( $self->possibly_imported_tokens ) {    # PPI:Element
+        next unless $word->isa('PPI::Token::Word');
+
+        next
+            if is_perl_bareword($word)
+            || is_perl_builtin($word)
+            || is_perl_filehandle($word);
+
+        if ( is_function_call($word) ) {
+            next
+                if $imported_symbol{"$word"}
+                || is_qualified_name($word)
+                || $self->is_constant_name("$word");
+        }
+
+        $unknown{"$word"} ||= $word;
+    }
+    my @sorted = sort { "$a" cmp "$b" } values %unknown;
+    return \@sorted;
+}
 
 sub _build_ppi_document {
     my $self = shift;
@@ -1450,6 +1503,25 @@ In edit mode, when L<tidied_document> is called, with each include that gets
 processed, this list gets updated to what we think it should be.  We do this
 so that we can keep track of what previous modules are really importing, to
 avoid duplicate imports (same symbol name from different packages).
+
+=item unknown_words
+
+An arrayref of L<PPI::Token::Word>'s (in alphabetic order) found in the
+document which do not seem to be defined anywhere.
+
+These would include functions that are not from any package mentioned in the
+document (so, a forgotten dependency), or misspelled (or typo) function names,
+both common mistakes, and very useful to detect in lint mode.
+
+Only the first occurrence of each word is saved.
+
+Note: Because generating this list depends on the L<found_imports>,
+one should use L<linter_success> first to find all possible imports that
+were omitted first.
+
+Note 2: There will sometimes be false positives, since Perl is a highly dynamic
+language, and the static analysis here cannot handle black magic of runtime
+code-generation.  Only useful 95% of the time!
 
 =back
 
