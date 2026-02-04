@@ -22,8 +22,9 @@ use PPIx::Utils::Classification qw(
     is_method_call
     is_package_declaration
 );
-use Ref::Util    qw( is_plain_arrayref is_plain_hashref );
-use Scalar::Util qw( refaddr );
+use PPIx::Utils::Traversal qw( split_nodes_on_comma );
+use Ref::Util              qw( is_plain_arrayref is_plain_hashref );
+use Scalar::Util           qw( refaddr );
 use Sub::HandlesVia;
 use Text::Diff      ();
 use Try::Tiny       qw( catch try );
@@ -418,10 +419,12 @@ sub _build_constants {
     ) || [];
 
     foreach my $inc (@$incs) {
-        next unless my $data = $self->_parse_constant($inc);
+        next unless my @data = $self->_parse_constant($inc);
 
         # N.B. we never alter 'use constant' imports
-        $constant{ $data->{name} } = $data;
+        foreach my $data (@data) {
+            $constant{ $data->{name} } = $data;
+        }
     }
 
     $self->logger->debug("constants found: @{[sort keys %constant]}");
@@ -429,46 +432,89 @@ sub _build_constants {
     return \%constant;
 }
 
+# parse hashref into list of "values"; each an arrayref of tokens
+sub _parse_hashlist {
+    my ($elem) = @_;
+    return unless $elem->isa('PPI::Structure::Constructor');
+    my ($exp) = $elem->schildren;
+    return unless $exp->isa('PPI::Statement::Expression');
+    my @tokens = $exp->schildren;
+
+    # first and last commas are ignored, if no significant child exists beyond!
+    # interior serial commas are not handled properly: {a => 1, 'b', , 'c', 4}
+    return my @values = split_nodes_on_comma(@tokens);
+}
+
 # until we get a PPI::Statement::Include::Constant class
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _parse_constant {
     my ( $self, $stm ) = @_;
     return
         unless $stm->isa('PPI::Statement::Include')
         && $stm->module eq 'constant';
 
-    # TODO handle hashref argument, e.g:
-    # use constant { FOO => 1, BAR => 3 };
+    my ( $expected, @kv );
 
-    my ($word, $op, @defn) = $stm->arguments;
+    return unless my @args = $stm->arguments;
+    if ( @args > 1 ) {
+        my ( $word, $op, @defn ) = @args;
 
-    my $expected = $op eq '=>' && $word->isa('PPI::Token::Word');
-    # so many weird edge cases. lets ignore them for now. YAGNI
-    # except... just to show how:
-    $expected ||= $word->isa('PPI::Token::Quote') &&
-        ($op eq ',' || $op eq '=>'); 
+        $expected = $op eq '=>' && $word->isa('PPI::Token::Word') && @defn;
 
-    unless ($expected) {
+        $expected
+            ||= $word->isa('PPI::Token::Quote')
+            && ( $op eq ',' || $op eq '=>' )
+            && @defn;
+
+        @kv = ( $word, \@defn ) if $expected;
+
+    }
+    elsif ( my $first = $args[0] ) {    # @args == 1
+        if ( $first->isa('PPI::Structure::Constructor') ) {
+
+            # e.g.: use constant { FOO => 1, BAR => 3 };
+            # keys are arrayrefs, of (hopefully) a single token
+            @kv = _parse_hashlist($first);
+            $expected++;
+        }
+    }
+
+    if ( !$expected || !@kv || @kv % 2 ) {
         $self->logger->error("failed to parse constant: $stm");
         return;
     }
 
-    my $name = $word->isa('PPI::Token::Quote') ? $word->string : "$word";
+    my @constants;
+    while (@kv) {
+        my ( $word, $val ) = splice( @kv, 0, 2 );
+        if ( is_plain_arrayref($word) ) {
+            if ( @$word > 1 ) {
+                $self->logger->error("failed to parse constant: @$word");
+                next;
+            }
+            $word = $word->[0];
+        }
 
-    my %data = (
-        token => $word,
-        name  => $name,
-        definition => \@defn,
-    );
+        my $name = $word->isa('PPI::Token::Quote') ? $word->string : "$word";
+        my %data = (
+            token      => $word,
+            name       => $name,
+            definition => $val,
+        );
 
-    # position in file after which this function exists (compile time)
-    # TODO location data can become stale
-    if (my $end = $stm->last_element) { # likely PPI:Token:Structure ';'
-        my $loc = _elem_loc($end);
-        $data{end} = $loc->{end};
+        # position in file after which this function exists (compile time)
+        # TODO location data can become stale
+        if ( my $end = $stm->last_element ) { # likely PPI:Token:Structure ';'
+            my $loc = _elem_loc($end);
+            $data{end} = $loc->{end};
+        }
+
+        push @constants, \%data;
     }
 
-    return \%data;
+    return @constants;
 }
+## use critic
 
 ## no critic (Subroutines::ProhibitExcessComplexity)
 sub _build_possible_imports {
@@ -515,10 +561,10 @@ sub _build_possible_imports {
                 if ( my $packname = $stm->module ) {
                     $pack{$packname} ||= 1;    # even if its a pragma
 
-                    if ($packname eq 'constant') {
-                        next unless my $data = $self->_parse_constant($stm);
-                        $const{ $data->{name} } ||= $data;
-                        next if $word == $data->{token};
+                    if ( $packname eq 'constant' ) {
+                        next unless my @data = $self->_parse_constant($stm);
+                        $const{ $_->{name} } ||= $_ for @data;
+                        next if any { $word == $_->{token} } @data;
                     }
 
                     my $package_bareword = $stm->schild(1);
