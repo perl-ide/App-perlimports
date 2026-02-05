@@ -207,8 +207,12 @@ has ppi_document => (
 # list of tokens in the document that -could- have come from an import
 # (but most are keywords, built-ins, lexical vars, defined funcs, etc.)
 has possible_imports => (
-    is      => 'ro',
-    isa     => ArrayRef [Object],        # isa PPI:Token:Word, :Symbol, :Magic
+    is          => 'ro',
+    isa         => ArrayRef [Object],    # isa PPI:Token:Word, :Symbol, :Magic
+    handles_via => 'Array',
+    handles     => {
+        possibly_imported_tokens => 'elements',
+    },
     lazy    => 1,
     builder => '_build_possible_imports',
 );

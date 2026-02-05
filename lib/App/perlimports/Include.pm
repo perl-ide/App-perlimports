@@ -176,7 +176,7 @@ sub _build_imports {
     my %found;
 
     # Stolen from Perl::Critic::Policy::TooMuchCode::ProhibitUnfoundImport
-    for my $word ( @{ $self->_document->possible_imports } ) {
+    for my $word ( $self->_document->possibly_imported_tokens ) {
         next if exists $found{"$word"};
 
         # stop if we've found everything that can be imported (every
