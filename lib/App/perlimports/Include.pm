@@ -617,6 +617,8 @@ sub _imports_remain {
     return keys %{$found} < $self->_explicit_export_count;
 }
 
+# takes a string 'use SomeModule ...', returns a PPI:Statement:Include
+# returns one made using the string, if its different, or else the original.
 sub _maybe_get_new_include {
     my $self      = shift;
     my $statement = shift;

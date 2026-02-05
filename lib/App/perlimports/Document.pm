@@ -939,6 +939,7 @@ INCLUDE:
         );
         my $elem;
         try {
+            # may return the original $include
             $elem = $e->formatted_ppi_statement;
         }
         catch {
@@ -977,6 +978,9 @@ INCLUDE:
                 next INCLUDE;
             }
         }
+
+        # if the 'new' statement is actually just the original, then skip.
+        next INCLUDE if $elem == $include;
 
         ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
         # Let's see if the import itself might break something
