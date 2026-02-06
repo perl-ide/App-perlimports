@@ -700,7 +700,7 @@ sub _is_already_imported {
         my @imports;
         if ( is_plain_arrayref( $self->_document->found_imports->{$module} ) )
         {
-            @imports = @{ $self->_document->found_imports->{$module} };
+            @imports = @{ $self->_document->found_imports_from($module) };
             $self->logger->debug(
                 'Explicit imports found: ' . Dumper( [ sort @imports ] ) );
         }

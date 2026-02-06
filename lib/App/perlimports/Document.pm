@@ -185,6 +185,7 @@ has found_imports => (
     handles_via => 'Hash',
     handles     => {
         _reset_found_import => 'set',
+        found_imports_from  => 'get',
     },
     lazy    => 1,
     builder => '_build_found_imports',
@@ -947,9 +948,8 @@ sub _has_import_switches {
     # We will leave this case as broken for the time being. I'm not sure how
     # common that invocation is.
 
-    if ( exists $self->found_imports->{$module_name}
-        && any { $_ =~ m{^[\-]} }
-        @{ $self->found_imports->{$module_name} || [] } ) {
+    my $imports = $self->found_imports_from($module_name);
+    if ( $imports && any { $_ =~ m{^[\-]} } @$imports ) {
         return 1;
     }
     return 0;
