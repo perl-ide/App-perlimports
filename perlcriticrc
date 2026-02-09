@@ -26,7 +26,7 @@ severity = 3
 [Documentation::RequirePackageMatchesPodName]
 severity = 3
 
-[Freenode::WhileDiamondDefaultAssignment]
+[Community::WhileDiamondDefaultAssignment]
 set_themes = core
 
 [InputOutput::RequireCheckedSyscalls]
