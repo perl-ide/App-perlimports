@@ -169,6 +169,14 @@ has lint => (
     default => 0,
 );
 
+# (lint mode only) whether to report on unknown functions
+has lint_unknowns => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
+);
+
 has my_own_inspector => (
     is      => 'ro',
     isa     => Maybe [ InstanceOf ['App::perlimports::ExportInspector'] ],
@@ -1270,10 +1278,10 @@ INCLUDE:
 
     $self->_maybe_cache_inspectors;
 
-    if ( $self->lint ) {
+    if ( $self->lint && $self->lint_unknowns ) {
         my @unknown = @{ $self->unknown_words };    # PPI:Token:Word
         if (@unknown) {
-            $linter_error = 1;    # if $self->_some_feature_enabled;
+            $linter_error = 1;
             $self->_warn_line_for_linter( 'Unknown function', $_ )
                 for @unknown;
         }
