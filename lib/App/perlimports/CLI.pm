@@ -181,6 +181,11 @@ sub _build_args {
         ],
         [],
         [
+            'lint-unknowns',
+            'When linting, report unknown functions.',
+        ],
+        [],
+        [
             'no-config-file',
             'Do not look for a perlimports config file.'
         ],
@@ -448,6 +453,7 @@ sub run {
         : (),
         json                => $self->_json,
         lint                => $self->_lint,
+        lint_unknowns       => $self->_opts->lint_unknowns,
         logger              => $logger,
         padding             => $self->_config->padding,
         preserve_duplicates => $self->_config->preserve_duplicates,
