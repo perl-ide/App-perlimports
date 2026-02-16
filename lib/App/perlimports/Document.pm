@@ -200,7 +200,7 @@ has _never_export_modules => (
 
 # catalog of symbols explicitly imported (by package), e.g.
 #  Carp => ['croak', ..], ...
-# in edit mode, this will be altered after processing (tidied_document)
+# will be altered while processing (linter_success or tidied_document)
 # to reflect what we think the import statement should be.
 has found_imports => (
     is          => 'ro',
@@ -678,10 +678,12 @@ sub _build_ppi_document {
 #     POSIX => [],
 # }
 #
-# In lint mode, it never changes.  In edit mode, it starts out as a list of
-# original imports, but with each include that gets processed, this list gets
-# updated. We do this so that we can keep track of what previous modules
-# are really importing, avoiding duplicate imports.
+# This attribute starts out as just what the source document says. Then,
+# when processing (lint or tidy) each include, if we change the imports in
+# the statement, then this list also gets updated.  We do this to keep track
+# of what previous modules are really importing, both to detect duplicate
+# imports (same symbol from different packages), and so that these
+# found symbols can be excluded from the list of unknown words.
 
 sub _build_found_imports {
     my $self = shift;
@@ -1252,6 +1254,16 @@ INCLUDE:
 
         $processed{ $include->module } = 1;
 
+        $self->logger->info("resetting imports as |$elem|");
+
+        # update found_imports attribute to reflect the changes we made.
+        # this ensures lint_unknowns doesn't report the newly-identified
+        # imports as unknown.
+        $self->_reset_found_import(
+            $include->module,
+            _imports_for_include($elem)
+        );
+
         if ( $self->lint ) {
             my $before = join q{ }, map { $_->content } $include->arguments;
             my $after  = join q{ }, map { $_->content } $elem->arguments;
@@ -1265,15 +1277,7 @@ INCLUDE:
                 );
                 $linter_error = 1;
             }
-            next INCLUDE;
         }
-
-        $self->logger->info("resetting imports for |$elem|");
-
-        $self->_reset_found_import(
-            $include->module,
-            _imports_for_include($elem)
-        );
     }
 
     $self->_maybe_cache_inspectors;
@@ -1559,12 +1563,11 @@ e.g.
 
   { Carp => ['croak', ..], ... }
 
-In lint mode, this attribute is never altered.
-
-In edit mode, when L<tidied_document> is called, with each include that gets
-processed, this list gets updated to what we think it should be.  We do this
-so that we can keep track of what previous modules are really importing, to
-avoid duplicate imports (same symbol name from different packages).
+When processing (lint or tidy) each include, this list gets updated to what
+we think it should be.  We do this so that we can keep track of what previous
+modules are really importing, to detect duplicate imports (same symbol name
+from different packages), and so these found symbols can be excluded
+from the list of unknown words.
 
 =item unknown_words
 
@@ -1577,9 +1580,10 @@ both common mistakes, and very useful to detect in lint mode.
 
 Only the first occurrence of each word is saved.
 
-Note: Because generating this list depends on the L<found_imports>,
-one should use L<linter_success> first to find all possible imports that
-were omitted first.
+Note: Because generating this list depends on the L<found_imports>, if you
+build this attribute before processing the document (e.g. L<linter_success>),
+it will include words that were identified as missing imports.  If you
+process first, it will exclude those.
 
 Note 2: There will sometimes be false positives, since Perl is a highly dynamic
 language, and the static analysis here cannot handle black magic of runtime
