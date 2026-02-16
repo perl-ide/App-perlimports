@@ -884,6 +884,21 @@ sub inspector_for {
     return $self->_get_inspector_for($module);
 }
 
+# given a PPI:Statement:Include that exists in the doc,
+# instantiate a App:perlimports:Include to process it.
+sub _include_analyzer {
+    my ( $self, $include ) = @_;
+
+    return my $e = App::perlimports::Include->new(
+        document        => $self,
+        include         => $include,
+        logger          => $self->logger,
+        found_imports   => $self->found_imports->{ $include->module },
+        pad_imports     => $self->_padding,
+        tidy_whitespace => $self->_tidy_whitespace,
+    );
+}
+
 sub tidied_document {
     return shift->_lint_or_tidy_document;
 }
@@ -929,16 +944,10 @@ INCLUDE:
 
         $self->logger->notice( '📦 ' . "Processing include: $include" );
 
-        my $e = App::perlimports::Include->new(
-            document        => $self,
-            include         => $include,
-            logger          => $self->logger,
-            found_imports   => $self->found_imports->{ $include->module },
-            pad_imports     => $self->_padding,
-            tidy_whitespace => $self->_tidy_whitespace,
-        );
+        my $e = $self->_include_analyzer($include);
         my $elem;
         try {
+            # may return the original include!
             $elem = $e->formatted_ppi_statement;
         }
         catch {
@@ -976,6 +985,12 @@ INCLUDE:
 
                 next INCLUDE;
             }
+        }
+
+        # if the 'new' statement is actually just the original, skip!
+        if ( $elem == $include ) {
+            $processed{ $include->module } = 1;
+            next INCLUDE;
         }
 
         ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
@@ -1018,23 +1033,10 @@ INCLUDE:
 
             $self->logger->info("resetting imports for |$elem|");
 
-            # Now reset found_imports so that we can account for any changes
-            # when processing includes further down the list.
-            my $doc = PPI::Document->new( \"$elem" );
-
-            if ( !$doc ) {
-                $self->logger->error("PPI could not parse $elem");
-            }
-            else {
-                my $new_include
-                    = $doc->find(
-                    sub { $_[1]->isa('PPI::Statement::Include') } );
-
-                $self->_reset_found_import(
-                    $include->module,
-                    _imports_for_include( $new_include->[0] )
-                );
-            }
+            $self->_reset_found_import(
+                $include->module,
+                _imports_for_include($elem)
+            );
         }
     }
 

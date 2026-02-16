@@ -53,7 +53,15 @@ lint_failure_exit_codes = 2
 
 [commands.perlcritic]
 type = "lint"
-include = [ "**/*.{pl,pm,t,psgi}" ]
+include = [ "**/*.{pl,pm,psgi}" ]
 cmd = [ "perlcritic", "--profile=$PRECIOUS_ROOT/perlcriticrc" ]
 ok_exit_codes = 0
 lint_failure_exit_codes = 2
+
+[commands.perlcritic-tests]
+type = "lint"
+include = [ "**/*.{t}" ]
+cmd = [ "perlcritic", "--profile=$PRECIOUS_ROOT/perlcriticrc", "--severity=3", "--theme=(core+pbp+bugs+maintenance+cosmetic+complexity+security+moose+tests) && !nontest" ]
+ok_exit_codes = 0
+lint_failure_exit_codes = 2
+

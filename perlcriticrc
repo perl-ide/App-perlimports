@@ -1,10 +1,17 @@
 severity = 3
 verbose = 11
 
-theme = core + pbp + bugs + maintenance + cosmetic + complexity + security + tests + moose
+# default set for non-test files:
+theme = (core + pbp + bugs + maintenance + cosmetic + complexity + security + moose)
+
+# for tests, we will use slightly different list:
+#theme = (core+pbp+bugs+maintenance+cosmetic+complexity+security+moose + tests) && !nontest
 
 program-extensions = pl psgi t
 
+# better syntax to disable a policy is prefixing with hyphen like:
+# [-Subroutines::ProhibitCallsToUndeclaredSubs]
+# but then perlcritic whines if you don't have it installed.
 exclude = Subroutines::ProhibitCallsToUndeclaredSubs
 
 [BuiltinFunctions::ProhibitStringySplit]
@@ -93,3 +100,16 @@ add_packages = Test::Builder
 
 # Too many false positives
 [-ValuesAndExpressions::ProhibitAccessOfPrivateData]
+
+
+# --- policies that should not be applied to tests:
+
+[Bangs::ProhibitNumberedNames]
+add_themes = nontest
+
+[Bangs::ProhibitDebuggingModules]
+add_themes = nontest
+
+#[Modules::RequireExplicitInclusion]
+#add_themes = nontest
+

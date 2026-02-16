@@ -4,6 +4,8 @@ use Moo;
 
 our $VERSION = '0.000059';
 
+## no critic (Bangs::ProhibitDebuggingModules)
+
 use Data::Dumper qw( Dumper );
 use List::Util   qw( any none uniq );
 use Memoize      qw( flush_cache memoize );
@@ -617,41 +619,48 @@ sub _imports_remain {
     return keys %{$found} < $self->_explicit_export_count;
 }
 
+# Takes a string 'use SomeModule ...', returns a PPI:Statement:Include.
+# The returned obj could be one made from the string, if its different from
+# the existing one, else it is just the original.
 sub _maybe_get_new_include {
     my $self      = shift;
     my $statement = shift;
-    my $doc       = PPI::Document->new( \$statement );
-    my $includes
-        = $doc->find( sub { $_[1]->isa('PPI::Statement::Include'); } );
-    my $rewrite = $includes->[0]->clone;
+    my $orig      = $self->_include;
+    return $orig if $statement eq $orig;    # quick exit
 
-    my $a = $self->_include . q{};
-    my $b = $rewrite . q{};
+    # Prefix newlines to reproduce original's location
+    ## no critic (BuiltinFunctions::ProhibitLvalueSubstr)
+    my $doc = do {
+        my $line = $orig->line_number || 1;
+        my $text = "\n" x $line;
+        substr( $text, -1 ) = $statement;
+        PPI::Document->new( \$text, filename => $orig->logical_filename );
+    };
+    ## use critic
 
-    # If the only difference is some whitespace before the quotes, we'll not
-    # alter the include. This reduces some of the churn. What we want to avoid
-    # is rewriting imports where the only change is to remove some whitespace
-    # padding which was specifically added by perltidy. If we keep removing
-    # changes made by perltidy this tool will be unfit to be used as a linter,
-    # because it will either force a tidy after every run or it will introduce
-    # tidying errors.
-    #
-    # So "use Foo     qw( bar );" should be considered equivalent to
-    #    "use Foo qw( bar );" because it might be in the context of
-    #
+    # Cloning is necessary because the tokens in the found statement belong
+    # to the document. When the document is destroyed, the tokens go with it.
+    # With the clone, the duplicated tokens are independent of the doc.
+    my $rewrite = do {
+        $doc->index_locations;
+        my $includes = $doc->find('Statement::Include');
+        $includes->[0]->clone;
+    };
+
+    # If the -only- difference is some whitespace before the symbol list, we
+    # keep the original statement. This is because perltidy often adds space
+    # to align successive import lists, and we don't want to fight. So:
     #    use AAAAAAA qw( thing );
-    #    use Foo     qw( bar );
-    #    use FFFFFFF qw( other );
-    #
-    #    If the existing include is something like
-    #    "use Foo    123 qw( foo );"
-    #    we should probably rewrite that since perltidy will likely rewrite
-    #    this to
-    #    "use Foo 123 qw( foo );"
+    #    use Foo     qw( bar );     <== leave this spacing alone
 
-    my $orig = $a;
-    if ( _respace_include($orig) eq $b ) {
-        return $self->_include;
+    # strip away extra spaces before the symbol list..
+    my $untidied_include = do {
+        my $string = "$orig";
+        $string =~ s{\s+(qw|\()}{ $1};
+        $string;
+    };
+    if ( "$rewrite" eq $untidied_include ) {
+        return $orig;
     }
 
     return $rewrite if $self->_tidy_whitespace;
@@ -659,20 +668,10 @@ sub _maybe_get_new_include {
     # We will return the rewritten include if a newline has been added or
     # removed. This is a formatting change that we *probably* want.
 
-    $a =~ s{\s}{}g;
-    $b =~ s{\s}{}g;
+    ( my $a = $orig . q{} )    =~ s{\s+}{}g;
+    ( my $b = $rewrite . q{} ) =~ s{\s+}{}g;
 
-    return ( $a eq $b ) ? $self->_include : $rewrite;
-}
-
-# This function takes the original include and strips away the extra spaces
-# which might have been added as formatting by perltidy. This makes it easier
-# to compare the old include with the new and decide if we really need to
-# replace it.
-sub _respace_include {
-    my $include = shift;
-    $include =~ s{\s+(qw|\()}{ $1};
-    return $include;
+    return ( $a eq $b ) ? $orig : $rewrite;
 }
 
 # If there's a different module in this document which has already imported
