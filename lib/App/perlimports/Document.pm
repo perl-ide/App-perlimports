@@ -1140,7 +1140,6 @@ sub linter_success {
 # Kind of on odd interface, but right now we return either a tidied document or
 # the result of linting. Could probably clean this up at some point, but I'm
 # not sure yet how much the linting will change.
-# N.B. In lint mode, we never modify the document.
 sub _lint_or_tidy_document {
     my $self = shift;
 
@@ -1237,37 +1236,38 @@ INCLUDE:
         }
         ## use critic
 
-        my $inserted = $include->replace($elem);
-        if ( !$inserted ) {
+        # here we modify the PPI document, making the 'found_imports' and
+        # 'includes' attributes "stale".
+        # $include is untouched, other than now having no parent.
+        unless ( $include->replace($elem) ) {
             $self->logger->error( 'Could not insert ' . $elem );
+            next INCLUDE;
         }
-        else {
-            $processed{ $include->module } = 1;
 
-            if ( $self->lint ) {
-                my $before = join q{ },
-                    map { $_->content } $include->arguments;
-                my $after = join q{ }, map { $_->content } $elem->arguments;
+        $processed{ $include->module } = 1;
 
-                if ( $before ne $after ) {
-                    $self->_warn_diff_for_linter(
-                        'import arguments need tidying',
-                        $include,
-                        $include->content,
-                        $elem->content
-                    );
-                    $linter_error = 1;
-                }
-                next INCLUDE;
+        if ( $self->lint ) {
+            my $before = join q{ }, map { $_->content } $include->arguments;
+            my $after  = join q{ }, map { $_->content } $elem->arguments;
+
+            if ( $before ne $after ) {
+                $self->_warn_diff_for_linter(
+                    'import arguments need tidying',
+                    $include,
+                    $include->content,
+                    $elem->content,
+                );
+                $linter_error = 1;
             }
-
-            $self->logger->info("resetting imports for |$elem|");
-
-            $self->_reset_found_import(
-                $include->module,
-                _imports_for_include($elem)
-            );
+            next INCLUDE;
         }
+
+        $self->logger->info("resetting imports for |$elem|");
+
+        $self->_reset_found_import(
+            $include->module,
+            _imports_for_include($elem)
+        );
     }
 
     $self->_maybe_cache_inspectors;
