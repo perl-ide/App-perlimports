@@ -229,6 +229,7 @@ has ppi_document => (
 
 # list of tokens in the document that -could- have come from an import
 # (but most are keywords, built-ins, lexical vars, defined funcs, etc.)
+# excludes constants, package names.
 has possible_imports => (
     is          => 'ro',
     isa         => ArrayRef [Object],    # isa PPI:Token:Word, :Symbol, :Magic
@@ -458,7 +459,8 @@ sub _build_constants {
         }
     }
 
-    $self->logger->debug("constants found: @{[sort keys %constant]}");
+    $self->logger->debug("constants found: @{[sort keys %constant]}")
+        if %constant;
 
     return \%constant;
 }
@@ -610,6 +612,8 @@ sub _build_possible_imports {
         next
             if $const{"$word"}
             && ( is_hash_key($word) || is_function_call($word) );
+
+        # NOTE: not yet tracking package scope (if file_scoped false)!
         next if $pack{"$word"} && is_class_name($word);   # class method calls
 
         push @after, $word;
@@ -1303,6 +1307,8 @@ INCLUDE:
 
 # given PPI:Element, returns hashref describing location, e.g.:
 #   {start => {line => 3, column => 4}, end => {...}}
+# NOTE: the "column" name is misleading: it is actually character number
+# (which is not the same if tabs or double-width chars are present)
 sub _elem_loc {
     my ($elem) = @_;
 
