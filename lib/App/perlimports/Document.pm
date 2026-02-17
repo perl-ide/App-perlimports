@@ -87,7 +87,8 @@ has includes => (
     isa         => ArrayRef [Object],    # PPI::Statement::Include
     handles_via => 'Array',
     handles     => {
-        all_includes => 'elements',
+        all_includes     => 'elements',
+        refresh_includes => 'reset',
     },
     lazy    => 1,
     builder => '_build_includes',
@@ -1146,7 +1147,8 @@ sub _lint_or_tidy_document {
     my $self = shift;
 
     my $linter_error = 0;
-    my %processed;    # modules we changed/confirmed the use statement
+    my %processed;         # modules we changed/confirmed the use statement
+    my $includes_stale;    # whether we edited any include statements
 
 INCLUDE:
     foreach my $include ( $self->all_includes ) {
@@ -1246,13 +1248,13 @@ INCLUDE:
             next INCLUDE;
         }
 
+        $includes_stale = 1;
         $processed{ $include->module } = 1;
 
         $self->logger->info("resetting imports as |$elem|");
 
-        # update found_imports attribute to reflect the changes we made.
-        # this ensures lint_unknowns doesn't report the newly-identified
-        # imports as unknown.
+        # updating 'found_imports' ensures lint_unknowns doesn't report the
+        # newly-identified imports as unknown.
         $self->_reset_found_import(
             $include->module,
             _imports_for_include($elem)
@@ -1273,6 +1275,9 @@ INCLUDE:
             }
         }
     }
+
+    # refresh stale attribute, just for consistency.
+    $self->refresh_includes if $includes_stale;
 
     $self->_maybe_cache_inspectors;
 
