@@ -1149,6 +1149,7 @@ sub linter_success {
 # Kind of on odd interface, but right now we return either a tidied document or
 # the result of linting. Could probably clean this up at some point, but I'm
 # not sure yet how much the linting will change.
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _lint_or_tidy_document {
     my $self = shift;
 
@@ -1300,6 +1301,7 @@ INCLUDE:
     # See https://metacpan.org/pod/PPI::Document#serialize
     return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
 }
+## use critic
 
 # given PPI:Element, returns hashref describing location, e.g.:
 #   {start => {line => 3, column => 4}, end => {...}}
