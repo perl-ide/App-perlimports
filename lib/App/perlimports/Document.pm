@@ -316,6 +316,10 @@ around BUILDARGS => sub {
         $args{ppi_selection} = PPI::Document->new( \$selection );
     }
 
+    if ( !exists $args{lint} ) {
+        $args{lint} = 1 if $args{lint_unknowns};
+    }
+
     return $class->$orig(%args);
 };
 
