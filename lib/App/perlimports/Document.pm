@@ -16,12 +16,15 @@ use MooX::StrictConstructor;
 use Path::Tiny                  qw( path );
 use PPI::Document               ();
 use PPIx::Utils::Classification qw(
+    is_class_name
     is_function_call
     is_hash_key
     is_method_call
+    is_package_declaration
 );
-use Ref::Util    qw( is_plain_arrayref is_plain_hashref );
-use Scalar::Util qw( refaddr );
+use PPIx::Utils::Traversal qw( split_nodes_on_comma );
+use Ref::Util              qw( is_plain_arrayref is_plain_hashref );
+use Scalar::Util           qw( refaddr );
 use Sub::HandlesVia;
 use Text::Diff      ();
 use Try::Tiny       qw( catch try );
@@ -86,6 +89,21 @@ has includes => (
     },
     lazy    => 1,
     builder => '_build_includes',
+);
+
+# constant subs defined using 'use constant'
+has constants => (
+    is          => 'ro',
+    isa         => HashRef,
+    handles_via => 'Hash',
+    handles     => {
+        is_constant_name => 'exists',
+        all_constants    => 'keys',
+        _set_constants   => 'set',
+    },
+    predicate => '_has_constants',
+    lazy      => 1,
+    builder   => '_build_constants',
 );
 
 has _inspectors => (
@@ -189,8 +207,12 @@ has ppi_document => (
 # list of tokens in the document that -could- have come from an import
 # (but most are keywords, built-ins, lexical vars, defined funcs, etc.)
 has possible_imports => (
-    is      => 'ro',
-    isa     => ArrayRef [Object],        # isa PPI:Token:Word, :Symbol, :Magic
+    is          => 'ro',
+    isa         => ArrayRef [Object],    # isa PPI:Token:Word, :Symbol, :Magic
+    handles_via => 'Array',
+    handles     => {
+        possibly_imported_tokens => 'elements',
+    },
     lazy    => 1,
     builder => '_build_possible_imports',
 );
@@ -389,6 +411,116 @@ sub _build_includes {
     ## use critic
 }
 
+sub _build_constants {
+    my $self = shift;
+    my %constant;
+
+    my $incs = $self->_ppi_selection->find(
+        sub {
+            $_[1]->isa('PPI::Statement::Include')
+                && $_[1]->module eq 'constant';
+        }
+    ) || [];
+
+    foreach my $inc (@$incs) {
+        next unless my @data = $self->_parse_constant($inc);
+
+        # N.B. we never alter 'use constant' imports
+        foreach my $data (@data) {
+            $constant{ $data->{name} } = $data;
+        }
+    }
+
+    $self->logger->debug("constants found: @{[sort keys %constant]}");
+
+    return \%constant;
+}
+
+# parse hashref into list of "values"; each an arrayref of tokens
+sub _parse_hashlist {
+    my ($elem) = @_;
+    return unless $elem->isa('PPI::Structure::Constructor');
+    my ($exp) = $elem->schildren;
+    return unless $exp->isa('PPI::Statement::Expression');
+    my @tokens = $exp->schildren;
+
+    # first and last commas are ignored, if no significant child exists beyond!
+    # interior serial commas are not handled properly: {a => 1, 'b', , 'c', 4}
+    return my @values = split_nodes_on_comma(@tokens);
+}
+
+# until we get a PPI::Statement::Include::Constant class
+## no critic (Subroutines::ProhibitExcessComplexity)
+sub _parse_constant {
+    my ( $self, $stm ) = @_;
+    return
+        unless $stm->isa('PPI::Statement::Include')
+        && $stm->module eq 'constant';
+
+    my ( $expected, @kv );
+
+    return unless my @args = $stm->arguments;
+    if ( @args > 1 ) {
+        my ( $word, $op, @defn ) = @args;
+
+        $expected = $op eq '=>' && $word->isa('PPI::Token::Word') && @defn;
+
+        $expected
+            ||= $word->isa('PPI::Token::Quote')
+            && ( $op eq ',' || $op eq '=>' )
+            && @defn;
+
+        @kv = ( $word, \@defn ) if $expected;
+
+    }
+    elsif ( my $first = $args[0] ) {    # @args == 1
+        if ( $first->isa('PPI::Structure::Constructor') ) {
+
+            # e.g.: use constant { FOO => 1, BAR => 3 };
+            # keys are arrayrefs, of (hopefully) a single token
+            @kv = _parse_hashlist($first);
+            $expected++;
+        }
+    }
+
+    if ( !$expected || !@kv || @kv % 2 ) {
+        $self->logger->error("failed to parse constant: $stm");
+        return;
+    }
+
+    my @constants;
+    while (@kv) {
+        my ( $word, $val ) = splice( @kv, 0, 2 );
+        if ( is_plain_arrayref($word) ) {
+            if ( @$word > 1 ) {
+                $self->logger->error("failed to parse constant: @$word");
+                next;
+            }
+            $word = $word->[0];
+        }
+
+        my $name = $word->isa('PPI::Token::Quote') ? $word->string : "$word";
+        my %data = (
+            token      => $word,
+            name       => $name,
+            definition => $val,
+        );
+
+        # position in file after which this function exists (compile time)
+        # TODO location data can become stale
+        if ( my $end = $stm->last_element ) { # likely PPI:Token:Structure ';'
+            my $loc = _elem_loc($end);
+            $data{end} = $loc->{end};
+        }
+
+        push @constants, \%data;
+    }
+
+    return @constants;
+}
+## use critic
+
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _build_possible_imports {
     my $self   = shift;
     my $before = $self->ppi_document->find(
@@ -399,6 +531,9 @@ sub _build_possible_imports {
                 || $_[1]->isa('PPI::Token::Prototype');
         }
     ) || [];
+
+    # remember referenced package namespaces and constants
+    my ( %pack, %const );
 
     my @after;
     for my $word ( @{$before} ) {
@@ -413,15 +548,55 @@ sub _build_possible_imports {
         # sub any {}
         next if $self->is_sub_name("$word");
 
+        # cant validate class/instance method names:
         next if !$word->isa('PPI::Token::Symbol') && is_method_call($word);
 
         next if $self->_is_word_interpreted_as_string($word);
 
+        next if is_package_declaration($word);
+
+        if ( my $stm = $word->statement ) {
+            my $first = $stm->schild(0);    # PPI:Element
+            if ( $stm->isa('PPI::Statement::Package') ) {
+                next if $word eq 'package' && $word == $first;
+
+            }
+            elsif ( $stm->isa('PPI::Statement::Include') ) {
+                if ( my $packname = $stm->module ) {
+                    $pack{$packname} ||= 1;    # even if its a pragma
+
+                    if ( $packname eq 'constant' ) {
+                        next unless my @data = $self->_parse_constant($stm);
+                        $const{ $_->{name} } ||= $_ for @data;
+                        next if any { $word == $_->{token} } @data;
+                    }
+
+                    my $package_bareword = $stm->schild(1);
+                    next if $word == $package_bareword;
+                }
+
+                next if $word eq 'use' && $word == $first;
+                next if $stm->pragma && $word eq 'no' && $word == $first;
+            }
+        }
+
+        next
+            if $const{"$word"}
+            && ( is_hash_key($word) || is_function_call($word) );
+        next if $pack{"$word"} && is_class_name($word);   # class method calls
+
         push @after, $word;
+    }
+
+    # safe to assume our search encountered every 'use constant' statement
+    if ( %const && !$self->_has_constants ) {
+        $self->_set_constants(%const);
+        $self->logger->debug("constants found: @{[sort keys %const]}");
     }
 
     return \@after;
 }
+## use critic
 
 sub _build_ppi_document {
     my $self = shift;
@@ -1047,6 +1222,24 @@ INCLUDE:
     return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
 }
 
+# given PPI:Element, returns hashref describing location, e.g.:
+#   {start => {line => 3, column => 4}, end => {...}}
+sub _elem_loc {
+    my ($elem) = @_;
+
+    my $loc     = { start => { line => $elem->line_number } };
+    my $content = $elem->content;
+    my @lines   = split( m{\n}, $content );
+
+    if ( $lines[0] =~ m{[^\s]} ) {
+        $loc->{start}->{column} = @-;
+    }
+    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
+    $loc->{end}->{column} = length( $lines[-1] );
+
+    return $loc;
+}
+
 sub _warn_diff_for_linter {
     my $self          = shift;
     my $reason        = shift;
@@ -1060,19 +1253,9 @@ sub _warn_diff_for_linter {
 
     if ( $self->json ) {
 
-        my $loc     = { start => { line => $include->line_number } };
-        my $content = $include->content;
-        my @lines   = split( m{\n}, $content );
-
-        if ( $lines[0] =~ m{[^\s]} ) {
-            $loc->{start}->{column} = @-;
-        }
-        $loc->{end}->{line}   = $include->line_number + @lines - 1;
-        $loc->{end}->{column} = length( $lines[-1] );
-
         $json = {
             filename => $self->_filename,
-            location => $loc,
+            location => _elem_loc($include),
             module   => $include->module,
             reason   => $reason,
         };
@@ -1221,6 +1404,33 @@ Returns a serialized PPI document with (hopefully) tidy import statements.
 =head1 ATTRIBUTES
 
 =over 4
+
+=item constants
+
+Hashref catalog of detected constants in the document. So the line:
+
+ use constant FIRST_IDX => 0;
+
+results in a corresponding entry in the constants hashref:
+
+ FIRST_IDX => {
+   name        => 'FIRST_IDX', # (plain string)
+   token       => 'FIRST_IDX', # (PPI::Token::Word usually)
+   definition  => [ PPI::Token.. ],
+   end         => { line => 9, column => 32 },
+ },
+
+The C<end> is the (line, character) position of the last character of the
+constant import statement.  This might be useful since the constant is only
+defined (at compile time!) after this statement.
+(Note: locations can become stale!)
+
+The C<name> field is useful when the constant was defined using atypical
+syntax (no fat arrow), since the token doesn't stringify the same:
+
+ use constant 'FIRST_IDX', 0;
+ # token eq "'FIRST_IDX'", # (PPI::Token::Quote::Single)
+ # name  eq 'FIRST_IDX',   # same as $token->string
 
 =item includes
 
