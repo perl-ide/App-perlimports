@@ -7,7 +7,7 @@ use lib 't/lib';
 
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc logger );
-use Test::More import => [qw( done_testing is is_deeply ok subtest )];
+use Test::More import => [qw( done_testing is is_deeply ok subtest $TODO )];
 
 =head1 DUPLICATE IMPORTS
 
@@ -86,6 +86,42 @@ EOF
         }, 'found_imports indicates the latter package';
 };
 
+subtest tidy_unused => sub {
+    my ($doc) = doc(
+        filename        => 'test-data/socket.pl',
+        preserve_unused => 0,
+    );
+
+    # without preserve-unused, at least one statement should be kept.
+    # perhaps we'd prefer the latter.  for example,
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Socket qw( SO_REUSEPORT SOL_SOCKET );
+
+foo( SO_REUSEPORT, SOL_SOCKET );
+sub foo { }
+EOF
+
+    TODO: {
+        local $TODO = 'fix duplicate imports';
+        eq_or_diff(
+            $doc->tidied_document,
+            $expected,
+            'One include statement was excised as unused',
+        );
+    }
+
+    # TODO: the found_imports value for the "unused" package should be the
+    # same as when the preserve_unused flag is true!
+    # e.g.: empty arrayref or undef. pick one and be consistent.
+    is_deeply $doc->found_imports, {
+            'IO::Socket::INET' => undef,
+            Socket             => [ qw( SO_REUSEPORT SOL_SOCKET ) ],
+        }, 'found_imports indicates the latter package';
+};
+
 subtest lint => sub {
     my @log;
     my $logger = logger( \@log, 'error' );
@@ -132,3 +168,4 @@ subtest lint => sub {
 };
 
 done_testing;
+
