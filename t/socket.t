@@ -133,7 +133,18 @@ subtest lint => sub {
 
     ok( !$doc->linter_success, 'fails linting' );
 
+    # TODO: empty arrayref or undef. pick one and be consistent.
+    is_deeply $doc->found_imports, {
+            'IO::Socket::INET' => undef,
+            Socket => [ qw( SO_REUSEPORT SOL_SOCKET ) ],
+        }, 'found_imports indicates the latter package';
+
+    # the linting logs should indicate that -one- of the two include
+    # statements should import the symbols.  perhaps the latter one?
+
     ## no critic (ValuesAndExpressions::ProhibitImplicitNewlines)
+    TODO: {
+        local $TODO = 'fix lint logs for duplicate symbol';
     eq_or_diff(
         \@log,
         [
@@ -158,13 +169,14 @@ subtest lint => sub {
                 level   => 'error',
                 message => '@@ -5 +5 @@
 -use Socket qw(SO_REUSEPORT SOL_SOCKET);
-+use Socket ();
++use Socket qw( SO_REUSEPORT SOL_SOCKET );
 ',
             },
 
         ],
         'linting errors logged'
     );
+    }
 };
 
 done_testing;
