@@ -137,7 +137,7 @@ subtest lint => sub {
 
     # TODO: empty arrayref or undef. pick one and be consistent.
     is_deeply $doc->found_imports, {
-        'IO::Socket::INET' => undef,
+        'IO::Socket::INET' => [],
         Socket             => [qw( SO_REUSEPORT SOL_SOCKET )],
         },
         'found_imports indicates the latter package';
@@ -146,8 +146,6 @@ subtest lint => sub {
     # statements should import the symbols.  perhaps the latter one?
 
     ## no critic (ValuesAndExpressions::ProhibitImplicitNewlines)
-    TODO: {
-        local $TODO = 'fix lint logs for duplicate symbol';
     eq_or_diff(
         \@log,
         [
@@ -179,7 +177,6 @@ subtest lint => sub {
         ],
         'linting errors logged'
     );
-    }
 };
 
 done_testing;
