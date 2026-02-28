@@ -1312,15 +1312,32 @@ INCLUDE:
 sub _elem_loc {
     my ($elem) = @_;
 
-    my $loc     = { start => { line => $elem->line_number } };
-    my $content = $elem->content;
-    my @lines   = split( m{\n}, $content );
+    my $loc = {
+        start => {
+            line   => $elem->line_number,
+            column => $elem->column_number,
+        }
+    };
 
-    if ( $lines[0] =~ m{[^\s]} ) {
-        $loc->{start}->{column} = @-;
+    # note: PPI::Statement::Null exists (content '')
+    my $content = $elem->content;
+
+    # handle PPI::Token::HereDoc with content of e.g. '<<TERM'
+    # heredoc lines end with newline, content and terminator do not
+    if ( ref $elem eq 'PPI::Token::HereDoc' ) {
+        $content .= join '', "\n", $elem->heredoc, $elem->terminator;
     }
-    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
-    $loc->{end}->{column} = length( $lines[-1] );
+
+    my @lines  = split( m{\n}, $content );
+    my $length = length( @lines ? $lines[-1] : $content );
+
+    $loc->{end}{line} = $elem->line_number + @lines - 1;
+    if ( @lines == 1 ) {
+        $loc->{end}{column} = $elem->column_number - 1 + $length;
+    }
+    else {
+        $loc->{end}{column} = $length;
+    }
 
     return $loc;
 }
