@@ -1318,15 +1318,23 @@ INCLUDE:
 sub _elem_loc {
     my ($elem) = @_;
 
-    my $loc     = { start => { line => $elem->line_number } };
+    my $loc = {
+        start => {
+            line   => $elem->line_number,
+            column => $elem->column_number,
+        }
+    };
     my $content = $elem->content;
     my @lines   = split( m{\n}, $content );
+    my $length  = length( $lines[-1] );
 
-    if ( $lines[0] =~ m{[^\s]} ) {
-        $loc->{start}->{column} = @-;
+    $loc->{end}{line} = $elem->line_number + @lines - 1;
+    if ( @lines == 1 ) {
+        $loc->{end}{column} = $elem->column_number - 1 + $length;
     }
-    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
-    $loc->{end}->{column} = length( $lines[-1] );
+    else {
+        $loc->{end}{column} = $length;
+    }
 
     return $loc;
 }
