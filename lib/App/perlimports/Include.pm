@@ -630,9 +630,12 @@ sub _maybe_get_new_include {
 
     # Prefix newlines to reproduce original's location
     ## no critic (BuiltinFunctions::ProhibitLvalueSubstr)
-    my $doc = do {
-        my $line = $orig->line_number || 1;
+    ## no critic (ControlStructures::ProhibitNegativeExpressionsInUnlessAndUntilConditions)
+    return $orig unless my $doc = do {
+        my $line = $orig->line_number   || 1;
+        my $pos  = $orig->column_number || 1;
         my $text = "\n" x $line;
+        substr( $text, -1 ) = q{ } x $pos if $pos > 1;
         substr( $text, -1 ) = $statement;
         PPI::Document->new( \$text, filename => $orig->logical_filename );
     };
@@ -641,10 +644,10 @@ sub _maybe_get_new_include {
     # Cloning is necessary because the tokens in the found statement belong
     # to the document. When the document is destroyed, the tokens go with it.
     # With the clone, the duplicated tokens are independent of the doc.
-    my $rewrite = do {
+    return $orig unless my $rewrite = do {
         $doc->index_locations;
         my $includes = $doc->find('Statement::Include');
-        $includes->[0]->clone;
+        $includes && @$includes && $includes->[0]->clone;
     };
 
     # If the -only- difference is some whitespace before the symbol list, we
