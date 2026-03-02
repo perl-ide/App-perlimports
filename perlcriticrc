@@ -104,6 +104,9 @@ add_packages = Test::Builder
 
 # --- policies that should not be applied to tests:
 
+[Subroutines::ProtectPrivateSubs]
+add_themes = nontest
+
 [Bangs::ProhibitNumberedNames]
 add_themes = nontest
 
