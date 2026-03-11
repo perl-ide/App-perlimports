@@ -21,6 +21,10 @@ use PPIx::Utils::Classification qw(
     is_hash_key
     is_method_call
     is_package_declaration
+    is_perl_bareword
+    is_perl_builtin
+    is_perl_filehandle
+    is_qualified_name
 );
 use PPIx::Utils::Traversal qw( split_nodes_on_comma );
 use Ref::Util              qw( is_plain_arrayref is_plain_hashref );
@@ -85,7 +89,8 @@ has includes => (
     isa         => ArrayRef [Object],    # PPI::Statement::Include
     handles_via => 'Array',
     handles     => {
-        all_includes => 'elements',
+        all_includes     => 'elements',
+        refresh_includes => 'reset',
     },
     lazy    => 1,
     builder => '_build_includes',
@@ -104,6 +109,17 @@ has constants => (
     predicate => '_has_constants',
     lazy      => 1,
     builder   => '_build_constants',
+);
+
+has unknown_words => (
+    is          => 'ro',
+    isa         => ArrayRef [Object],    # PPI::Token::Word
+    handles_via => 'Array',
+    handles     => {
+        all_unknowns => 'elements',
+    },
+    lazy    => 1,
+    builder => '_build_unknowns',
 );
 
 has _inspectors => (
@@ -154,6 +170,14 @@ has lint => (
     default => 0,
 );
 
+# (lint mode only) whether to report on unknown functions
+has lint_unknowns => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
+);
+
 has my_own_inspector => (
     is      => 'ro',
     isa     => Maybe [ InstanceOf ['App::perlimports::ExportInspector'] ],
@@ -177,7 +201,7 @@ has _never_export_modules => (
 
 # catalog of symbols explicitly imported (by package), e.g.
 #  Carp => ['croak', ..], ...
-# in edit mode, this will be altered after processing (tidied_document)
+# will be altered while processing (linter_success or tidied_document)
 # to reflect what we think the import statement should be.
 has found_imports => (
     is          => 'ro',
@@ -185,6 +209,7 @@ has found_imports => (
     handles_via => 'Hash',
     handles     => {
         _reset_found_import => 'set',
+        found_imports_from  => 'get',
     },
     lazy    => 1,
     builder => '_build_found_imports',
@@ -206,6 +231,7 @@ has ppi_document => (
 
 # list of tokens in the document that -could- have come from an import
 # (but most are keywords, built-ins, lexical vars, defined funcs, etc.)
+# excludes constants, package names.
 has possible_imports => (
     is          => 'ro',
     isa         => ArrayRef [Object],    # isa PPI:Token:Word, :Symbol, :Magic
@@ -289,6 +315,10 @@ around BUILDARGS => sub {
 
     if ( my $selection = delete $args{selection} ) {
         $args{ppi_selection} = PPI::Document->new( \$selection );
+    }
+
+    if ( !exists $args{lint} ) {
+        $args{lint} = 1 if $args{lint_unknowns};
     }
 
     return $class->$orig(%args);
@@ -431,7 +461,8 @@ sub _build_constants {
         }
     }
 
-    $self->logger->debug("constants found: @{[sort keys %constant]}");
+    $self->logger->debug("constants found: @{[sort keys %constant]}")
+        if %constant;
 
     return \%constant;
 }
@@ -583,6 +614,8 @@ sub _build_possible_imports {
         next
             if $const{"$word"}
             && ( is_hash_key($word) || is_function_call($word) );
+
+        # NOTE: not yet tracking package scope (if file_scoped false)!
         next if $pack{"$word"} && is_class_name($word);   # class method calls
 
         push @after, $word;
@@ -597,6 +630,44 @@ sub _build_possible_imports {
     return \@after;
 }
 ## use critic
+
+# array of PPI::Token::Word that are not known to be defined.
+# not every unknown word, just the first occurrence of each.
+sub _build_unknowns {
+    my $self = shift;
+    my %unknown;
+
+    my $imports = $self->found_imports;
+    my %imported_symbol;    # invert the found_imports hash
+    foreach my $pkg ( keys %$imports ) {
+        next unless my $foundlist = $self->found_imports_from($pkg);
+        $imported_symbol{$_} = $pkg for @$foundlist;
+    }
+
+    # method calls and known package name used in class-method call
+    # were already excluded.
+
+    # we're looking only for undefined functions
+    foreach my $word ( $self->possibly_imported_tokens ) {    # PPI:Element
+        next unless $word->isa('PPI::Token::Word');
+
+        next
+            if is_perl_bareword($word)
+            || is_perl_builtin($word)
+            || is_perl_filehandle($word);
+
+        if ( is_function_call($word) ) {
+            next
+                if $imported_symbol{"$word"}
+                || is_qualified_name($word)
+                || $self->is_constant_name("$word");
+        }
+
+        $unknown{"$word"} ||= $word;
+    }
+    my @sorted = sort { "$a" cmp "$b" } values %unknown;
+    return \@sorted;
+}
 
 sub _build_ppi_document {
     my $self = shift;
@@ -616,10 +687,12 @@ sub _build_ppi_document {
 #     POSIX => [],
 # }
 #
-# In lint mode, it never changes.  In edit mode, it starts out as a list of
-# original imports, but with each include that gets processed, this list gets
-# updated. We do this so that we can keep track of what previous modules
-# are really importing, avoiding duplicate imports.
+# This attribute starts out as just what the source document says. Then,
+# when processing (lint or tidy) each include, if we change the imports in
+# the statement, then this list also gets updated.  We do this to keep track
+# of what previous modules are really importing, both to detect duplicate
+# imports (same symbol from different packages), and so that these
+# found symbols can be excluded from the list of unknown words.
 
 sub _build_found_imports {
     my $self = shift;
@@ -947,9 +1020,8 @@ sub _has_import_switches {
     # We will leave this case as broken for the time being. I'm not sure how
     # common that invocation is.
 
-    if ( exists $self->found_imports->{$module_name}
-        && any { $_ =~ m{^[\-]} }
-        @{ $self->found_imports->{$module_name} || [] } ) {
+    my $imports = $self->found_imports_from($module_name);
+    if ( $imports && any { $_ =~ m{^[\-]} } @$imports ) {
         return 1;
     }
     return 0;
@@ -1085,12 +1157,13 @@ sub linter_success {
 # Kind of on odd interface, but right now we return either a tidied document or
 # the result of linting. Could probably clean this up at some point, but I'm
 # not sure yet how much the linting will change.
-# N.B. In lint mode, we never modify the document.
+## no critic (Subroutines::ProhibitExcessComplexity)
 sub _lint_or_tidy_document {
     my $self = shift;
 
     my $linter_error = 0;
-    my %processed;    # modules we changed/confirmed the use statement
+    my %processed;         # modules we changed/confirmed the use statement
+    my $includes_stale;    # whether we edited any include statements
 
 INCLUDE:
     foreach my $include ( $self->all_includes ) {
@@ -1182,62 +1255,133 @@ INCLUDE:
         }
         ## use critic
 
-        my $inserted = $include->replace($elem);
-        if ( !$inserted ) {
+        # here we modify the PPI document, making the 'found_imports' and
+        # 'includes' attributes "stale".
+        # $include is untouched, other than now having no parent.
+        unless ( $include->replace($elem) ) {
             $self->logger->error( 'Could not insert ' . $elem );
+            next INCLUDE;
         }
-        else {
-            $processed{ $include->module } = 1;
 
-            if ( $self->lint ) {
-                my $before = join q{ },
-                    map { $_->content } $include->arguments;
-                my $after = join q{ }, map { $_->content } $elem->arguments;
+        $includes_stale = 1;
+        $processed{ $include->module } = 1;
 
-                if ( $before ne $after ) {
-                    $self->_warn_diff_for_linter(
-                        'import arguments need tidying',
-                        $include,
-                        $include->content,
-                        $elem->content
-                    );
-                    $linter_error = 1;
-                }
-                next INCLUDE;
+        $self->logger->info("resetting imports as |$elem|");
+
+        # updating 'found_imports' ensures lint_unknowns doesn't report the
+        # newly-identified imports as unknown.
+        $self->_reset_found_import(
+            $include->module,
+            _imports_for_include($elem)
+        );
+
+        if ( $self->lint ) {
+            my $before = join q{ }, map { $_->content } $include->arguments;
+            my $after  = join q{ }, map { $_->content } $elem->arguments;
+
+            if ( $before ne $after ) {
+                $self->_warn_diff_for_linter(
+                    'import arguments need tidying',
+                    $include,
+                    $include->content,
+                    $elem->content,
+                );
+                $linter_error = 1;
             }
-
-            $self->logger->info("resetting imports for |$elem|");
-
-            $self->_reset_found_import(
-                $include->module,
-                _imports_for_include($elem)
-            );
         }
     }
 
+    # refresh stale attribute, just for consistency.
+    $self->refresh_includes if $includes_stale;
+
     $self->_maybe_cache_inspectors;
+
+    if ( $self->lint && $self->lint_unknowns ) {
+        my @unknown = @{ $self->unknown_words };    # PPI:Token:Word
+        if (@unknown) {
+            $linter_error = 1;
+            $self->_warn_line_for_linter( 'Unknown function', $_ )
+                for @unknown;
+        }
+    }
 
     # We need to do serialize in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
     return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
 }
+## use critic
 
 # given PPI:Element, returns hashref describing location, e.g.:
 #   {start => {line => 3, column => 4}, end => {...}}
+# NOTE: the "column" name is misleading: it is actually character number
+# (which is not the same if tabs or double-width chars are present)
 sub _elem_loc {
     my ($elem) = @_;
 
-    my $loc     = { start => { line => $elem->line_number } };
+    my $loc = {
+        start => {
+            line   => $elem->line_number,
+            column => $elem->column_number,
+        }
+    };
     my $content = $elem->content;
     my @lines   = split( m{\n}, $content );
+    my $length  = length( $lines[-1] );
 
-    if ( $lines[0] =~ m{[^\s]} ) {
-        $loc->{start}->{column} = @-;
+    $loc->{end}{line} = $elem->line_number + @lines - 1;
+    if ( @lines == 1 ) {
+        $loc->{end}{column} = $elem->column_number - 1 + $length;
     }
-    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
-    $loc->{end}->{column} = length( $lines[-1] );
+    else {
+        $loc->{end}{column} = $length;
+    }
 
     return $loc;
+}
+
+sub _line_count {
+    my ($self) = @_;
+    my $doc    = $self->ppi_document;
+    my $number = $doc->last_token && $doc->last_token->line_number;
+    return my $line_count = $number || 1 + $doc->content =~ tr/\n//;
+}
+
+sub _warn_line_for_linter {
+    my ( $self, $reason, $elem ) = @_;
+
+    my $name
+        = $elem->isa('PPI::Token::Quote') ? $elem->string
+        : $elem->isa('PPI::Token::Word')  ? $elem->content
+        :                                   q{};
+    my $stm = $elem->statement;
+
+    if ( $self->json ) {
+
+        my $json = {
+            filename => $self->_filename,
+            location => _elem_loc($elem),
+            reason   => $reason,
+            ( name      => $name ) x !!$name,
+            ( statement => $stm->content ) x !!$stm,
+        };
+        $self->logger->error( $self->_json_encoder->encode($json) );
+    }
+    else {
+
+        my $justification = sprintf(
+            '❌ %s (%s) at %s line %i',
+            $reason, $name, $self->_filename, $elem->line_number
+        );
+        $self->logger->error($justification);
+        if ($stm) {
+            my $wid  = length( $self->_line_count );
+            my $line = sprintf(
+                " %${wid}u %s\n", $stm->line_number,
+                $stm->content
+            );
+            $self->logger->error($line);
+        }
+    }
 }
 
 sub _warn_diff_for_linter {
@@ -1444,12 +1588,31 @@ e.g.
 
   { Carp => ['croak', ..], ... }
 
-In lint mode, this attribute is never altered.
+When processing (lint or tidy) each include, this list gets updated to what
+we think it should be.  We do this so that we can keep track of what previous
+modules are really importing, to detect duplicate imports (same symbol name
+from different packages), and so these found symbols can be excluded
+from the list of unknown words.
 
-In edit mode, when L<tidied_document> is called, with each include that gets
-processed, this list gets updated to what we think it should be.  We do this
-so that we can keep track of what previous modules are really importing, to
-avoid duplicate imports (same symbol name from different packages).
+=item unknown_words
+
+An arrayref of L<PPI::Token::Word>'s (in alphabetic order) found in the
+document which do not seem to be defined anywhere.
+
+These would include functions that are not from any package mentioned in the
+document (so, a forgotten dependency), or misspelled (or typo) function names,
+both common mistakes, and very useful to detect in lint mode.
+
+Only the first occurrence of each word is saved.
+
+Note: Because generating this list depends on the L<found_imports>, if you
+build this attribute before processing the document (e.g. L<linter_success>),
+it will include words that were identified as missing imports.  If you
+process first, it will exclude those.
+
+Note 2: There will sometimes be false positives, since Perl is a highly dynamic
+language, and the static analysis here cannot handle black magic of runtime
+code-generation.  Only useful 95% of the time!
 
 =back
 

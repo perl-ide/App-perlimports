@@ -1,6 +1,15 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - New: option --lint-unknowns will warn you about unknown functions
+      (GH#137) (pyrrhlin)
+    - recognize and parse constant definitions (GH#141) (pyrrhlin)
+    - Rename poorly named attribute "original_imports" (GH#140) (pyrrhlin)
+    - Fix: minor bug that could cause an imported symbol to appear twice
+      (GH#139) (pyrrhlin)
+    - several performance enhancements (GH#138, GH#143) (pyrrhlin)
+    - tests for bad handling of duplicate imports (GH#145) (pyrrhlin)
+    - build test tweaks (differentiate perlcritic policies for tests)
 
 0.000058  2025-10-28 17:06:33Z
     - Fix: Recognize function references (\&Module::func) as valid module usage

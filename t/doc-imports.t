@@ -6,7 +6,9 @@ use warnings;
 use lib 'test-data/lib', 't/lib';
 
 use App::perlimports::Document ();
+use PPI::Document              ();
 use TestHelper                 qw( logger );
+use Test::Differences          qw( eq_or_diff );
 use Test::More import => [qw( done_testing is is_deeply subtest )];
 
 subtest 'linting doesnt change found_imports' => sub {
@@ -31,8 +33,8 @@ subtest 'linting doesnt change found_imports' => sub {
         = grep { $_->{message} =~ /import arguments need tidying/ } @log;
     is $found, 2, 'log indicates Carp imports need fixing';
 
-    is_deeply $doc->found_imports, $original_imports,
-        'but doc found_imports unchanged in lint mode';
+    eq_or_diff $doc->found_imports, { Carp => ['croak'] },
+        'and doc found_imports changed in lint mode';
 };
 
 subtest 'found_imports edited' => sub {
@@ -54,7 +56,7 @@ subtest 'found_imports edited' => sub {
     my $clean_source = $doc->tidied_document;
 
     my $found
-        = grep { $_->{message} =~ /resetting imports for .use Carp/ } @log;
+        = grep { $_->{message} =~ /resetting imports as .use Carp/ } @log;
     is $found, 2, 'log indicates Carp import was fixed';
 
     is_deeply $doc->found_imports, $clean_imports,

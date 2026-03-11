@@ -181,6 +181,11 @@ sub _build_args {
         ],
         [],
         [
+            'lint-unknowns',
+            'Act as a linter, and report unknown functions.',
+        ],
+        [],
+        [
             'no-config-file',
             'Do not look for a perlimports config file.'
         ],
@@ -407,7 +412,9 @@ sub run {
         return 1;
     }
 
-    if ( $self->_lint && $self->_inplace_edit ) {
+    my $lintmode = $self->_lint || $self->_opts->lint_unknowns;
+
+    if ( $lintmode && $self->_inplace_edit ) {
         $logger->error('Cannot lint if inplace edit has been enabled');
         return 1;
     }
@@ -447,7 +454,8 @@ sub run {
         ? ( never_export_modules => $self->_config->never_export )
         : (),
         json                => $self->_json,
-        lint                => $self->_lint,
+        lint                => $lintmode,
+        lint_unknowns       => $self->_opts->lint_unknowns,
         logger              => $logger,
         padding             => $self->_config->padding,
         preserve_duplicates => $self->_config->preserve_duplicates,
@@ -476,7 +484,7 @@ FILENAME:
         # piped back into vim.
         my ( $stdout, $tidied, $linter_success );
 
-        if ( $self->_lint ) {
+        if ($lintmode) {
             ( $stdout, $linter_success ) = capture_stdout(
                 sub {
                     return $pi_doc->linter_success;

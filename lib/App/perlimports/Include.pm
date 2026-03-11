@@ -631,8 +631,10 @@ sub _maybe_get_new_include {
     # Prefix newlines to reproduce original's location
     ## no critic (BuiltinFunctions::ProhibitLvalueSubstr)
     my $doc = do {
-        my $line = $orig->line_number || 1;
+        my $line = $orig->line_number   || 1;
+        my $pos  = $orig->column_number || 1;
         my $text = "\n" x $line;
+        substr( $text, -1 ) = q{ } x $pos if $pos > 1;
         substr( $text, -1 ) = $statement;
         PPI::Document->new( \$text, filename => $orig->logical_filename );
     };
@@ -700,7 +702,7 @@ sub _is_already_imported {
         my @imports;
         if ( is_plain_arrayref( $self->_document->found_imports->{$module} ) )
         {
-            @imports = @{ $self->_document->found_imports->{$module} };
+            @imports = @{ $self->_document->found_imports_from($module) };
             $self->logger->debug(
                 'Explicit imports found: ' . Dumper( [ sort @imports ] ) );
         }
