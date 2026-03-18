@@ -186,6 +186,11 @@ sub _build_args {
         ],
         [],
         [
+            'pad-brackets!',
+            'Pad square brackets in import lists: [ qw( foo ) ] vs [qw( foo )]. Defaults to false',
+        ],
+        [],
+        [
             'padding!',
             'Pad imports: qw( foo bar ) vs qw(foo bar). Defaults to true',
         ],
@@ -265,6 +270,7 @@ sub _build_config {
         log_filename
         log_level
         never_export_modules_filename
+        pad_brackets
         padding
         preserve_duplicates
         preserve_unused
@@ -449,6 +455,7 @@ sub run {
         json                => $self->_json,
         lint                => $self->_lint,
         logger              => $logger,
+        pad_brackets        => $self->_config->pad_brackets,
         padding             => $self->_config->padding,
         preserve_duplicates => $self->_config->preserve_duplicates,
         preserve_unused     => $self->_config->preserve_unused,

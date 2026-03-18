@@ -43,6 +43,7 @@ subtest 'defaults' => sub {
     ok( $config->preserve_duplicates, 'preserve_duplicates on' );
     ok( $config->preserve_unused,     'preserve_unused on' );
     ok( $config->tidy_whitespace,     'tidy_whitespace on' );
+    ok( !$config->pad_brackets,       'pad_brackets off by default' );
 };
 
 done_testing;

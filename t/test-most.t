@@ -24,7 +24,7 @@ for my $module ( keys %modules ) {
 
         is(
             $doc->tidied_document,
-            "use $module import => [ qw( done_testing ) ];",
+            "use $module import => [qw( done_testing )];",
             'tidied document'
         );
     };

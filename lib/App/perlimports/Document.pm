@@ -190,6 +190,13 @@ has found_imports => (
     builder => '_build_found_imports',
 );
 
+has _pad_brackets => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'pad_brackets',
+    default  => 0,
+);
+
 has _padding => (
     is       => 'ro',
     isa      => Bool,
@@ -1069,6 +1076,7 @@ sub _include_analyzer {
         include         => $include,
         logger          => $self->logger,
         found_imports   => $self->found_imports->{ $include->module },
+        pad_brackets    => $self->_pad_brackets,
         pad_imports     => $self->_padding,
         tidy_whitespace => $self->_tidy_whitespace,
     );

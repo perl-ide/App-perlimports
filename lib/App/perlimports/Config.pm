@@ -7,7 +7,7 @@ our $VERSION = '0.000059';
 
 use List::Util      qw( uniq );
 use Path::Tiny      qw( path );
-use Types::Standard qw( ArrayRef Bool InstanceOf Str );
+use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Str );
 
 has cache => (
     is      => 'ro',
@@ -102,6 +102,29 @@ has never_export => (
     isa     => ArrayRef,
     lazy    => 1,
     builder => '_build_never_export',
+);
+
+has _perltidy_options => (
+    is      => 'ro',
+    isa     => HashRef,
+    lazy    => 1,
+    default => sub {
+        require Perl::Tidy;    ## no perlimports
+        my %opts;
+        Perl::Tidy::perltidy(
+            dump_options      => \%opts,
+            dump_options_type => 'full',
+            argv              => q{},
+        );
+        return \%opts;
+    },
+);
+
+has pad_brackets => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
 );
 
 has padding => (
@@ -226,6 +249,7 @@ log_filename                    = ""
 log_level                       = "warn"
 never_export_modules            = []
 never_export_modules_filename   = ""
+pad_brackets                    = false
 padding                         = true
 preserve_duplicates             = false
 preserve_unused                 = false

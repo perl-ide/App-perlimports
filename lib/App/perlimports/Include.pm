@@ -125,6 +125,13 @@ has _found_imports => (
     },
 );
 
+has _pad_brackets => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'pad_brackets',
+    default  => 0,
+);
+
 has _pad_imports => (
     is       => 'ro',
     isa      => Bool,
@@ -568,18 +575,20 @@ sub _build_formatted_ppi_statement {
 
         # save ~60ms in cases where we don't need Perl::Tidy
         require Perl::Tidy;    ## no perlimports
+        my $sbt = $self->_pad_brackets ? 0 : 1;
         Perl::Tidy::perltidy(
-            argv        => '-npro',
+            argv        => "-npro -sbt=$sbt",
             source      => \$statement,
             destination => \$statement
         );
     }
 
     else {
-        my $padding = $self->_pad_imports ? q{ } : q{};
+        my $padding = $self->_pad_imports  ? q{ } : q{};
+        my $bp      = $self->_pad_brackets ? q{ } : q{};
         my $template
             = $self->_isa_test_builder_module
-            ? 'use %s%s import => [ qw(%s%s%s) ];'
+            ? "use %s%s import => [${bp}qw(%s%s%s)${bp}];"
             : 'use %s%s qw(%s%s%s);';
 
         $statement = sprintf(
