@@ -15,7 +15,7 @@ use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
 use Ref::Util                   qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
 use Try::Tiny       qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Int Maybe Object Str);
 
 with 'App::perlimports::Role::Logger';
 
@@ -123,6 +123,13 @@ has _found_imports => (
         _all_found_imports => 'elements',
         _has_found_imports => 'count',
     },
+);
+
+has _indent => (
+    is       => 'ro',
+    isa      => Int,
+    init_arg => 'indent',
+    default  => 4,
 );
 
 has _pad_brackets => (
@@ -611,8 +618,9 @@ sub _build_formatted_ppi_statement {
             $self->module_name,
             $maybe_module_version,
         );
+        my $indent = q{ } x $self->_indent;
         for ( @{ $self->_imports } ) {
-            $statement .= "    $_\n";
+            $statement .= "$indent$_\n";
         }
         $statement .= ');';
     }

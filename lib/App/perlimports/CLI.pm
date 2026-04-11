@@ -186,6 +186,11 @@ sub _build_args {
         ],
         [],
         [
+            'indent=i',
+            'Indent for multiline qw() lists. Default: perltidy -i value',
+        ],
+        [],
+        [
             'pad-brackets!',
             'Pad square brackets in import lists: [ qw( foo ) ] vs [qw( foo )]. Defaults to false',
         ],
@@ -267,6 +272,7 @@ sub _build_config {
         cache
         ignore_modules_filename
         ignore_modules_pattern
+        indent
         log_filename
         log_level
         never_export_modules_filename
@@ -452,6 +458,7 @@ sub run {
         @{ $self->_config->never_export }
         ? ( never_export_modules => $self->_config->never_export )
         : (),
+        indent              => $self->_config->indent,
         json                => $self->_json,
         lint                => $self->_lint,
         logger              => $logger,

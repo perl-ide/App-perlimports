@@ -7,7 +7,7 @@ our $VERSION = '0.000059';
 
 use List::Util      qw( uniq );
 use Path::Tiny      qw( path );
-use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Str );
+use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Int Str );
 
 has cache => (
     is      => 'ro',
@@ -117,6 +117,15 @@ has _perltidy_options => (
             argv              => q{},
         );
         return \%opts;
+    },
+);
+
+has indent => (
+    is      => 'ro',
+    isa     => Int,
+    lazy    => 1,
+    default => sub {
+        return $_[0]->_perltidy_options->{'indent-columns'} // 4;
     },
 );
 
@@ -244,6 +253,7 @@ ignore_modules                  = []
 ignore_modules_filename         = ""
 ignore_modules_pattern          = "" # regex like "^(Foo|Foo::Bar)"
 ignore_modules_pattern_filename = ""
+# indent                        = 4     # default: perltidy -i
 libs                            = ["lib", "t/lib"]
 log_filename                    = ""
 log_level                       = "warn"

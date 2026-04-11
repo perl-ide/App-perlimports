@@ -26,9 +26,10 @@ use PPIx::Utils::Traversal qw( split_nodes_on_comma );
 use Ref::Util              qw( is_plain_arrayref is_plain_hashref );
 use Scalar::Util           qw( refaddr );
 use Sub::HandlesVia;
-use Text::Diff      ();
-use Try::Tiny       qw( catch try );
-use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Maybe Object Str );
+use Text::Diff ();
+use Try::Tiny  qw( catch try );
+use Types::Standard
+    qw( ArrayRef Bool HashRef InstanceOf Int Maybe Object Str );
 
 with 'App::perlimports::Role::Logger';
 
@@ -188,6 +189,13 @@ has found_imports => (
     },
     lazy    => 1,
     builder => '_build_found_imports',
+);
+
+has _indent => (
+    is       => 'ro',
+    isa      => Int,
+    init_arg => 'indent',
+    default  => 4,
 );
 
 has _pad_brackets => (
@@ -1074,6 +1082,7 @@ sub _include_analyzer {
     return my $e = App::perlimports::Include->new(
         document        => $self,
         include         => $include,
+        indent          => $self->_indent,
         logger          => $self->logger,
         found_imports   => $self->found_imports->{ $include->module },
         pad_brackets    => $self->_pad_brackets,
