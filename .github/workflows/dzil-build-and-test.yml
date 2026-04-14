@@ -160,7 +160,7 @@ jobs:
         run: cpm install -g --cpanfile test-needs-cpanfile
         continue-on-error: true
       - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v1
+        uses: perl-actions/install-with-cpm@v2
         with:
           cpanfile: 'cpanfile'
           args: '--with-suggests --with-test --with-develop'
@@ -198,7 +198,7 @@ jobs:
           name: build_dir
           path: .
       - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v1
+        uses: perl-actions/install-with-cpm@v2
         with:
           cpanfile: 'cpanfile'
           args: '--with-test'
