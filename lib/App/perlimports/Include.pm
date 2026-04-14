@@ -5,7 +5,8 @@ use Moo;
 our $VERSION = '0.000059';
 
 ## no critic (Bangs::ProhibitDebuggingModules)
-
+# Data::Dumper is used at runtime to serialize import argument hash lists for
+# Test::Builder-based modules (see _build_formatted_ppi_statement).
 use Data::Dumper qw( Dumper );
 use List::Util   qw( any none uniq );
 use Memoize      qw( flush_cache memoize );
