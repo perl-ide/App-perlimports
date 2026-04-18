@@ -55,11 +55,11 @@ CLI -> Document -> Include -> ExportInspector -> Sandbox
 
 **Key modules in `lib/App/perlimports/`:**
 
-- **CLI.pm** — Parses CLI arguments, manages I/O (file or stdin), dispatches to Document. Handles `--inplace-edit`, `--json`, `--lint`, `--config`.
+- **CLI.pm** — Parses CLI arguments, manages I/O (file or stdin), dispatches to Document. Handles `--inplace-edit`, `--json`, `--lint`, `--config`. Discovers config via `XDG_CONFIG_HOME` when `--config` is not specified.
 - **Document.pm** — Core logic. Wraps `PPI::Document`, identifies all imports in a file, determines which symbols are actually used, and coordinates rewriting.
 - **Include.pm** — Represents a single `use Module ...` statement. Tracks which exported symbols are used and formats the corrected import line.
 - **ExportInspector.pm** — Inspects a module's `@EXPORT`, `@EXPORT_OK`, and `@EXPORT_TAGS` by loading it in a sandboxed `eval`. Handles both `Exporter` and `Sub::Exporter` styles.
-- **Config.pm** — Reads `perlimports.toml` (supports XDG_CONFIG_HOME). Manages ignore lists, lib paths, logging, and output format.
+- **Config.pm** — Reads `perlimports.toml`. Manages ignore lists, lib paths, logging, and output format.
 - **Annotations.pm** — Parses `## no perlimports` / `## use perlimports` inline comment directives that let users disable or re-enable the tool for ranges of code.
 - **Sandbox.pm** — Provides an isolated environment for safely evaluating module exports without polluting the main namespace.
 
@@ -69,7 +69,7 @@ CLI -> Document -> Include -> ExportInspector -> Sandbox
 
 ## Test Layout
 
-- `t/*.t` — Main test suite (~89 files)
+- `t/*.t` — Main test suite (~85 files)
 - `t/ExportInspector/` — Tests specific to export inspection logic
 - `t/cpan-modules/` — Integration tests against real CPAN modules
 - `t/lib/` — Shared test utilities (`TestHelper.pm`)
