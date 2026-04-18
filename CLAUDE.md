@@ -36,7 +36,7 @@ dzil build
 ## Code Quality Tools
 
 `precious.toml` configures:
-- `perlimports` — run via `perl -Ilib script/perlimports --lint`
+- `perlimports` — run via `perl -Ilib script/perlimports`, with `--lint` for linting or `-i` for tidying
 - `perltidy` — formatter governed by `perltidyrc` (4-space indent, 78-char lines)
 - `perlcritic` — style checker governed by `perlcriticrc` (severity 3)
 - `omegasort` — sorts `.gitignore` and `.stopwords`
@@ -60,7 +60,7 @@ CLI -> Document -> Include -> ExportInspector -> Sandbox
 - **Include.pm** — Represents a single `use Module ...` statement. Tracks which exported symbols are used and formats the corrected import line.
 - **ExportInspector.pm** — Inspects a module's `@EXPORT`, `@EXPORT_OK`, and `@EXPORT_TAGS` by loading it in a sandboxed `eval`. Handles both `Exporter` and `Sub::Exporter` styles.
 - **Config.pm** — Reads `perlimports.toml` (supports XDG_CONFIG_HOME). Manages ignore lists, lib paths, logging, and output format.
-- **Annotations.pm** — Parses inline `## perlimports` comment directives that let users override tool decisions per-statement.
+- **Annotations.pm** — Parses `## no perlimports` / `## use perlimports` inline comment directives that let users disable or re-enable the tool for ranges of code.
 - **Sandbox.pm** — Provides an isolated environment for safely evaluating module exports without polluting the main namespace.
 
 **Entry points:**
@@ -69,7 +69,7 @@ CLI -> Document -> Include -> ExportInspector -> Sandbox
 
 ## Test Layout
 
-- `t/*.t` — Main test suite (~40+ files)
+- `t/*.t` — Main test suite (~89 files)
 - `t/ExportInspector/` — Tests specific to export inspection logic
 - `t/cpan-modules/` — Integration tests against real CPAN modules
 - `t/lib/` — Shared test utilities (`TestHelper.pm`)
@@ -81,7 +81,7 @@ Declared in `cpanfile`. The build is managed by [Dist::Zilla](https://metacpan.o
 
 ## Development Notes
 
-- The `perlimports.toml` at the repo root configures the tool for its own source (includes `test-data/lib` and `t/lib`).
+- The `perlimports.toml` at the repo root configures the tool for its own source (libs: `lib` and `t/lib`).
 - Attributes in the Moo classes use lazy initialization extensively — be careful when adding new attributes that existing tests may not exercise lazy code paths.
 - A pre-commit hook (`git/hooks/pre-commit`) runs `precious lint --staged`; install it with `bash git/setup.sh`.
 - PPI is a regular CPAN dependency (version 1.276 minimum), not a fork.
