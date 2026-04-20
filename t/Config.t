@@ -30,6 +30,12 @@ like(
 
 subtest 'defaults' => sub {
 
+    # Isolate from a user ~/.perltidyrc that could change the indent
+    # default asserted below.
+    my $home = Path::Tiny->tempdir;
+    local $ENV{HOME} = "$home";
+    delete local $ENV{PERLTIDY};
+
     # Ensure defaults don't throw exceptions
     my $config = App::perlimports::Config->new;
     ok( !$config->cache, 'no cache' );
