@@ -5,8 +5,8 @@ use MooX::StrictConstructor;
 
 our $VERSION = '0.000059';
 
-use List::Util      qw( uniq );
-use Path::Tiny      qw( path );
+use List::Util             qw( uniq );
+use Path::Tiny             qw( path );
 use Types::Common::Numeric qw( PositiveOrZeroInt );
 use Types::Standard        qw( ArrayRef Bool HashRef InstanceOf Str );
 
