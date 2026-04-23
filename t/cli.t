@@ -451,7 +451,6 @@ EOF
     my ( $stdout, $stderr ) = capture { $cli->run };
     is( $stderr, q{},       'no STDERR' );
     is( $stdout, $expected, 'stdout' );
-    is( $stderr, q{},       'no STDERR' );
 };
 
 subtest '--stdout' => sub {
