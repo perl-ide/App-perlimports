@@ -268,14 +268,14 @@ has _tidy_whitespace => (
     isa      => Bool,
     init_arg => 'tidy_whitespace',
     lazy     => 1,
-    default  => sub { 1 },
+    default  => 1,
 );
 
 has _verbose => (
     is       => 'ro',
     isa      => Bool,
     init_arg => 'verbose',
-    default  => sub { 0 },
+    default  => 0,
 );
 
 around BUILDARGS => sub {
