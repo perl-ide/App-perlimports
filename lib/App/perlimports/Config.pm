@@ -7,7 +7,8 @@ our $VERSION = '0.000059';
 
 use List::Util      qw( uniq );
 use Path::Tiny      qw( path );
-use Types::Standard qw( ArrayRef Bool HashRef InstanceOf Int Str );
+use Types::Common::Numeric qw( PositiveOrZeroInt );
+use Types::Standard        qw( ArrayRef Bool HashRef InstanceOf Str );
 
 has cache => (
     is      => 'ro',
@@ -122,7 +123,7 @@ has _perltidy_options => (
 
 has indent => (
     is      => 'ro',
-    isa     => Int,
+    isa     => PositiveOrZeroInt,
     lazy    => 1,
     default => sub {
         return $_[0]->_perltidy_options->{'indent-columns'} // 4;
