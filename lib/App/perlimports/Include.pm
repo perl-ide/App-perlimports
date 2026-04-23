@@ -585,9 +585,10 @@ sub _build_formatted_ppi_statement {
 
         # save ~60ms in cases where we don't need Perl::Tidy
         require Perl::Tidy;    ## no perlimports
-        my $sbt = $self->_pad_brackets ? 0 : 1;
+        my $sbt    = $self->_pad_brackets ? 0 : 1;
+        my $indent = $self->_indent;
         Perl::Tidy::perltidy(
-            argv        => "-npro -sbt=$sbt",
+            argv        => "-npro -sbt=$sbt -i=$indent",
             source      => \$statement,
             destination => \$statement
         );
