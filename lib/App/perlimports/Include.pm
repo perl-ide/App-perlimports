@@ -564,6 +564,9 @@ sub _build_formatted_ppi_statement {
         }
 
         if ( $self->_imports ) {
+
+            # Always emit tight brackets here; the -sbt flag passed to
+            # Perl::Tidy below controls whether padding is added.
             $import_arg = sprintf(
                 'import => [qw( %s )]',
                 join( q{ }, @{ $self->_imports } )
