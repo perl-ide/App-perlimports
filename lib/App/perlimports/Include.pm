@@ -129,7 +129,7 @@ has _pad_imports => (
     is       => 'ro',
     isa      => Bool,
     init_arg => 'pad_imports',
-    default  => sub { 1 },
+    default  => 1,
 );
 
 has _tidy_whitespace => (
@@ -137,7 +137,7 @@ has _tidy_whitespace => (
     isa      => Bool,
     init_arg => 'tidy_whitespace',
     lazy     => 1,
-    default  => sub { 1 },
+    default  => 1,
 );
 
 has _will_never_export => (
