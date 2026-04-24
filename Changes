@@ -1,6 +1,24 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add `pad_brackets` and `indent` formatting options (GH#151) (Paul
+      Johnson)
+    - Recognize constants defined with `use constant` as importable symbols
+      (GH#141) (pyrrhlin)
+    - Fix crash when parsing double-quoted strings containing "q" or "qq"
+      (GH#133) (Copilot)
+    - Rename `original_imports` attribute to `found_imports` (GH#140)
+      (pyrrhlin)
+    - Ensure `original_imports` does not contain duplicated symbols (GH#139)
+      (pyrrhlin)
+    - Avoid wasted effort when linting includes that would not change
+      (GH#138) (pyrrhlin)
+    - Clean up `maybe_new_include` and related lint-or-tidy code paths
+      (GH#143) (pyrrhlin)
+    - Use bare values for simple Bool defaults in Moo attributes (GH#157)
+      (Olaf Alders)
+    - Remove duplicate STDERR assertion in t/cli.t (GH#156) (Olaf Alders)
+    - Add CLAUDE.md and update CONTRIBUTING.md (GH#153) (Olaf Alders)
 
 0.000058  2025-10-28 17:06:33Z
     - Fix: Recognize function references (\&Module::func) as valid module usage
