@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000059  2026-04-24 12:47:09Z
     - Add `pad_brackets` and `indent` formatting options (GH#151) (Paul
       Johnson)
     - Recognize constants defined with `use constant` as importable symbols
