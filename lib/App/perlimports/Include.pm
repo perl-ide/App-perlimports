@@ -15,7 +15,7 @@ use PPIx::Utils::Classification qw( is_function_call is_perl_builtin );
 use Ref::Util                   qw( is_plain_arrayref is_plain_hashref );
 use Sub::HandlesVia;
 use Try::Tiny       qw( catch try );
-use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Maybe Object Str);
+use Types::Standard qw(ArrayRef Bool HashRef InstanceOf Int Maybe Object Str);
 
 with 'App::perlimports::Role::Logger';
 
@@ -123,6 +123,20 @@ has _found_imports => (
         _all_found_imports => 'elements',
         _has_found_imports => 'count',
     },
+);
+
+has _indent => (
+    is       => 'ro',
+    isa      => Int,
+    init_arg => 'indent',
+    default  => 4,
+);
+
+has _pad_brackets => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'pad_brackets',
+    default  => 0,
 );
 
 has _pad_imports => (
@@ -550,6 +564,9 @@ sub _build_formatted_ppi_statement {
         }
 
         if ( $self->_imports ) {
+
+            # Always emit tight brackets here; the -sbt flag passed to
+            # Perl::Tidy below controls whether padding is added.
             $import_arg = sprintf(
                 'import => [qw( %s )]',
                 join( q{ }, @{ $self->_imports } )
@@ -568,18 +585,21 @@ sub _build_formatted_ppi_statement {
 
         # save ~60ms in cases where we don't need Perl::Tidy
         require Perl::Tidy;    ## no perlimports
+        my $sbt    = $self->_pad_brackets ? 0 : 1;
+        my $indent = $self->_indent;
         Perl::Tidy::perltidy(
-            argv        => '-npro',
+            argv        => "-npro -sbt=$sbt -i=$indent",
             source      => \$statement,
             destination => \$statement
         );
     }
 
     else {
-        my $padding = $self->_pad_imports ? q{ } : q{};
+        my $padding = $self->_pad_imports  ? q{ } : q{};
+        my $bp      = $self->_pad_brackets ? q{ } : q{};
         my $template
             = $self->_isa_test_builder_module
-            ? 'use %s%s import => [ qw(%s%s%s) ];'
+            ? "use %s%s import => [${bp}qw(%s%s%s)${bp}];"
             : 'use %s%s qw(%s%s%s);';
 
         $statement = sprintf(
@@ -602,8 +622,9 @@ sub _build_formatted_ppi_statement {
             $self->module_name,
             $maybe_module_version,
         );
+        my $indent = q{ } x $self->_indent;
         for ( @{ $self->_imports } ) {
-            $statement .= "    $_\n";
+            $statement .= "$indent$_\n";
         }
         $statement .= ');';
     }

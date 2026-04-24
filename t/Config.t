@@ -30,6 +30,12 @@ like(
 
 subtest 'defaults' => sub {
 
+    # Isolate from a user ~/.perltidyrc that could change the indent
+    # default asserted below.
+    my $home = Path::Tiny->tempdir;
+    local $ENV{HOME} = "$home";
+    delete local $ENV{PERLTIDY};
+
     # Ensure defaults don't throw exceptions
     my $config = App::perlimports::Config->new;
     ok( !$config->cache, 'no cache' );
@@ -43,6 +49,8 @@ subtest 'defaults' => sub {
     ok( $config->preserve_duplicates, 'preserve_duplicates on' );
     ok( $config->preserve_unused,     'preserve_unused on' );
     ok( $config->tidy_whitespace,     'tidy_whitespace on' );
+    ok( !$config->pad_brackets,       'pad_brackets off by default' );
+    is( $config->indent, 4, 'indent defaults to 4 (from perltidy)' );
 };
 
 done_testing;

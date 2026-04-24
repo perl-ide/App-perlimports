@@ -31,6 +31,7 @@ EOF
         '--ignore-modules-pattern'          => '^(Foo|Foo::Bar)',
         '--ignore-modules-pattern-filename' =>
             'test-data/ignore-modules-pattern.txt',
+        '--indent'                        => 2,
         '--libs'                          => 'lib,t/lib',
         '--never-export-modules'          => 'Never::One,Never::Two',
         '--never-export-modules-filename' =>
@@ -42,6 +43,7 @@ EOF
         '--no-preserve-duplicates',
         '--no-preserve-unused',
         '--no-tidy-whitespace',
+        '--pad-brackets',
         'test-data/var-in-hash-key.pl',
     );
     my $cli = App::perlimports::CLI->new( logger => logger( [] ) );
@@ -69,6 +71,8 @@ EOF
         [ 'Never::One', 'Never::Two', 'Never::Three', 'Never::Four', ],
         'never_export'
     );
+    is( $c->indent,              2, 'indent' );
+    is( $c->pad_brackets,        1, 'pad_brackets' );
     is( $c->padding,             0, 'padding' );
     is( $c->preserve_duplicates, 0, 'preserve_duplicates' );
     is( $c->tidy_whitespace,     0, 'tidy_whitespace' );
