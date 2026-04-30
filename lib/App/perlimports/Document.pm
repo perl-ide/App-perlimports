@@ -475,7 +475,7 @@ sub _parse_hashlist {
 
     # first and last commas are ignored, if no significant child exists beyond!
     # interior serial commas are not handled properly: {a => 1, 'b', , 'c', 4}
-    return my @values = split_nodes_on_comma(@tokens);
+    return split_nodes_on_comma(@tokens);
 }
 
 # until we get a PPI::Statement::Include::Constant class
