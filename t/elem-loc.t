@@ -110,5 +110,30 @@ TODO: {
     }
 };
 
+subtest 'heredoc' => sub {
+    my ( $doc, $log ) = doc(
+        filename      => 'test-data/elem-loc.pl',
+        lint_unknowns => 1,
+        json          => 1,
+    );
+    my $ppidoc = $doc->ppi_document;
+
+    my $found = $ppidoc->find(
+        sub {
+            $_[1]->isa('PPI::Token::HereDoc');
+        }
+    ) || [];
+    my $heredoc = $found->[0];
+
+    is_deeply $heredoc->location,
+        [ 13, 11, 11, 13, 'test-data/elem-loc.pl' ],
+        ':Token:HereDoc location';
+    is_deeply App::perlimports::Document::_elem_loc($heredoc), {
+        start => { line => 13, column => 11 },
+        end   => { line => 15, column => 3 },
+        },
+        ':Token:HereDoc elem_loc';
+};
+
 done_testing();
 
