@@ -5,7 +5,8 @@ use Moo;
 our $VERSION = '0.000060';
 
 ## no critic (Bangs::ProhibitDebuggingModules)
-
+# Data::Dumper is used at runtime to serialize import argument hash lists for
+# Test::Builder-based modules (see _build_formatted_ppi_statement).
 use Data::Dumper qw( Dumper );
 use List::Util   qw( any none uniq );
 use Memoize      qw( flush_cache memoize );
@@ -651,9 +652,12 @@ sub _maybe_get_new_include {
 
     # Prefix newlines to reproduce original's location
     ## no critic (BuiltinFunctions::ProhibitLvalueSubstr)
-    my $doc = do {
-        my $line = $orig->line_number || 1;
+    ## no critic (ControlStructures::ProhibitNegativeExpressionsInUnlessAndUntilConditions)
+    return $orig unless my $doc = do {
+        my $line = $orig->line_number   || 1;
+        my $pos  = $orig->column_number || 1;
         my $text = "\n" x $line;
+        substr( $text, -1 ) = q{ } x $pos if $pos > 1;
         substr( $text, -1 ) = $statement;
         PPI::Document->new( \$text, filename => $orig->logical_filename );
     };
@@ -662,10 +666,10 @@ sub _maybe_get_new_include {
     # Cloning is necessary because the tokens in the found statement belong
     # to the document. When the document is destroyed, the tokens go with it.
     # With the clone, the duplicated tokens are independent of the doc.
-    my $rewrite = do {
+    return $orig unless my $rewrite = do {
         $doc->index_locations;
         my $includes = $doc->find('Statement::Include');
-        $includes->[0]->clone;
+        $includes && @$includes && $includes->[0]->clone;
     };
 
     # If the -only- difference is some whitespace before the symbol list, we
@@ -721,7 +725,7 @@ sub _is_already_imported {
         my @imports;
         if ( is_plain_arrayref( $self->_document->found_imports->{$module} ) )
         {
-            @imports = @{ $self->_document->found_imports->{$module} };
+            @imports = @{ $self->_document->found_imports_from($module) };
             $self->logger->debug(
                 'Explicit imports found: ' . Dumper( [ sort @imports ] ) );
         }

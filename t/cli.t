@@ -212,6 +212,21 @@ EOF
 
     is( $stderr, $expected, 'STDERR' );
     is( $exit,   1,         'exit code is error' );
+
+    # same result using --lint-unknowns (which implies --lint)
+    local @ARGV = (
+        '--lint-unknowns',
+        '--no-config-file',
+        '-f' => 'test-data/lint-failure-import-args.pl',
+    );
+    $cli = App::perlimports::CLI->new;
+    ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT with --lint-unknowns' );
+
+    is( $stderr, $expected, 'STDERR is the same' );
+    is( $exit,   1,         'exit code is same error' );
 };
 
 subtest '--lint failure unused import' => sub {
@@ -361,6 +376,16 @@ subtest '--lint with -i' => sub {
     like(
         $stderr, qr{Cannot lint if inplace edit has been enabled},
         'trying to edit and lint at once'
+    );
+
+    local @ARGV = ( '--lint-unknowns', '-i', 'test-data/var-in-hash-key.pl' );
+    $cli = App::perlimports::CLI->new;
+    ( undef, $stderr ) = capture {
+        $cli->run;
+    };
+    like(
+        $stderr, qr{Cannot lint if inplace edit has been enabled},
+        'exact same error with --lint-unknowns -i'
     );
 };
 
