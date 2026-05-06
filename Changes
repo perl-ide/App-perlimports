@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000060  2026-05-06 16:10:42Z
     - Drop Perl 5.18, 5.20, 5.22 from CI matrix
     - Add Perl 5.42 to CI matrix
     - Remove Test::Most integration test (Test::Most 0.39 broke import => [...]

@@ -134,7 +134,7 @@
          "web" : "https://github.com/perl-ide/App-perlimports"
       }
    },
-   "version" : "0.000059",
+   "version" : "0.000060",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.042002"
@@ -684,7 +684,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000059",
+                  "tag" : "v0.000060",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
