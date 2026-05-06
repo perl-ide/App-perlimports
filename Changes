@@ -1,6 +1,10 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Drop Perl 5.18, 5.20, 5.22 from CI matrix
+    - Add Perl 5.42 to CI matrix
+    - Remove Test::Most integration test (Test::Most 0.39 broke import => [...]
+      support) (GH#159)
 
 0.000059  2026-04-24 12:47:09Z
     - Add `pad_brackets` and `indent` formatting options (GH#151) (Paul
