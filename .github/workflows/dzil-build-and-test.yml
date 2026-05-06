@@ -143,6 +143,7 @@ jobs:
           - '5.36'
           - '5.38'
           - '5.40'
+          - '5.42'
     name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
