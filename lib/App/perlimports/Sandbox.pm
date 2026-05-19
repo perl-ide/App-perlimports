@@ -37,6 +37,14 @@ EOF
 
     ## no critic (Variables::RequireInitializationForLocalVars)
     local $@;
+
+    # Suppress warnings emitted while probing. Callers only inspect $@ to
+    # decide whether the eval compiled, so stray warnings (e.g. "Attempt to
+    # call undefined import method" when probing OO-only modules like
+    # LWP::UserAgent with an import list) would otherwise leak to STDERR
+    # during normal runs and pollute `dzil test` output.
+    local $SIG{__WARN__} = sub { };
+
     ## no critic (BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval)
     eval $to_eval;
 
