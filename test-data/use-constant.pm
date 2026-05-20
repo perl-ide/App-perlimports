@@ -57,3 +57,28 @@ sub new {
 
 1;
 
+__END__
+
+# this "module" is also a demonstration of how unknown symbols can bite you.
+
+$ perl -MDDP -E'require "./use-constant.pm";my $m=rfc3339::nonsense->new("26-01-04T02:17:03Z"); p$m'
+rfc3339::nonsense  {
+    public methods (11):
+        FIRST_IDX, IDX_FORMAT, IDX_SEP, IDX_SEP_RE, IDX_STR, IDX_UTIME, new
+        Carp:
+            croak
+        Time::Local:
+            timegm
+    private methods (1): _parse
+    internals: [
+        [0] undef,
+        [1] undef,
+        [2] "T",
+        [3] "T",
+        [4] "26-01-04T02:17:03Z",
+        [5] 1767493023
+    ]
+}
+$ perl -E'require "./use-constant.pm";my $m=rfc3339::nonsense->new("26-01-04T02:17:03")'
+Undefined subroutine &rfc3339::nonsense::timelocal called at ./use-constant.pm line 35.
+
