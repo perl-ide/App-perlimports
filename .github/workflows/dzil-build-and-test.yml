@@ -17,7 +17,7 @@ jobs:
     container:
       image: perldocker/perl-tester:5.40
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Install ubi
         run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
       - name: Install omegasort
@@ -58,7 +58,7 @@ jobs:
   #run: cpm install -g --cpanfile test-needs-cpanfile
   #- name: Install deps and test
   #run: cpan-install-dist-deps && test-dist
-  #- uses: actions/checkout@v6
+  #- uses: actions/checkout@v6.0.2
   #with:
   #repository: mojolicious/mojo
   #path: mojo
@@ -110,7 +110,7 @@ jobs:
     container:
       image: perldocker/perl-tester:5.40
     steps:
-      - uses: actions/checkout@v6 # codecov wants to be inside a Git repository
+      - uses: actions/checkout@v6.0.2 # codecov wants to be inside a Git repository
       - uses: actions/download-artifact@v8
         with:
           name: build_dir
@@ -158,7 +158,7 @@ jobs:
         run: cpm install -g --cpanfile test-needs-cpanfile
         continue-on-error: true
       - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v2.3
+        uses: perl-actions/install-with-cpm@v2.4
         with:
           cpanfile: 'cpanfile'
           args: '--with-suggests --with-test --with-develop'
@@ -196,7 +196,7 @@ jobs:
           name: build_dir
           path: .
       - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v2.3
+        uses: perl-actions/install-with-cpm@v2.4
         with:
           cpanfile: 'cpanfile'
           args: '--with-test'
