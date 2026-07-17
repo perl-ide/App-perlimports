@@ -10,14 +10,19 @@ on:
       - '*'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-job:
     name: Build distribution
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     container:
-      image: perldocker/perl-tester:5.40
+      image: perldocker/perl-tester:5.42
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.0
       - name: Install ubi
         run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
       - name: Install omegasort
@@ -58,7 +63,7 @@ jobs:
   #run: cpm install -g --cpanfile test-needs-cpanfile
   #- name: Install deps and test
   #run: cpan-install-dist-deps && test-dist
-  #- uses: actions/checkout@v6.0.2
+  #- uses: actions/checkout@v7.0.0
   #with:
   #repository: mojolicious/mojo
   #path: mojo
@@ -107,10 +112,11 @@ jobs:
   coverage-job:
     needs: build-job
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     container:
-      image: perldocker/perl-tester:5.40
+      image: perldocker/perl-tester:5.42
     steps:
-      - uses: actions/checkout@v6.0.2 # codecov wants to be inside a Git repository
+      - uses: actions/checkout@v7.0.0 # codecov wants to be inside a Git repository
       - uses: actions/download-artifact@v8
         with:
           name: build_dir
@@ -125,10 +131,14 @@ jobs:
           HARNESS_OPTIONS: j2
           HARNESS_PERL_SWITCHES: '-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data'
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
   test-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
+    # Backstop only: no job should approach this. The macOS post-suite hang
+    # that used to burn the full 6h runner limit is fixed at the source (see
+    # t/memoize.t, which skips loading the UUID XS module on darwin).
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -157,15 +167,16 @@ jobs:
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
         continue-on-error: true
-      - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v2.4
+      - uses: perl-actions/setup-cpm@v1
         with:
-          cpanfile: 'cpanfile'
-          args: '--with-suggests --with-test --with-develop'
+          version: compat
+      - name: install deps using cpm
+        run: cpm install -g --cpanfile cpanfile --with-suggests --with-test --with-develop
       - run: prove -lr -j2 t
   without-test-needs-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -195,9 +206,9 @@ jobs:
         with:
           name: build_dir
           path: .
-      - name: install deps using cpm
-        uses: perl-actions/install-with-cpm@v2.4
+      - uses: perl-actions/setup-cpm@v1
         with:
-          cpanfile: 'cpanfile'
-          args: '--with-test'
+          version: compat
+      - name: install deps using cpm
+        run: cpm install -g --cpanfile cpanfile --with-test
       - run: prove -lr -j2 t

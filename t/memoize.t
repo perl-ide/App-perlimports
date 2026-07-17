@@ -14,13 +14,26 @@ use warnings;
 # We use "memoize" on "is_function_call" because it was identified as a hotspot
 # in earlier profiling.
 
+use Test::More import => [qw( done_testing )];
+
+# Loading the UUID XS module wedges prove at process exit on macOS: the test
+# passes but the worker never exits, hanging CI at the runner time limit. The
+# behaviour under test (memoization of is_function_call in Include.pm) is
+# platform-independent, so skip on darwin. This BEGIN must precede the
+# Test::Needs line below, which itself require()s UUID. See the macOS notes in
+# .github/workflows/dzil-build-and-test.yml.
+BEGIN {
+    Test::More::plan( skip_all =>
+            'Loading the UUID XS module hangs prove at exit on macOS' )
+        if $^O eq 'darwin';
+}
+
 use lib 't/lib';
 
 use Path::Tiny        qw( path );
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
-use Test::More import => [qw( done_testing )];
-use Test::Needs qw( MooseX::Types::UUID UUID );
+use Test::Needs       qw( MooseX::Types::UUID UUID );
 
 {
     my ($doc) = doc( filename => 'test-data/a.pl' );
