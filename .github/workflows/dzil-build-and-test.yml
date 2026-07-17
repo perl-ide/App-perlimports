@@ -15,7 +15,7 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-24.04
     container:
-      image: perldocker/perl-tester:5.40
+      image: perldocker/perl-tester:5.42
     steps:
       - uses: actions/checkout@v7.0.0
       - name: Install ubi
@@ -108,7 +108,7 @@ jobs:
     needs: build-job
     runs-on: ubuntu-24.04
     container:
-      image: perldocker/perl-tester:5.40
+      image: perldocker/perl-tester:5.42
     steps:
       - uses: actions/checkout@v7.0.0 # codecov wants to be inside a Git repository
       - uses: actions/download-artifact@v8
