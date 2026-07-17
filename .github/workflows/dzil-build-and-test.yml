@@ -18,6 +18,7 @@ jobs:
   build-job:
     name: Build distribution
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     container:
       image: perldocker/perl-tester:5.42
     steps:
@@ -111,6 +112,7 @@ jobs:
   coverage-job:
     needs: build-job
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     container:
       image: perldocker/perl-tester:5.42
     steps:
@@ -133,6 +135,10 @@ jobs:
   test-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
+    # Backstop only: no job should approach this. The macOS post-suite hang
+    # that used to burn the full 6h runner limit is fixed at the source (see
+    # t/memoize.t, which skips loading the UUID XS module on darwin).
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -170,6 +176,7 @@ jobs:
   without-test-needs-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
