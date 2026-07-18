@@ -95,4 +95,35 @@ eq_or_diff(
     'block-form annotation region left intact',
 );
 
+# 12. Bug 1a: multiple includes on one physical line are left unchanged
+# (a shared-line section cannot be safely reordered).
+eq_or_diff(
+    sorted("use Zoo; use strict; use Apple;\n"),
+    "use Zoo; use strict; use Apple;\n",
+    'shared-line section left unchanged',
+);
+
+# 13. Bug 1b: the shared-line bail is per-section, not global. A normal
+# separate-line section still sorts while the shared-line section stays intact.
+eq_or_diff(
+    sorted("use Zoo; use Apple;\n\nuse Foo;\nuse Bar;\n"),
+    "use Zoo; use Apple;\n\nuse Bar;\nuse Foo;\n",
+    'shared-line section left intact, normal section still sorted',
+);
+
+# 14. Bug 2: a final include without a trailing newline must not be jammed
+# onto one line, and the missing trailing newline must be preserved.
+eq_or_diff(
+    sorted("use Foo;\nuse Bar;"),
+    "use Bar;\nuse Foo;",
+    'no trailing newline preserved, not jammed',
+);
+
+# 15. Idempotency for the no-trailing-newline case.
+{
+    my $once  = sorted("use Foo;\nuse Bar;");
+    my $twice = sorted($once);
+    eq_or_diff( $twice, $once, 'no-trailing-newline sort is idempotent' );
+}
+
 done_testing();

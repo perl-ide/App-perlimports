@@ -127,6 +127,14 @@ sub _sections {
 sub _reorder_section {
     my ( $self, $section, $lines ) = @_;
 
+    # If any two units share or overlap a physical line, reordering would
+    # duplicate or merge the user's source. We cannot safely sort statements
+    # that share a line, so leave the whole section byte-identical.
+    for my $i ( 0 .. $#{$section} - 1 ) {
+        return ( q{}, 0 )
+            if $section->[$i]{end} >= $section->[ $i + 1 ]{lead};
+    }
+
     my @hoist   = grep { $_->{class} eq 'hoist' } @{$section};
     my @modules = grep { $_->{class} ne 'hoist' } @{$section};
 
@@ -145,12 +153,24 @@ sub _reorder_section {
         return join q{}, @{$lines}[ $u->{lead} - 1 .. $u->{end} - 1 ];
     };
 
+    # Normalize each unit's text to end in exactly one newline so reordered
+    # units never jam onto one line when the final unit lacked a trailing "\n".
+    my $rendered = sub {
+        my $text = $text_of->(shift);
+        $text =~ s/\n?\z/\n/;
+        return $text;
+    };
+
     my $new_text = q{};
-    $new_text .= $text_of->($_) for @hoist;
-    $new_text .= "\n" if @hoist && @ordered_modules;    # set pragmas off
-    $new_text .= $text_of->($_) for @ordered_modules;
+    $new_text .= $rendered->($_) for @hoist;
+    $new_text .= "\n" if @hoist && @ordered_modules;     # set pragmas off
+    $new_text .= $rendered->($_) for @ordered_modules;
 
     my $old_text = join q{}, map { $text_of->($_) } @{$section};
+
+    # Preserve the section's original trailing-newline state: if the source
+    # had no final "\n", do not add bytes the user did not have.
+    $new_text =~ s/\n\z// unless $old_text =~ /\n\z/;
 
     return ( $new_text, $new_text ne $old_text );
 }
