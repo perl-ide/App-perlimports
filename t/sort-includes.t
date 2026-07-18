@@ -61,4 +61,15 @@ EOF
     ok( !$document->linter_success, 'lint fails on unsorted includes' );
 }
 
+# Lint mode: already-sorted includes pass.
+{
+    my ($document) = doc(
+        filename       => 'test-data/sort-includes.pl',
+        ignore_modules => \@ignore,
+        sort           => 0,
+        lint           => 1,
+    );
+    ok( $document->linter_success, 'lint passes when sort is disabled' );
+}
+
 done_testing();

@@ -1118,6 +1118,20 @@ sub _lint_or_tidy_document {
     my $self = shift;
 
     my $linter_error = 0;
+
+    if ( $self->lint && $self->_sort ) {
+        my $before = $self->_ppi_selection->serialize;
+        my $after  = App::perlimports::Sorter->new(
+            logger => $self->logger,
+            source => $before,
+        )->sorted_document;
+
+        if ( $before ne $after ) {
+            $self->_warn_unsorted_includes( $before, $after );
+            $linter_error = 1;
+        }
+    }
+
     my %processed;    # modules we changed/confirmed the use statement
 
 INCLUDE:
@@ -1324,6 +1338,31 @@ sub _warn_diff_for_linter {
         $self->logger->error($justification);
         $self->logger->error($diff);
     }
+}
+
+sub _warn_unsorted_includes {
+    my ( $self, $before, $after ) = @_;
+
+    my $reason = 'includes are not sorted';
+
+    if ( $self->json ) {
+        $self->logger->error(
+            $self->_json_encoder->encode(
+                {
+                    filename => $self->_filename,
+                    reason   => $reason,
+                }
+            )
+        );
+        return;
+    }
+
+    $self->logger->error(
+        sprintf( '❌ %s (%s)', $self->_filename, $reason ) );
+    $self->logger->error(
+        Text::Diff::diff( \$before, \$after, { STYLE => 'Unified' } ) );
+
+    return;
 }
 
 sub _remove_with_trailing_characters {
