@@ -126,4 +126,74 @@ eq_or_diff(
     eq_or_diff( $twice, $once, 'no-trailing-newline sort is idempotent' );
 }
 
+# 16. Sort key is case-insensitive. In byte order 'S' (0x53) sorts before 'n'
+# (0x6E), so a case-sensitive sort would keep SOAP first; case-insensitive
+# ordering puts namespace first. (Both names are non-pragma: a bare lowercase
+# word like 'strict' is a pragma, but 'namespace::clean' is not.)
+eq_or_diff(
+    sorted("use SOAP::Lite;\nuse namespace::clean;\n"),
+    "use namespace::clean;\nuse SOAP::Lite;\n",
+    'sort key is case-insensitive',
+);
+
+# 17. A trailing same-line comment travels with a sortable that moves.
+eq_or_diff(
+    sorted("use Foo; # keep foo\nuse Bar; # keep bar\n"),
+    "use Bar; # keep bar\nuse Foo; # keep foo\n",
+    'trailing same-line comment travels with its import',
+);
+
+# 18. A multi-line use statement moves as a whole block.
+eq_or_diff(
+    sorted("use Zoo qw(\n  a\n  b\n);\nuse Apple;\n"),
+    "use Apple;\nuse Zoo qw(\n  a\n  b\n);\n",
+    'multi-line use statement moves as a block',
+);
+
+# 19. A non-pragma `no Module` is an anchor and keeps its slot.
+eq_or_diff(
+    sorted("use Foo;\nno Bar;\nuse Apple;\n"),
+    "use Apple;\nno Bar;\nuse Foo;\n",
+    'non-pragma no Module is anchored, others fill slots',
+);
+
+# 20. Stable sort: equal keys (use Foo + require Foo) keep original order.
+eq_or_diff(
+    sorted("use Foo;\nrequire Foo;\n"),
+    "use Foo;\nrequire Foo;\n",
+    'equal keys retain original relative order (stable sort)',
+);
+
+# 21. Multiple attached leading comment lines travel together.
+eq_or_diff(
+    sorted("# a\n# b\nuse Foo;\nuse Bar;\n"),
+    "use Bar;\n# a\n# b\nuse Foo;\n",
+    'multiple leading comment lines travel together',
+);
+
+# 22. A pragmas-only section is unchanged (no blank line injected).
+eq_or_diff(
+    sorted("use strict;\nuse warnings;\n"),
+    "use strict;\nuse warnings;\n",
+    'pragmas-only section is a no-op',
+);
+
+# 23. Multiple anchors each keep their slot; sortables fill around them.
+eq_or_diff(
+    sorted(
+        "use Zebra;\nuse Mango; ## no perlimports\nuse Apple;\nuse Beta; ## no perlimports\n"
+    ),
+    "use Apple;\nuse Mango; ## no perlimports\nuse Zebra;\nuse Beta; ## no perlimports\n",
+    'multiple anchors keep slots while sortables fill the rest',
+);
+
+# 24. Heredoc content elsewhere in the file is left byte-for-byte untouched,
+# even when it contains lines that look like include statements.
+eq_or_diff(
+    sorted(
+        "use Foo;\nuse Bar;\n\nmy \$x = <<'END';\nuse ZZZ;\nuse AAA;\nEND\n"),
+    "use Bar;\nuse Foo;\n\nmy \$x = <<'END';\nuse ZZZ;\nuse AAA;\nEND\n",
+    'heredoc content is not treated as includes',
+);
+
 done_testing();
