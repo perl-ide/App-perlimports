@@ -72,4 +72,18 @@ EOF
     ok( $document->linter_success, 'lint passes when sort is disabled' );
 }
 
+# Lint mode: already-sorted includes pass with sort enabled.
+{
+    my ($document) = doc(
+        filename       => 'test-data/sort-includes-sorted.pl',
+        ignore_modules => \@ignore,
+        sort           => 1,
+        lint           => 1,
+    );
+    ok(
+        $document->linter_success,
+        'lint passes on already-sorted includes with sort enabled'
+    );
+}
+
 done_testing();
