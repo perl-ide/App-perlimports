@@ -9,6 +9,7 @@ use App::perlimports::Annotations     ();
 use App::perlimports::ExportInspector ();
 use App::perlimports::Include         ();
 use App::perlimports::Sandbox         ();
+use App::perlimports::Sorter          ();
 use File::Basename                    qw( fileparse );
 use List::Util                        qw( any uniq );
 use Module::Runtime                   qw( module_notional_filename );
@@ -1246,7 +1247,15 @@ INCLUDE:
 
     # We need to do serialize in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
-    return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
+    return !$linter_error if $self->lint;
+
+    my $tidied = $self->_ppi_selection->serialize;
+    return $tidied unless $self->_sort;
+
+    return App::perlimports::Sorter->new(
+        logger => $self->logger,
+        source => $tidied,
+    )->sorted_document;
 }
 
 # given PPI:Element, returns hashref describing location, e.g.:
