@@ -6,9 +6,9 @@ use warnings;
 use lib 't/lib', 'test-data/lib';
 
 use App::perlimports::Sorter ();
-use Test::Differences qw( eq_or_diff );
-use TestHelper        qw( logger );
-use Test::More import => [qw( done_testing is )];
+use Test::Differences        qw( eq_or_diff );
+use TestHelper               qw( logger );
+use Test::More import => [qw( done_testing )];
 
 sub sorted {
     my $source = shift;
@@ -39,10 +39,9 @@ eq_or_diff(
     'independent sections',
 );
 
-# 4. ## no perlimports anchor keeps its slot; others fill around it.
+# 4. An annotated anchor keeps its slot; others fill around it.
 eq_or_diff(
-    sorted(
-        "use Charlie;\nuse Bravo; ## no perlimports\nuse Alpha;\n"),
+    sorted("use Charlie;\nuse Bravo; ## no perlimports\nuse Alpha;\n"),
     "use Alpha;\nuse Bravo; ## no perlimports\nuse Charlie;\n",
     'annotated module anchored, others fill slots',
 );
@@ -89,10 +88,9 @@ eq_or_diff(
     eq_or_diff( $twice, $once, 'sorting is idempotent' );
 }
 
-# 11. Block-form ## no perlimports region is not reordered.
+# 11. A block-form disabled region is not reordered.
 eq_or_diff(
-    sorted(
-        "## no perlimports\nuse Zebra;\nuse Ant;\n## use perlimports\n"),
+    sorted("## no perlimports\nuse Zebra;\nuse Ant;\n## use perlimports\n"),
     "## no perlimports\nuse Zebra;\nuse Ant;\n## use perlimports\n",
     'block-form annotation region left intact',
 );

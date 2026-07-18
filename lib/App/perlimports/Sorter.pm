@@ -53,8 +53,8 @@ sub sorted_document {
 
         $changed = 1;
         my $first = $section->[0]{lead};
-        my $last  = $section->[-1]{end};
-        splice @lines, $first - 1, $last - $first + 1, $new_text;
+        my $end   = $section->[-1]{end};
+        splice @lines, $first - 1, $end - $first + 1, $new_text;
     }
 
     return $changed ? join( q{}, @lines ) : $source;

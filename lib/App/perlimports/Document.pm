@@ -1118,19 +1118,7 @@ sub _lint_or_tidy_document {
     my $self = shift;
 
     my $linter_error = 0;
-
-    if ( $self->lint && $self->_sort ) {
-        my $before = $self->_ppi_selection->serialize;
-        my $after  = App::perlimports::Sorter->new(
-            logger => $self->logger,
-            source => $before,
-        )->sorted_document;
-
-        if ( $before ne $after ) {
-            $self->_warn_unsorted_includes( $before, $after );
-            $linter_error = 1;
-        }
-    }
+    $linter_error = 1 if $self->_sort_lint_error;
 
     my %processed;    # modules we changed/confirmed the use statement
 
@@ -1262,6 +1250,33 @@ INCLUDE:
     # We need to do serialize in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
     return !$linter_error if $self->lint;
+
+    return $self->_tidied_and_sorted;
+}
+
+# Returns 1 (and warns via the linter) if we're linting with --sort enabled
+# and the current includes are not in sorted order; returns 0 otherwise.
+sub _sort_lint_error {
+    my $self = shift;
+
+    return 0 unless $self->lint && $self->_sort;
+
+    my $before = $self->_ppi_selection->serialize;
+    my $after  = App::perlimports::Sorter->new(
+        logger => $self->logger,
+        source => $before,
+    )->sorted_document;
+
+    return 0 if $before eq $after;
+
+    $self->_warn_unsorted_includes( $before, $after );
+    return 1;
+}
+
+# Serializes the tidied document and, when --sort is enabled, reorders its
+# include statements.
+sub _tidied_and_sorted {
+    my $self = shift;
 
     my $tidied = $self->_ppi_selection->serialize;
     return $tidied unless $self->_sort;
