@@ -9,21 +9,19 @@ use Types::Standard               qw( Str );
 
 our $VERSION = '0.000061';
 
-has logger => (
-    is       => 'ro',
-    required => 1,
-);
+with 'App::perlimports::Role::Logger';
 
-has source => (
+has _source => (
     is       => 'ro',
     isa      => Str,
+    init_arg => 'source',
     required => 1,
 );
 
 sub sorted_document {
     my $self = shift;
 
-    my $source = $self->source;
+    my $source = $self->_source;
     my $doc    = PPI::Document->new( \$source );
     return $source unless $doc;
     $doc->index_locations;
@@ -178,3 +176,20 @@ sub _reorder_section {
 1;
 
 # ABSTRACT: Sort a document's include statements
+
+=head1 SYNOPSIS
+
+    my $sorter = App::perlimports::Sorter->new(
+        logger => $logger,
+        source => $source_string,
+    );
+
+    my $sorted = $sorter->sorted_document;
+
+=head2 sorted_document
+
+Returns the source with each contiguous section of C<use>/C<require>
+statements sorted per the C<--sort> rules. Pragmas and version requires are
+hoisted, C<## no perlimports> and other anchors keep their slots, and
+attached comments travel with their include. Returns the original source
+unchanged when there is nothing to sort.
