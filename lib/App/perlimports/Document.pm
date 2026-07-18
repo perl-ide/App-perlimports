@@ -215,6 +215,13 @@ has _padding => (
     default  => 1,
 );
 
+has _sort => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'sort',
+    default  => 0,
+);
+
 has ppi_document => (
     is      => 'ro',
     isa     => Object,

@@ -78,4 +78,16 @@ EOF
     is( $c->tidy_whitespace,     0, 'tidy_whitespace' );
 };
 
+# --- sort option plumbing ---
+{
+    local @ARGV = ( '--no-config-file', 'lib/App/perlimports.pm' );
+    my $cli = App::perlimports::CLI->new;
+    is( $cli->_config->sort, 0, 'sort defaults to false' );
+}
+{
+    local @ARGV = ( '--no-config-file', '--sort', 'lib/App/perlimports.pm' );
+    my $cli = App::perlimports::CLI->new;
+    is( $cli->_config->sort, 1, '--sort sets config sort true' );
+}
+
 done_testing();

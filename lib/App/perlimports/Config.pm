@@ -158,6 +158,13 @@ has preserve_unused => (
     default => 1,
 );
 
+has sort => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 0,
+);
+
 has tidy_whitespace => (
     is      => 'ro',
     isa     => Bool,
@@ -264,4 +271,5 @@ pad_brackets                    = false
 padding                         = true
 preserve_duplicates             = false
 preserve_unused                 = false
+sort                            = false
 tidy_whitespace                 = true
