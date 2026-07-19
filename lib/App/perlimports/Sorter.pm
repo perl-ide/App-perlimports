@@ -116,7 +116,10 @@ sub _sections {
         }
         push @current, $u;
     }
-    push @sections, [@current] if @current;
+
+    # @current always holds at least the final unit: sorted_document returns
+    # early when there are no includes, so this loop always runs at least once.
+    push @sections, [@current];
 
     return @sections;
 }

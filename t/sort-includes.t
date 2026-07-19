@@ -5,9 +5,10 @@ use warnings;
 
 use lib 't/lib', 'test-data/lib';
 
+use Cpanel::JSON::XS  qw( decode_json );
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
-use Test::More import => [qw( done_testing ok )];
+use Test::More import => [qw( done_testing is ok )];
 
 my @ignore = ( 'Foo', 'Bar', 'Baz' );
 
@@ -153,6 +154,26 @@ EOF
     eq_or_diff(
         $document->tidied_document, $expected,
         'already-sorted input is unchanged through tidy (idempotent)'
+    );
+}
+
+# Lint mode with --json reports the unsorted includes as a JSON diagnostic
+# instead of a unified diff.
+{
+    my ( $document, $log ) = doc(
+        filename       => 'test-data/sort-includes.pl',
+        ignore_modules => \@ignore,
+        sort           => 1,
+        lint           => 1,
+        json           => 1,
+    );
+    ok( !$document->linter_success, 'json lint fails on unsorted includes' );
+
+    my ($error) = grep { $_->{level} eq 'error' } @{$log};
+    my $payload = decode_json( $error->{message} );
+    is(
+        $payload->{reason}, 'includes are not sorted',
+        'json diagnostic carries the unsorted reason'
     );
 }
 
