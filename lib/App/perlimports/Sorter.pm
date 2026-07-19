@@ -27,8 +27,8 @@ sub sorted_document {
     $doc->index_locations;
 
     my $found
-        = $doc->find( sub { $_[1]->isa('PPI::Statement::Include') } );
-    return $source unless $found && @{$found};
+        = $doc->find( sub { $_[1]->isa('PPI::Statement::Include') } ) || [];
+    return $source unless @{$found};
 
     my $annotations = App::perlimports::Annotations->new(
         ppi_document => $doc,
@@ -78,7 +78,7 @@ sub _unit {
         start => $start,
         end   => $end,
         class => $self->_classify( $node, $annotations ),
-        key   => lc( $node->module // q{} ),
+        key   => lc( $node->module ),
     };
 }
 
@@ -88,8 +88,8 @@ sub _classify {
     return 'hoist'  if $node->pragma;
     return 'hoist'  if $node->version;
     return 'anchor' if $annotations->is_ignored($node);
-    return 'anchor' if ( $node->type // q{} ) eq 'no';
-    return 'anchor' unless defined $node->module && length $node->module;
+    return 'anchor' if $node->type eq 'no';
+    return 'anchor' unless length $node->module;
     return 'sortable';
 }
 
