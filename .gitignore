@@ -1,4 +1,5 @@
 /.build
+/.nono
 /.test-script-*
 /.tidyall.d/
 /App-perlimports*
