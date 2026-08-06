@@ -134,7 +134,7 @@
          "web" : "https://github.com/perl-ide/App-perlimports"
       }
    },
-   "version" : "0.000060",
+   "version" : "0.000061",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.042002"
@@ -684,7 +684,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000060",
+                  "tag" : "v0.000061",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
@@ -870,7 +870,7 @@
       }
    },
    "x_contributors" : [
-      "copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>",
+      "Copilot <198982749+Copilot@users.noreply.github.com>",
       "dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
       "E. Choroba <choroba@matfyz.cz>",
       "James Raspass <jraspass@gmail.com>",
