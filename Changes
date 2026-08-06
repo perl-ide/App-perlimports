@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000061  2026-08-06 20:49:42Z
     - Fix a crash caused by Sub::HandlesVia::XS stack-pointer corruption in
       Document by removing the remaining Sub::HandlesVia Array delegations
