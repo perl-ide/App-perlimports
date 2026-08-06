@@ -82,15 +82,18 @@ has _ignore_modules_pattern => (
 # list of PPI::Statement::Include (use, no, require)
 # (excluding pragmas, ignored modules, and 'use VERSION')
 has includes => (
-    is          => 'ro',
-    isa         => ArrayRef [Object],    # PPI::Statement::Include
-    handles_via => 'Array',
-    handles     => {
-        all_includes => 'elements',
-    },
+    is      => 'ro',
+    isa     => ArrayRef [Object],    # PPI::Statement::Include
     lazy    => 1,
     builder => '_build_includes',
 );
+
+# Deliberately an explicit accessor rather than a Sub::HandlesVia 'elements'
+# delegation. Under the Sub::HandlesVia::XS backend the array handler caches the
+# Perl stack pointer, then invokes this lazy builder via call_sv; the builder
+# grows (and reallocates) the stack, leaving that cached pointer dangling, and
+# the handler's subsequent write corrupts the heap. See issue #171.
+sub all_includes { return @{ $_[0]->includes }; }
 
 # constant subs defined using 'use constant'
 has constants => (
@@ -222,15 +225,15 @@ has ppi_document => (
 # list of tokens in the document that -could- have come from an import
 # (but most are keywords, built-ins, lexical vars, defined funcs, etc.)
 has possible_imports => (
-    is          => 'ro',
-    isa         => ArrayRef [Object],    # isa PPI:Token:Word, :Symbol, :Magic
-    handles_via => 'Array',
-    handles     => {
-        possibly_imported_tokens => 'elements',
-    },
+    is      => 'ro',
+    isa     => ArrayRef [Object],        # isa PPI:Token:Word, :Symbol, :Magic
     lazy    => 1,
     builder => '_build_possible_imports',
 );
+
+# Explicit accessor rather than a Sub::HandlesVia 'elements' delegation; see the
+# note on all_includes above and issue #171.
+sub possibly_imported_tokens { return @{ $_[0]->possible_imports }; }
 
 has _ppi_selection => (
     is       => 'ro',
@@ -255,15 +258,15 @@ has _preserve_unused => (
 );
 
 has _sub_exporter_export_list => (
-    is          => 'ro',
-    isa         => ArrayRef,
-    handles_via => 'Array',
-    handles     => {
-        sub_exporter_export_list => 'elements',
-    },
+    is      => 'ro',
+    isa     => ArrayRef,
     lazy    => 1,
     builder => '_build_sub_exporter_export_list',
 );
+
+# Explicit accessor rather than a Sub::HandlesVia 'elements' delegation; see the
+# note on all_includes above and issue #171.
+sub sub_exporter_export_list { return @{ $_[0]->_sub_exporter_export_list }; }
 
 # catalog of the named subs defined, e.g.
 #   new => 1, ...
