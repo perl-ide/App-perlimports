@@ -115,14 +115,9 @@ has module_name => (
 );
 
 has _found_imports => (
-    is          => 'ro',
-    isa         => Maybe [ArrayRef],
-    init_arg    => 'found_imports',
-    handles_via => 'Array',
-    handles     => {
-        _all_found_imports => 'elements',
-        _has_found_imports => 'count',
-    },
+    is       => 'ro',
+    isa      => Maybe [ArrayRef],
+    init_arg => 'found_imports',
 );
 
 has _indent => (
