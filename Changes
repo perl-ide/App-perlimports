@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Suppress warnings leaked to STDERR when trial-loading modules in
+      Sandbox::eval_pkg (e.g. "Attempt to call undefined import method" for
+      modules with no import()) (Olaf Alders)
 
 0.000062  2026-09-08 13:34:54Z
     - Add an experimental --sort flag to sort contiguous include statements
