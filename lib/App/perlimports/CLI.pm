@@ -207,7 +207,7 @@ sub _build_args {
         [],
         [
             'sort!',
-            'Sort contiguous include statements. Defaults to false.',
+            '(Experimental) Sort contiguous include statements. Defaults to false.',
         ],
         [],
         [

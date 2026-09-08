@@ -1,6 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Add an experimental --sort flag to sort contiguous include statements
+      into a deterministic order (GH#14)
 
 0.000061  2026-08-06 20:49:42Z
     - Fix a crash caused by Sub::HandlesVia::XS stack-pointer corruption in
