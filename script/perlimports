@@ -521,6 +521,12 @@ If this option is enabled, then C<--inplace-edit|-i> is not available.
 
     --read-stdin
 
+=head2 --[no-]sort
+
+(Experimental). Sort contiguous include statements into a deterministic order.
+Defaults to false. As this feature is still experimental, the exact sorting
+behaviour may change in a subsequent release.
+
 =head2 --log-level|-l
 
 Generally only useful for debugging. C<notice> notifies about progress, like

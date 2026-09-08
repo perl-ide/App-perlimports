@@ -9,6 +9,7 @@ use App::perlimports::Annotations     ();
 use App::perlimports::ExportInspector ();
 use App::perlimports::Include         ();
 use App::perlimports::Sandbox         ();
+use App::perlimports::Sorter          ();
 use File::Basename                    qw( fileparse );
 use List::Util                        qw( any uniq );
 use Module::Runtime                   qw( module_notional_filename );
@@ -213,6 +214,13 @@ has _padding => (
     isa      => Bool,
     init_arg => 'padding',
     default  => 1,
+);
+
+has _sort => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'sort',
+    default  => 0,
 );
 
 has ppi_document => (
@@ -1110,6 +1118,8 @@ sub _lint_or_tidy_document {
     my $self = shift;
 
     my $linter_error = 0;
+    $linter_error = 1 if $self->_sort_lint_error;
+
     my %processed;    # modules we changed/confirmed the use statement
 
 INCLUDE:
@@ -1239,7 +1249,42 @@ INCLUDE:
 
     # We need to do serialize in order to preserve HEREDOCs.
     # See https://metacpan.org/pod/PPI::Document#serialize
-    return $self->lint ? !$linter_error : $self->_ppi_selection->serialize;
+    return !$linter_error if $self->lint;
+
+    return $self->_tidied_and_sorted;
+}
+
+# Returns 1 (and warns via the linter) if we're linting with --sort enabled
+# and the current includes are not in sorted order; returns 0 otherwise.
+sub _sort_lint_error {
+    my $self = shift;
+
+    return 0 unless $self->lint && $self->_sort;
+
+    my $before = $self->_ppi_selection->serialize;
+    my $after  = App::perlimports::Sorter->new(
+        logger => $self->logger,
+        source => $before,
+    )->sorted_document;
+
+    return 0 if $before eq $after;
+
+    $self->_warn_unsorted_includes( $before, $after );
+    return 1;
+}
+
+# Serializes the tidied document and, when --sort is enabled, reorders its
+# include statements.
+sub _tidied_and_sorted {
+    my $self = shift;
+
+    my $tidied = $self->_ppi_selection->serialize;
+    return $tidied unless $self->_sort;
+
+    return App::perlimports::Sorter->new(
+        logger => $self->logger,
+        source => $tidied,
+    )->sorted_document;
 }
 
 # given PPI:Element, returns hashref describing location, e.g.:
@@ -1308,6 +1353,31 @@ sub _warn_diff_for_linter {
         $self->logger->error($justification);
         $self->logger->error($diff);
     }
+}
+
+sub _warn_unsorted_includes {
+    my ( $self, $before, $after ) = @_;
+
+    my $reason = 'includes are not sorted';
+
+    if ( $self->json ) {
+        $self->logger->error(
+            $self->_json_encoder->encode(
+                {
+                    filename => $self->_filename,
+                    reason   => $reason,
+                }
+            )
+        );
+        return;
+    }
+
+    $self->logger->error(
+        sprintf( '❌ %s (%s)', $self->_filename, $reason ) );
+    $self->logger->error(
+        Text::Diff::diff( \$before, \$after, { STYLE => 'Unified' } ) );
+
+    return;
 }
 
 sub _remove_with_trailing_characters {

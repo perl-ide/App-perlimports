@@ -206,6 +206,11 @@ sub _build_args {
         ],
         [],
         [
+            'sort!',
+            '(Experimental) Sort contiguous include statements. Defaults to false.',
+        ],
+        [],
+        [
             'preserve-duplicates!',
             'Preserve duplicate use statements for the same module. This is the default behaviour. You are encouraged to disable it.',
         ],
@@ -280,6 +285,7 @@ sub _build_config {
         padding
         preserve_duplicates
         preserve_unused
+        sort
         tidy_whitespace
     );
     my @config_option_lists
@@ -466,6 +472,7 @@ sub run {
         padding             => $self->_config->padding,
         preserve_duplicates => $self->_config->preserve_duplicates,
         preserve_unused     => $self->_config->preserve_unused,
+        sort                => $self->_config->sort,
         tidy_whitespace     => $self->_config->tidy_whitespace,
         $selection ? ( selection => $selection ) : (),
     );
