@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000062  2026-09-08 13:34:54Z
     - Add an experimental --sort flag to sort contiguous include statements
       into a deterministic order (GH#14)
