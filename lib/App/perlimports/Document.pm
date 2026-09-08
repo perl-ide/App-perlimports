@@ -1437,25 +1437,25 @@ sub _changed_line_span {
     # Unified hunk headers look like "@@ -L,S +l,s @@". A missing S means 1;
     # S == 0 marks a pure insertion positioned after original line L. We take
     # the union of the original-file ranges the hunks touch.
-    my ( $first, $last );
+    my ( $first_elem, $last_elem );
     while ( $diff =~ m{^\@\@ \s+ [-](\d+) (?: [,](\d+) )? \s}gmx ) {
         my ( $start, $size ) = ( $1, defined $2 ? $2 : 1 );
         my $end = $size > 0 ? $start + $size - 1 : $start;
-        $first = $start if !defined $first || $start < $first;
-        $last  = $end   if !defined $last  || $end > $last;
+        $first_elem = $start if !defined $first_elem || $start < $first_elem;
+        $last_elem  = $end   if !defined $last_elem  || $end > $last_elem;
     }
-    return unless defined $first;
+    return unless defined $first_elem;
 
     my @before     = split( m{\n}, $before, -1 );
-    my $start_line = $before[ $first - 1 ];
+    my $start_line = $before[ $first_elem - 1 ];
     my $start_column
         = ( defined $start_line && $start_line =~ m{\S} ) ? $-[0] + 1 : 1;
 
     return {
-        start => { line => $first, column => $start_column },
+        start => { line => $first_elem, column => $start_column },
         end   => {
-            line   => $last,
-            column => length( $before[ $last - 1 ] // q{} ) || 1,
+            line   => $last_elem,
+            column => length( $before[ $last_elem - 1 ] // q{} ) || 1,
         },
     };
 }
