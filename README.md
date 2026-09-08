@@ -10,7 +10,7 @@ App::perlimports - Make implicit imports explicit
 
 # VERSION
 
-version 0.000062
+version 0.000063
 
 # DESCRIPTION
 
