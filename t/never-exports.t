@@ -6,7 +6,8 @@ use warnings;
 use lib 't/lib';
 
 use TestHelper qw( source2pi );
-use Test::More import => [qw( done_testing is is_deeply ok subtest )];
+use Test::More import => [qw( is is_deeply ok subtest )];
+use Test::Warnings;
 use Test::Needs {
     'Cpanel::JSON::XS' => 4.19,
     'Getopt::Long'     => 2.40,

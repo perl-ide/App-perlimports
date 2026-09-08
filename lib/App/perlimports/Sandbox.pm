@@ -37,6 +37,12 @@ EOF
 
     ## no critic (Variables::RequireInitializationForLocalVars)
     local $@;
+
+    # We only care about whether the eval throws an error. Trial-loading an
+    # arbitrary module can emit warnings (e.g. "Attempt to call undefined
+    # import method" when a module has no import()), which we don't want to
+    # leak to the user's terminal.
+    local $SIG{__WARN__} = sub { };
     ## no critic (BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval)
     eval $to_eval;
 
