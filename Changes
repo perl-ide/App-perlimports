@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000063  2026-09-08 21:15:32Z
     - Suppress warnings leaked to STDERR when trial-loading modules in
       Sandbox::eval_pkg (e.g. "Attempt to call undefined import method" for

@@ -7,7 +7,7 @@ use App::perlimports::Annotations ();
 use PPI::Document                 ();
 use Types::Standard               qw( Str );
 
-our $VERSION = '0.000063';
+our $VERSION = '0.000064';
 
 with 'App::perlimports::Role::Logger';
 
