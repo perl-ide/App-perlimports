@@ -1360,22 +1360,43 @@ sub _warn_unsorted_includes {
 
     my $reason = 'includes are not sorted';
 
+    my $diff = Text::Diff::diff( \$before, \$after, { STYLE => 'Unified' } );
+
     if ( $self->json ) {
-        $self->logger->error(
-            $self->_json_encoder->encode(
-                {
-                    filename => $self->_filename,
-                    reason   => $reason,
-                }
-            )
-        );
+
+        # Unlike a per-include diagnostic, this reports a document-wide
+        # reordering, so there's no single include to attach a location or
+        # module to. We report the span covering all includes and omit
+        # "module" entirely rather than pick an arbitrary one.
+        my $json = {
+            filename => $self->_filename,
+            reason   => $reason,
+            diff     => $diff,
+        };
+
+        # Sorting operates on every include in the document (pragmas and
+        # ignored modules included), so we span the raw PPI include
+        # statements rather than the filtered all_includes list.
+        ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
+        my $includes
+            = $self->_ppi_selection->find(
+            sub { $_[1]->isa('PPI::Statement::Include') } )
+            || [];
+        ## use critic
+        if ( @{$includes} ) {
+            $json->{location} = {
+                start => _elem_loc( $includes->[0] )->{start},
+                end   => _elem_loc( $includes->[-1] )->{end},
+            };
+        }
+
+        $self->logger->error( $self->_json_encoder->encode($json) );
         return;
     }
 
     $self->logger->error(
         sprintf( '❌ %s (%s)', $self->_filename, $reason ) );
-    $self->logger->error(
-        Text::Diff::diff( \$before, \$after, { STYLE => 'Unified' } ) );
+    $self->logger->error($diff);
 
     return;
 }

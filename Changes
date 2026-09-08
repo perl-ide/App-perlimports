@@ -4,6 +4,9 @@ Revision history for App-perlimports
     - Suppress warnings leaked to STDERR when trial-loading modules in
       Sandbox::eval_pkg (e.g. "Attempt to call undefined import method" for
       modules with no import()) (Olaf Alders)
+    - Include the "location" and "diff" fields in --json output when --sort
+      reports unsorted includes; previously only "reason" and "filename" were
+      emitted (GH#178)
 
 0.000062  2026-09-08 13:34:54Z
     - Add an experimental --sort flag to sort contiguous include statements

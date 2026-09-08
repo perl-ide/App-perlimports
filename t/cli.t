@@ -300,6 +300,42 @@ subtest '--lint --json failure duplicate import' => sub {
     is( $exit, 1, 'exit code is error' );
 };
 
+subtest '--sort --json failure reports location and diff' => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--sort',
+        '--no-config-file',
+        '-f' => 'test-data/sort-includes.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $parsed_stderr = decode_json($stderr);
+    is(
+        $parsed_stderr->{reason}, 'includes are not sorted',
+        'reason is present'
+    );
+    is(
+        $parsed_stderr->{filename}, 'test-data/sort-includes.pl',
+        'filename is present'
+    );
+    eq_or_diff(
+        $parsed_stderr->{location},
+        {
+            start => { line => 1, column => 1 },
+            end   => { line => 4, column => 8 },
+        },
+        'location spans all includes'
+    );
+    ok( length $parsed_stderr->{diff},    'diff is present and non-empty' );
+    ok( !exists $parsed_stderr->{module}, 'module is omitted' );
+    is( $exit, 1, 'exit code is error' );
+};
+
 subtest '--log-filename' => sub {
     my $expected = <<'EOF';
 use strict;

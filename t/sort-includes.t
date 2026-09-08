@@ -8,7 +8,7 @@ use lib 't/lib', 'test-data/lib';
 use Cpanel::JSON::XS  qw( decode_json );
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
-use Test::More import => [qw( done_testing is ok )];
+use Test::More import => [qw( done_testing is like ok )];
 
 my @ignore = ( 'Foo', 'Bar', 'Baz' );
 
@@ -174,6 +174,33 @@ EOF
     is(
         $payload->{reason}, 'includes are not sorted',
         'json diagnostic carries the unsorted reason'
+    );
+    is(
+        $payload->{filename}, 'test-data/sort-includes.pl',
+        'json diagnostic carries the filename'
+    );
+
+    # The sort diagnostic is document-wide, so location spans all includes
+    # (first include start through last include end) and there is no module.
+    eq_or_diff(
+        $payload->{location},
+        {
+            start => { line => 1, column => 1 },
+            end   => { line => 4, column => 8 },
+        },
+        'json diagnostic carries the location spanning all includes'
+    );
+    ok(
+        !exists $payload->{module},
+        'json diagnostic omits module for a document-wide sort'
+    );
+    ok(
+        length $payload->{diff},
+        'json diagnostic carries a non-empty diff'
+    );
+    like(
+        $payload->{diff}, qr{^\@\@}m,
+        'diff is in unified format'
     );
 }
 
