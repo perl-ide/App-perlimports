@@ -13,7 +13,7 @@ use Path::Tiny            ();
 use TestHelper            qw( logger );
 use Test::Differences     qw( eq_or_diff );
 use Test::Fatal           qw( exception );
-use Test::More import => [qw( done_testing is like ok subtest )];
+use Test::More import => [qw( diag done_testing is like ok subtest )];
 use Test::Needs qw( Perl::Critic::Utils );
 
 subtest 'bad path to config file' => sub {
@@ -166,11 +166,11 @@ subtest '--lint success' => sub {
         $cli->run;
     };
     is(
-        $stderr,
+        $stdout,
         "test-data/lint-success.pl OK\n",
-        'success message on STDERR'
+        'success message on STDOUT'
     );
-    is( $stdout, q{}, 'no STDOUT' );
+    is( $stderr, q{}, 'no STDERR on a clean run (GH #163)' );
     is( $exit,   0,   'exit code is success' );
 };
 
@@ -212,6 +212,179 @@ EOF
 
     is( $stderr, $expected, 'STDERR' );
     is( $exit,   1,         'exit code is error' );
+};
+
+subtest '--lint --quiet success' => sub {
+    local @ARGV = (
+        '--lint',
+        '--quiet',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT with --quiet on a clean run' );
+    is( $stderr, q{}, 'no STDERR with --quiet on a clean run' );
+    is( $exit,   0,   'exit code is success' );
+};
+
+subtest '--lint -q success' => sub {
+    local @ARGV = (
+        '--lint',
+        '-q',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT with -q on a clean run' );
+    is( $stderr, q{}, 'no STDERR with -q on a clean run' );
+    is( $exit,   0,   'exit code is success' );
+};
+
+subtest '--lint --quiet failure still reports diagnostics' => sub {
+    local @ARGV = (
+        '--lint',
+        '--quiet',
+        '--no-config-file',
+        '-f' => 'test-data/lint-failure-import-args.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+
+    my $expected = <<'EOF';
+❌ Perl::Critic::Utils (import arguments need tidying) at test-data/lint-failure-import-args.pl line 4
+@@ -4 +4 @@
+-use Perl::Critic::Utils;
++use Perl::Critic::Utils qw( $QUOTE );
+
+EOF
+
+    is( $stdout, q{}, 'no STDOUT' );
+
+    # --quiet suppresses the success summary and info/notice noise, but must
+    # not swallow genuine failure diagnostics (logged at the error level).
+    is( $stderr, $expected, 'failure diagnostics survive --quiet (GH #163)' );
+    is( $exit,   1,         'exit code is error' );
+};
+
+subtest '--lint --json --quiet failure still reports JSON' => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--quiet',
+        '--no-config-file',
+        '-f' => 'test-data/lint-failure-import-args.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+
+    is( $stdout, q{}, 'no STDOUT' );
+    is( $exit,   1,   'exit code is error' );
+
+    # The machine-readable JSON diagnostic is logged at the error level, so
+    # --quiet must not discard it -- a CI consumer needs the payload.
+    like(
+        $stderr, qr{"diff"},
+        'JSON failure diagnostic survives --json --quiet (GH #163)'
+    );
+    my $decoded;
+    is(
+        exception { $decoded = decode_json($stderr) },
+        undef, 'STDERR is valid JSON'
+    ) or diag($stderr);
+    is(
+        $decoded->{module}, 'Perl::Critic::Utils',
+        'JSON reports the offending module'
+    );
+};
+
+subtest '--lint --json --quiet success' => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--quiet',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT with --json --quiet' );
+    is( $stderr, q{}, 'no STDERR with --json --quiet' );
+    is( $exit,   0,   'exit code is success' );
+};
+
+subtest '--lint --log-level=notice noise (control)' => sub {
+    local @ARGV = (
+        '--lint',
+        '--log-level' => 'notice',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    like(
+        $stderr,
+        qr{Starting file},
+        'notice-level log noise appears without --quiet'
+    );
+    is( $exit, 0, 'exit code is success' );
+};
+
+subtest '--lint --log-level=notice --quiet suppresses log noise' => sub {
+    local @ARGV = (
+        '--lint',
+        '--log-level' => 'notice',
+        '--quiet',
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT with --quiet' );
+    is(
+        $stderr, q{},
+        'notice noise and OK line both suppressed by --quiet'
+    );
+    is( $exit, 0, 'exit code is success' );
+};
+
+subtest '--quiet does not silence an explicit --log-filename' => sub {
+    my $log = Path::Tiny->tempfile('perlimports-logXXXXXX');
+    local @ARGV = (
+        '--lint',
+        '--log-level' => 'notice',
+        '--quiet',
+        '--log-filename' => "$log",
+        '--no-config-file',
+        '-f' => 'test-data/lint-success.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+    is( $stderr, q{}, 'no STDERR (logging is redirected to the file)' );
+    like(
+        $log->slurp_utf8,
+        qr{Starting file},
+        'file log keeps notice-level messages despite --quiet'
+    );
+    is( $exit, 0, 'exit code is success' );
 };
 
 subtest '--lint failure unused import' => sub {
