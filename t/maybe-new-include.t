@@ -32,14 +32,21 @@ sub make_doc {
         ( lint            => $args{lint} ) x !!defined $args{lint},
         ( tidy_whitespace => $args{tidy} ) x !!defined $args{tidy},
     );
-    my $stm = $doc->includes->[0];              # PPI:Statement:Include
+    my $stm = $doc->includes->[0];    # PPI:Statement:Include
+
+    # An empty includes list means the fixture's use statement could not be
+    # evaluated in the sandbox (e.g. it relies on a symbol not exported by the
+    # installed module version). Fail with a clear message rather than a cryptic
+    # "Can't call method ... on an undefined value" from _include_analyzer.
+    die "no includes found for: $text" unless $stm;
+
     my $inc = $doc->_include_analyzer($stm);    # App:perlimports:Include
     return ( $doc, $inc );
 }
 ## use critic
 
 subtest 'tidied include with tidying' => sub {
-    my $orig = 'use List::Util     qw( any );';
+    my $orig = 'use List::Util     qw( first );';
     my ( $doc, $inc ) = make_doc( include => $orig );
     my $ppis = $inc->_include;                  # PPI:Statement:Include
         # with tidy_whitespace, the only way to get the original back is:
@@ -47,7 +54,7 @@ subtest 'tidied include with tidying' => sub {
         # * original had some extra spaces before the symbol list.
 
     # statements that are rejected (the original statement is kept!)
-    my $reject = 'use List::Util qw( any );';
+    my $reject = 'use List::Util qw( first );';
     foreach my $try ( $orig, $reject ) {
         my $res = $inc->_maybe_get_new_include($try);
         ok( $res == $ppis, 'kept original, rejected: ' . $try );
@@ -55,13 +62,13 @@ subtest 'tidied include with tidying' => sub {
 
     # and a list of statements that should replace the original:
     my @tries = split /\n/, <<'EODOC';
-use List::Util qw(any);
+use List::Util qw(first);
 use List::Util ();
-use List::Util qw( any mesh );
+use List::Util qw( first max );
 EODOC
     push @tries, chomped(<<'EOTEXT');
 use List::Util qw(
-    any
+    first
 );
 EOTEXT
     foreach my $try (@tries) {
@@ -71,7 +78,7 @@ EOTEXT
 };
 
 subtest 'tidied include without tidying' => sub {
-    my $orig = 'use List::Util     qw( any );';
+    my $orig = 'use List::Util     qw( first );';
     my ( $doc, $inc ) = make_doc( include => $orig, tidy => 0 );
     my $ppis = $inc->_include;    # PPI:Statement:Include
         # without tidy_whitespace, always get back the original
@@ -79,12 +86,12 @@ subtest 'tidied include without tidying' => sub {
 
     # statements that are rejected (the original statement is kept!)
     my @rejects = split /\n/, <<'EODOC';
-use List::Util qw( any );
-use List::Util qw(any);
+use List::Util qw( first );
+use List::Util qw(first);
 EODOC
     push @rejects, chomped(<<'EOTEXT');
 use List::Util qw(
-    any
+    first
 );
 EOTEXT
     foreach my $try ( $orig, @rejects ) {
@@ -95,7 +102,7 @@ EOTEXT
     # statements that should replace the original:
     my @tries = split /\n/, <<'EODOC2';
 use List::Util ();
-use List::Util qw( any mesh );
+use List::Util qw( first max );
 EODOC2
     foreach my $try (@tries) {
         my $res = $inc->_maybe_get_new_include($try);
@@ -190,9 +197,9 @@ EOTEXT
 subtest 'multiline include with tidying' => sub {
     my $orig = chomped(<<'EORIG');
 use List::Util     qw(
-    any
-    mesh
-    none
+    first
+    max
+    min
 );
 EORIG
     my ( $doc, $inc ) = make_doc( include => $orig );
@@ -204,9 +211,9 @@ EORIG
     # statement that is rejected (the original statement is kept!)
     my $reject = chomped(<<'EOTEXT');
 use List::Util qw(
-    any
-    mesh
-    none
+    first
+    max
+    min
 );
 EOTEXT
     foreach my $try ( $orig, $reject ) {
@@ -216,8 +223,8 @@ EOTEXT
 
     # statements that should replace the original:
     my @tries = split /\n/, <<'EODOC';
-use List::Util qw(any mesh none);
-use List::Util qw( any mesh none );
+use List::Util qw(first max min);
+use List::Util qw( first max min );
 EODOC
     foreach my $try (@tries) {
         my $res = $inc->_maybe_get_new_include($try);
