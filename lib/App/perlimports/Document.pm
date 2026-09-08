@@ -1292,15 +1292,34 @@ sub _tidied_and_sorted {
 sub _elem_loc {
     my ($elem) = @_;
 
-    my $loc     = { start => { line => $elem->line_number } };
+    my $line   = $elem->line_number;
+    my $column = $elem->column_number;
+
     my $content = $elem->content;
     my @lines   = split( m{\n}, $content );
 
-    if ( $lines[0] =~ m{[^\s]} ) {
-        $loc->{start}->{column} = @-;
+    my $loc = { start => { line => $line, column => $column } };
+
+    if ( @lines <= 1 ) {
+
+        # A single-line statement's own indentation is not part of its
+        # content, so the (inclusive) end column is measured from the start
+        # column rather than from column 1.
+        $loc->{end} = {
+            line   => $line,
+            column => $column + length( $lines[0] // q{} ) - 1,
+        };
     }
-    $loc->{end}->{line}   = $elem->line_number + @lines - 1;
-    $loc->{end}->{column} = length( $lines[-1] );
+    else {
+
+        # Continuation lines begin at column 1 and their leading whitespace is
+        # part of the statement content, so the final line's length is already
+        # the absolute end column.
+        $loc->{end} = {
+            line   => $line + @lines - 1,
+            column => length( $lines[-1] ),
+        };
+    }
 
     return $loc;
 }
@@ -1360,35 +1379,33 @@ sub _warn_unsorted_includes {
 
     my $reason = 'includes are not sorted';
 
-    my $diff = Text::Diff::diff( \$before, \$after, { STYLE => 'Unified' } );
+    # Use CONTEXT => 0 for parity with the per-include diagnostic
+    # (_warn_diff_for_linter): the before/after are full-document
+    # serializations whose line numbers already align, so surrounding context
+    # lines would only bloat the output and diverge from the other shape.
+    my $diff = Text::Diff::diff(
+        \$before, \$after,
+        {
+            CONTEXT => 0,
+            STYLE   => 'Unified',
+        }
+    );
 
     if ( $self->json ) {
 
-        # Unlike a per-include diagnostic, this reports a document-wide
-        # reordering, so there's no single include to attach a location or
-        # module to. We report the span covering all includes and omit
-        # "module" entirely rather than pick an arbitrary one.
+        # Unlike a per-include diagnostic, this reports a reordering rather
+        # than a single include, so there's no module to attach and we omit
+        # "module" entirely. The location spans the lines that actually
+        # changed rather than every include in the file: a `require` buried in
+        # a sub far below never participates in a top-of-file reordering.
         my $json = {
             filename => $self->_filename,
             reason   => $reason,
             diff     => $diff,
         };
 
-        # Sorting operates on every include in the document (pragmas and
-        # ignored modules included), so we span the raw PPI include
-        # statements rather than the filtered all_includes list.
-        ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
-        my $includes
-            = $self->_ppi_selection->find(
-            sub { $_[1]->isa('PPI::Statement::Include') } )
-            || [];
-        ## use critic
-        if ( @{$includes} ) {
-            $json->{location} = {
-                start => _elem_loc( $includes->[0] )->{start},
-                end   => _elem_loc( $includes->[-1] )->{end},
-            };
-        }
+        my $location = _changed_line_span( $before, $diff );
+        $json->{location} = $location if $location;
 
         $self->logger->error( $self->_json_encoder->encode($json) );
         return;
@@ -1399,6 +1416,48 @@ sub _warn_unsorted_includes {
     $self->logger->error($diff);
 
     return;
+}
+
+# Given the original document ($before) and the unified diff describing the
+# reordering, return the 1-indexed line/column span of the original lines the
+# diff touches. This keeps a document-wide sort diagnostic pointed at the
+# reordered includes rather than at unrelated includes elsewhere in the file
+# (a `require` buried in a sub far below never participates in a top-of-file
+# reordering). Deriving the span from the diff -- rather than comparing lines
+# positionally -- is important because the Sorter can insert a blank line
+# after the hoisted pragmas, which shifts every following line and would make
+# a positional comparison flag the whole tail of the file. Columns are
+# 1-indexed and inclusive. When the change touches multiple non-contiguous
+# blocks the span covers the first changed line through the last. Returns
+# undef when the diff has no hunks (the caller only reaches here when the
+# versions differ).
+sub _changed_line_span {
+    my ( $before, $diff ) = @_;
+
+    # Unified hunk headers look like "@@ -L,S +l,s @@". A missing S means 1;
+    # S == 0 marks a pure insertion positioned after original line L. We take
+    # the union of the original-file ranges the hunks touch.
+    my ( $first, $last );
+    while ( $diff =~ m{^\@\@ \s+ [-](\d+) (?: [,](\d+) )? \s}gmx ) {
+        my ( $start, $size ) = ( $1, defined $2 ? $2 : 1 );
+        my $end = $size > 0 ? $start + $size - 1 : $start;
+        $first = $start if !defined $first || $start < $first;
+        $last  = $end   if !defined $last  || $end > $last;
+    }
+    return unless defined $first;
+
+    my @before     = split( m{\n}, $before, -1 );
+    my $start_line = $before[ $first - 1 ];
+    my $start_column
+        = ( defined $start_line && $start_line =~ m{\S} ) ? $-[0] + 1 : 1;
+
+    return {
+        start => { line => $first, column => $start_column },
+        end   => {
+            line   => $last,
+            column => length( $before[ $last - 1 ] // q{} ) || 1,
+        },
+    };
 }
 
 sub _remove_with_trailing_characters {

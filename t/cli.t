@@ -300,6 +300,37 @@ subtest '--lint --json failure duplicate import' => sub {
     is( $exit, 1, 'exit code is error' );
 };
 
+subtest
+    '--lint --json location reports the true column of an indented include'
+    => sub {
+    local @ARGV = (
+        '--lint',
+        '--json',
+        '--no-config-file',
+        '--no-preserve-duplicates',
+        '-f' => 'test-data/lint-failure-indented-duplicate.pl',
+    );
+    my $cli = App::perlimports::CLI->new;
+    my ( $stdout, $stderr, $exit ) = capture {
+        $cli->run;
+    };
+    is( $stdout, q{}, 'no STDOUT' );
+
+    my $parsed_stderr = decode_json($stderr);
+
+    # The redundant `use Carp;` is indented four spaces inside a block, so the
+    # start column is 5 (not 1) and the end column is 13 (inclusive).
+    eq_or_diff(
+        $parsed_stderr->{location},
+        {
+            start => { line => 8, column => 5 },
+            end   => { line => 8, column => 13 },
+        },
+        'location reflects the indentation of the include'
+    );
+    is( $exit, 1, 'exit code is error' );
+    };
+
 subtest '--sort --json failure reports location and diff' => sub {
     local @ARGV = (
         '--lint',
@@ -326,10 +357,10 @@ subtest '--sort --json failure reports location and diff' => sub {
     eq_or_diff(
         $parsed_stderr->{location},
         {
-            start => { line => 1, column => 1 },
+            start => { line => 2, column => 1 },
             end   => { line => 4, column => 8 },
         },
-        'location spans all includes'
+        'location spans the changed includes'
     );
     ok( length $parsed_stderr->{diff},    'diff is present and non-empty' );
     ok( !exists $parsed_stderr->{module}, 'module is omitted' );

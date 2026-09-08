@@ -180,15 +180,17 @@ EOF
         'json diagnostic carries the filename'
     );
 
-    # The sort diagnostic is document-wide, so location spans all includes
-    # (first include start through last include end) and there is no module.
+    # The location spans the lines that actually changed. The `use strict`
+    # pragma on line 1 is hoisted but stays put, so the span starts at the
+    # first reordered include (line 2) and ends at the last (line 4). There
+    # is no single module for a reordering.
     eq_or_diff(
         $payload->{location},
         {
-            start => { line => 1, column => 1 },
+            start => { line => 2, column => 1 },
             end   => { line => 4, column => 8 },
         },
-        'json diagnostic carries the location spanning all includes'
+        'json diagnostic carries the location spanning the changed includes'
     );
     ok(
         !exists $payload->{module},
@@ -201,6 +203,30 @@ EOF
     like(
         $payload->{diff}, qr{^\@\@}m,
         'diff is in unified format'
+    );
+}
+
+# A reordering of the top-of-file block must not report a location that
+# reaches down to a `require` buried in a sub far below, which never
+# participates in the sort.
+{
+    my ( $document, $log ) = doc(
+        filename => 'test-data/sort-includes-noncontiguous.pl',
+        sort     => 1,
+        lint     => 1,
+        json     => 1,
+    );
+    ok( !$document->linter_success, 'json lint fails on unsorted includes' );
+
+    my ($error) = grep { $_->{level} eq 'error' } @{$log};
+    my $payload = decode_json( $error->{message} );
+    eq_or_diff(
+        $payload->{location},
+        {
+            start => { line => 2, column => 1 },
+            end   => { line => 3, column => 8 },
+        },
+        'location covers only the reordered top block, not the distant require'
     );
 }
 

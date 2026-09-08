@@ -39,10 +39,16 @@ EOF
     local $@;
 
     # We only care about whether the eval throws an error. Trial-loading an
-    # arbitrary module can emit warnings (e.g. "Attempt to call undefined
-    # import method" when a module has no import()), which we don't want to
-    # leak to the user's terminal.
-    local $SIG{__WARN__} = sub { };
+    # arbitrary module can emit the "Attempt to call undefined import method"
+    # warning when a module has no import(), which we don't want to leak to
+    # the user's terminal. We suppress only that specific noise and re-dispatch
+    # anything else, so genuine diagnostics from a broken module still surface.
+    my $prev_warn = $SIG{__WARN__};
+    local $SIG{__WARN__} = sub {
+        my ($msg) = @_;
+        return if $msg =~ m{Attempt to call undefined import method};
+        $prev_warn ? $prev_warn->($msg) : print {*STDERR} $msg;
+    };
     ## no critic (BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval)
     eval $to_eval;
 
