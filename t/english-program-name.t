@@ -6,9 +6,8 @@ use lib 't/lib';
 use TestHelper qw( doc );
 use Test::More import => [qw( done_testing is )];
 
-# English exports typeglobs like *PROGRAM_NAME. Importing a single slot such
-# as $PROGRAM_NAME is valid and more minimal, so it must be preserved rather
-# than expanded to the *PROGRAM_NAME typeglob. See GH #97.
+# GH #97: English exports typeglobs like *PROGRAM_NAME, but a single-slot
+# import such as $PROGRAM_NAME must be preserved, not expanded.
 my ($doc) = doc( filename => 'test-data/english-program-name.pl' );
 
 my $expected = <<'EOF';

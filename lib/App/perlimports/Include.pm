@@ -378,7 +378,7 @@ sub _build_imports {
     # slot form, that is correct and more minimal, so preserve what they wrote
     # rather than expanding it to the typeglob.
     my %found_imports
-        = map { $_ => 1 } @{ $self->_found_imports || [] };
+        = map { $_ => 1 } @{ $self->_found_imports // [] };
     my @found
         = map { exists $found_imports{$_} ? $_ : $self->_import_name($_); }
         keys %found;
