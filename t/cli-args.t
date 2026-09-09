@@ -41,6 +41,7 @@ EOF
         '--no-cache',
         '--no-padding',
         '--no-preserve-duplicates',
+        '--no-preserve-require',
         '--no-preserve-unused',
         '--no-tidy-whitespace',
         '--pad-brackets',
@@ -75,6 +76,7 @@ EOF
     is( $c->pad_brackets,        1, 'pad_brackets' );
     is( $c->padding,             0, 'padding' );
     is( $c->preserve_duplicates, 0, 'preserve_duplicates' );
+    is( $c->preserve_require,    0, 'preserve_require' );
     is( $c->tidy_whitespace,     0, 'tidy_whitespace' );
 };
 

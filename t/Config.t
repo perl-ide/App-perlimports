@@ -47,6 +47,7 @@ subtest 'defaults' => sub {
     eq_or_diff( $config->never_export, [], 'empty never_export' );
     ok( $config->padding,             'padding on' );
     ok( $config->preserve_duplicates, 'preserve_duplicates on' );
+    ok( $config->preserve_require,    'preserve_require on' );
     ok( $config->preserve_unused,     'preserve_unused on' );
     ok( $config->tidy_whitespace,     'tidy_whitespace on' );
     ok( !$config->pad_brackets,       'pad_brackets off by default' );
