@@ -685,6 +685,28 @@ sub _imports_remain {
     return keys %{$found} < $self->_explicit_export_count;
 }
 
+# Comments which live *inside* the original include statement (e.g. a
+# "## no critic (...)" annotation between the module name and the import list,
+# or a comment nested inside an explicit "( ... )" import list) are
+# descendants of the PPI::Statement::Include and always appear before its
+# terminating ";". Because we rebuild the statement from scratch, they would
+# otherwise be silently dropped (see #50), so we collect them here, in source
+# order, to be re-attached as a trailing side comment. Only the comment
+# *content* is preserved, not its original position: every embedded comment is
+# moved to the end of the rewritten statement. A comment which already trails
+# the ";" is a sibling of the statement rather than a descendant, so it is left
+# in place by the document and is intentionally not collected here.
+sub _original_side_comments {
+    my $self = shift;
+    my $comments
+        = $self->_include->find( sub { $_[1]->isa('PPI::Token::Comment') } );
+    return q{} unless $comments;
+    return join q{ }, map {
+        ( my $content = $_->content ) =~ s{\s+\z}{};
+        $content;
+    } @{$comments};
+}
+
 # Takes a string 'use SomeModule ...', returns a PPI:Statement:Include.
 # The returned obj could be one made from the string, if its different from
 # the existing one, else it is just the original.
@@ -692,6 +714,40 @@ sub _maybe_get_new_include {
     my $self      = shift;
     my $statement = shift;
     my $orig      = $self->_include;
+
+    # Re-attach any comments which were embedded in the original statement as a
+    # trailing side comment so they survive the rewrite (#50). Four spaces of
+    # separation matches perltidy's default --minimum-space-to-comment, so the
+    # result is stable under a subsequent perltidy run. We only pipe through
+    # Perl::Tidy for single-line statements: running it over an already-wrapped
+    # (multi-line) import list would re-flow the indentation and fight our own
+    # --indent handling.
+    #
+    # Known limitation: if the original statement had comments on *both* sides
+    # -- one embedded (collected here) and one already trailing the ";" (kept in
+    # place by the document) -- both end up as side comments on the single
+    # rewritten line. Their text is preserved, but Perl::Critic honours only the
+    # first "## no critic" on a physical line, so a second such annotation stops
+    # suppressing. This both-sided case is rare and we deliberately keep both
+    # comments rather than drop one; a human can merge the annotations if needed.
+    my $comments = $self->_original_side_comments;
+    if ( length $comments ) {
+        $statement .= q{    } . $comments;
+        if ( $statement !~ m{\n} ) {
+            require Perl::Tidy;    ## no perlimports
+            my $sbt    = $self->_pad_brackets ? 0 : 1;
+            my $indent = $self->_indent;
+            my $tidied;
+            Perl::Tidy::perltidy(
+                argv        => "-npro -sbt=$sbt -i=$indent",
+                source      => \$statement,
+                destination => \$tidied,
+            );
+            $tidied =~ s{\s+\z}{};
+            $statement = $tidied;
+        }
+    }
+
     return $orig if $statement eq $orig;    # quick exit
 
     # Prefix newlines to reproduce original's location
@@ -710,7 +766,26 @@ sub _maybe_get_new_include {
     my $rewrite = do {
         $doc->index_locations;
         my $includes = $doc->find('Statement::Include');
-        $includes->[0]->clone;
+        my $found    = $includes->[0];
+        my $clone    = $found->clone;
+
+        # A re-attached side comment sits *after* the terminating ";", so PPI
+        # parses it as a sibling of the include rather than a child. Pull those
+        # trailing comment tokens into the clone so they are not lost when the
+        # document is destroyed.
+        if ( length $comments ) {
+            my @trailing;
+            my $sibling = $found;
+            while ( $sibling = $sibling->next_sibling ) {
+                last if $sibling->isa('PPI::Statement');
+                push @trailing, $sibling;
+            }
+            pop @trailing
+                while @trailing
+                && !$trailing[-1]->isa('PPI::Token::Comment');
+            $clone->add_element( $_->clone ) for @trailing;
+        }
+        $clone;
     };
 
     # If the -only- difference is some whitespace before the symbol list, we
