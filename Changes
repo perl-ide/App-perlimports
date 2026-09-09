@@ -1,6 +1,10 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Also suppress the Sandbox::eval_pkg trial-load warning under its Perl
+      5.44 wording ("Attempt to call missing import method"), which the 5.44
+      dev cycle renamed from "undefined"; fixes a t/never-exports.t failure on
+      Fedora 45 (GH#181) (reported by mavit)
 
 0.000063  2026-09-08 21:15:32Z
     - Suppress warnings leaked to STDERR when trial-loading modules in

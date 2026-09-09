@@ -46,7 +46,7 @@ EOF
     my $prev_warn = $SIG{__WARN__};
     local $SIG{__WARN__} = sub {
         my ($msg) = @_;
-        return if $msg =~ m{Attempt to call undefined import method};
+        return if _is_trial_load_warning($msg);
         $prev_warn ? $prev_warn->($msg) : print {*STDERR} $msg;
     };
     ## no critic (BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval)
@@ -54,6 +54,15 @@ EOF
 
     my $e = $@;
     return $e;
+}
+
+# Recognize the noisy warning emitted when we trial-load a module that has no
+# import() method. Perl's wording for this diagnostic changed from "undefined"
+# to "missing" in the 5.44 development cycle, so match either variant.
+sub _is_trial_load_warning {
+    my $msg = shift;
+    return defined $msg
+        && $msg =~ m{Attempt to call (?:undefined|missing) import method};
 }
 
 1;
