@@ -55,16 +55,19 @@ subtest 'local module with exception' => sub {
 subtest 'real trial-load warning is suppressed' => sub {
 
     # End-to-end check: trial-load a dependency-free module that has no
-    # import() method, which makes the running Perl emit its actual "Attempt
-    # to call undefined/missing import method" warning. eval_pkg must swallow
-    # it so nothing reaches this outer handler -- verifying suppression against
-    # whatever wording this Perl version happens to use (see GH #181).
+    # import() method while passing a non-empty import list -- the same shape
+    # as the original report, "use LWP::UserAgent qw( new );". With no import()
+    # to hand the list to, Perl emits its actual "Attempt to call
+    # undefined/missing import method" warning (the symbol name is irrelevant;
+    # only the non-empty list matters -- a bare "use" stays silent). eval_pkg
+    # must swallow it so nothing reaches this outer handler, verifying
+    # suppression against whatever wording this Perl version uses (see GH #181).
     my @leaked;
     local $SIG{__WARN__} = sub { push @leaked, @_ };
 
     my $error = App::perlimports::Sandbox::eval_pkg(
         'Local::NoImport',
-        'use Local::NoImport qw( frobnicate );',
+        'use Local::NoImport qw( new );',
     );
 
     ok( !$error, 'module trial-loads without error' );
