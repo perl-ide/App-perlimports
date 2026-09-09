@@ -1,6 +1,11 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Handle `Env` instead of ignoring it: prune unused variables from a
+      `use Env qw( ... )` statement and keep the ones which are actually used
+      (including interpolated and bareword-scalar forms), rather than leaving
+      every `use Env` untouched. A bare `use Env;` is still left alone
+      (GH#23) (Olaf Alders)
     - Preserve an explicitly-imported typeglob slot (e.g.
       `use English qw( $PROGRAM_NAME )`) instead of normalizing it to the
       `*PROGRAM_NAME` typeglob form (GH#97) (Olaf Alders)

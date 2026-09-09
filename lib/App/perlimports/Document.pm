@@ -329,7 +329,6 @@ my %default_ignore = (
     'Devel::Confess'                 => 1,
     'DynaLoader'                     => 1,
     'Encode::Guess'                  => 1,
-    'Env'                            => 1,    # see t/env.t
     'Exception::Class'               => 1,
     'Exporter'                       => 1,
     'Exporter::Lite'                 => 1,
