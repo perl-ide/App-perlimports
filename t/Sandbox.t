@@ -52,6 +52,36 @@ subtest 'local module with exception' => sub {
     ok( $eval, 'eval failure' );
 };
 
+subtest 'trial-load warning recognized across Perl versions' => sub {
+
+    # Perl reworded this diagnostic from "undefined" to "missing" in the 5.44
+    # development cycle (see GH #181). Both wordings must be suppressed so the
+    # noise never leaks to the user's terminal, regardless of the running Perl.
+    my $args = q{("new") via package "LWP::UserAgent"};
+    my $tail
+        = ' (Perhaps you forgot to load the package?) at (eval 1) line 1.';
+
+    ok(
+        App::perlimports::Sandbox::_is_trial_load_warning(
+            "Attempt to call undefined import method with arguments $args$tail"
+        ),
+        'undefined (Perl <= 5.42) wording is recognized'
+    );
+
+    ok(
+        App::perlimports::Sandbox::_is_trial_load_warning(
+            "Attempt to call missing import method with arguments $args$tail"
+        ),
+        'missing (Perl >= 5.44) wording is recognized'
+    );
+
+    ok(
+        !App::perlimports::Sandbox::_is_trial_load_warning(
+            'Some other warning we should let through'),
+        'unrelated warnings are not suppressed'
+    );
+};
+
 subtest 'eval in tidied_document' => sub {
     my ($doc) = doc( filename => 'test-data/exceptional.pl' );
 
