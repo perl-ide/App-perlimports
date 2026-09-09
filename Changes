@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000064  2026-09-09 14:10:05Z
     - Write the "<file> OK" --lint success summary to STDOUT instead of
       STDERR, so a clean run leaves STDERR empty, and add a --quiet/-q flag
       that suppresses the success summary and quiets info/notice-level
