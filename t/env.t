@@ -122,6 +122,45 @@ EOF
     );
 };
 
+subtest 'comma-separated (non-qw) args are handled' => sub {
+    my ($doc) = doc( filename => 'test-data/env-comma.pl' );
+
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+use Env qw( @PATH );
+
+my @copy = @PATH;
+EOF
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        q{'HOME', '@PATH' list drops unused HOME and normalizes to qw()},
+    );
+};
+
+subtest 'preserve_unused => 0 removes an entirely unused use Env' => sub {
+    my ($doc)
+        = doc( filename => 'test-data/env-unused.pl', preserve_unused => 0 );
+
+    # The whole statement is removed (this is the general unused-module
+    # removal path, not specific to Env); the surrounding blank lines are
+    # left as-is, as they are for any other removed import.
+    my $expected = <<'EOF';
+use strict;
+use warnings;
+
+
+my $x = 1;
+EOF
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'an unused use Env line is deleted, not left as use Env ()',
+    );
+};
+
 subtest 'bare use Env is left untouched' => sub {
     my ($doc) = doc( filename => 'test-data/env-bare.pl' );
 
