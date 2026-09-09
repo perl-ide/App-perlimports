@@ -723,13 +723,14 @@ sub _maybe_get_new_include {
     # (multi-line) import list would re-flow the indentation and fight our own
     # --indent handling.
     #
-    # Known limitation: if the original statement had comments on *both* sides
-    # -- one embedded (collected here) and one already trailing the ";" (kept in
-    # place by the document) -- both end up as side comments on the single
-    # rewritten line. Their text is preserved, but Perl::Critic honours only the
-    # first "## no critic" on a physical line, so a second such annotation stops
-    # suppressing. This both-sided case is rare and we deliberately keep both
-    # comments rather than drop one; a human can merge the annotations if needed.
+    # Known limitation: whenever a rewrite ends up with more than one comment on
+    # the single collapsed line -- multiple comments embedded in the original
+    # statement (collected here), or one embedded plus one already trailing the
+    # ";" (kept in place by the document) -- their text is preserved, but
+    # Perl::Critic honours only the first "## no critic" on a physical line, so a
+    # second such annotation stops suppressing. These cases are rare and we
+    # deliberately keep every comment rather than drop one; a human can merge the
+    # annotations if needed.
     my $comments = $self->_original_side_comments;
     if ( length $comments ) {
         $statement .= q{    } . $comments;
