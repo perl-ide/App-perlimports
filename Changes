@@ -1,6 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Preserve an explicitly-imported typeglob slot (e.g.
+      `use English qw( $PROGRAM_NAME )`) instead of normalizing it to the
+      `*PROGRAM_NAME` typeglob form (GH#97) (Olaf Alders)
 
 0.000064  2026-09-09 14:10:05Z
     - Write the "<file> OK" --lint success summary to STDOUT instead of
