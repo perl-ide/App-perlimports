@@ -338,6 +338,7 @@ my %default_ignore = (
     'Git::Sub'                       => 1,
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
     'Import::Into'                   => 1,
+    'local::lib'                     => 1,
     'MLDBM'                          => 1,
     'Modern::Perl'                   => 1,
     'Mojo::Base'                     => 1,
