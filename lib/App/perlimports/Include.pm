@@ -169,9 +169,45 @@ sub _build_export_inspector {
 # what gets exported by using the implicit list.
 sub _build_explicit_exports {
     my $self = shift;
+
+    # Env is a special case. It ties environment variables to Perl variables,
+    # so there is no @EXPORT for the ExportInspector to discover -- whatever a
+    # given "use Env" statement imports is exactly what it provides. Treat the
+    # statement's own arguments as its exportable symbols so that unused ones
+    # can be pruned. See t/env.t and GH #23.
+    if ( $self->_is_env ) {
+        return $self->_env_exports;
+    }
+
     return $self->_export_inspector->has_explicit_exports
         ? $self->_export_inspector->explicit_exports
         : $self->_export_inspector->implicit_exports;
+}
+
+sub _is_env {
+    my $self = shift;
+    my $name = $self->module_name;
+    return defined $name && $name eq 'Env';
+}
+
+sub _env_exports {
+    my $self = shift;
+
+    my %exports;
+    for my $arg ( @{ $self->_found_imports // [] } ) {
+
+        # A bareword (FOO) and the scalar form ($FOO) both tie the scalar
+        # $FOO; only @FOO and %FOO tie the array or hash. Key on the sigil'd
+        # symbol we'll actually search for in the code, but keep the literal
+        # the user wrote as the value so we preserve their original style.
+        my $sigil = substr( $arg, 0, 1 );
+        my $key
+            = ( $sigil eq '$' || $sigil eq '@' || $sigil eq '%' )
+            ? $arg
+            : '$' . $arg;
+        $exports{$key} = $arg;
+    }
+    return \%exports;
 }
 
 ## no critic (Subroutines::ProhibitExcessComplexity)
@@ -411,6 +447,11 @@ sub _build_is_ignored {
     if ( $self->_include->type eq 'require' ) {
         return 1 if !$self->_is_translatable;
     }
+
+    # A bare "use Env;" imports every environment variable. There are no
+    # explicit arguments to prune, so leave the statement untouched rather than
+    # collapsing it to "use Env ();". See GH #23.
+    return 1 if $self->_is_env && !@{ $self->_found_imports // [] };
 
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;
