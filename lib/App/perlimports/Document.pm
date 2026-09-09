@@ -258,6 +258,13 @@ has _preserve_duplicates => (
     default  => 1,
 );
 
+has _preserve_require => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'preserve_require',
+    default  => 1,
+);
+
 has _preserve_unused => (
     is       => 'ro',
     isa      => Bool,
@@ -1091,14 +1098,15 @@ sub _include_analyzer {
     my ( $self, $include ) = @_;
 
     return my $e = App::perlimports::Include->new(
-        document        => $self,
-        include         => $include,
-        indent          => $self->_indent,
-        logger          => $self->logger,
-        found_imports   => $self->found_imports->{ $include->module },
-        pad_brackets    => $self->_pad_brackets,
-        pad_imports     => $self->_padding,
-        tidy_whitespace => $self->_tidy_whitespace,
+        document         => $self,
+        include          => $include,
+        indent           => $self->_indent,
+        logger           => $self->logger,
+        found_imports    => $self->found_imports->{ $include->module },
+        pad_brackets     => $self->_pad_brackets,
+        pad_imports      => $self->_padding,
+        preserve_require => $self->_preserve_require,
+        tidy_whitespace  => $self->_tidy_whitespace,
     );
 }
 
