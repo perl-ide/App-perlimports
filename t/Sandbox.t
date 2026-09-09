@@ -6,7 +6,7 @@ use lib 't/lib', 'test-data/lib';
 use App::perlimports::Sandbox ();
 use TestHelper                qw( doc );
 use Test::Differences         qw( eq_or_diff );
-use Test::More import => [qw( cmp_ok done_testing ok subtest )];
+use Test::More import => [qw( cmp_ok diag done_testing ok subtest )];
 
 my $pkg1 = App::perlimports::Sandbox::pkg_for('fakeblock');
 my $pkg2 = App::perlimports::Sandbox::pkg_for('fakeblock');
@@ -50,6 +50,28 @@ subtest 'local module with exception' => sub {
     );
 
     ok( $eval, 'eval failure' );
+};
+
+subtest 'real trial-load warning is suppressed' => sub {
+
+    # End-to-end check: trial-load a dependency-free module that has no
+    # import() method, which makes the running Perl emit its actual "Attempt
+    # to call undefined/missing import method" warning. eval_pkg must swallow
+    # it so nothing reaches this outer handler -- verifying suppression against
+    # whatever wording this Perl version happens to use (see GH #181).
+    my @leaked;
+    local $SIG{__WARN__} = sub { push @leaked, @_ };
+
+    my $error = App::perlimports::Sandbox::eval_pkg(
+        'Local::NoImport',
+        'use Local::NoImport qw( frobnicate );',
+    );
+
+    ok( !$error, 'module trial-loads without error' );
+    ok(
+        !( grep { m/call (?:undefined|missing) import method/ } @leaked ),
+        'no trial-load import-method warning leaks to the outer handler'
+    ) or diag "leaked: @leaked";
 };
 
 subtest 'trial-load warning recognized across Perl versions' => sub {
