@@ -377,14 +377,11 @@ sub _build_imports {
     # typeglob form *PROGRAM_NAME. But if the user explicitly imported a valid
     # slot form, that is correct and more minimal, so preserve what they wrote
     # rather than expanding it to the typeglob.
-    my @found_imports
-        = $self->_found_imports ? @{ $self->_found_imports } : ();
-    my @found = map {
-        my $key = $_;
-        ( any { $_ eq $key } @found_imports )
-            ? $key
-            : $self->_import_name($key);
-    } keys %found;
+    my %found_imports
+        = map { $_ => 1 } @{ $self->_found_imports || [] };
+    my @found
+        = map { exists $found_imports{$_} ? $_ : $self->_import_name($_); }
+        keys %found;
 
     # Some modules have imports which are basically flags, rather than names of
     # symbols to export.  So if a flag is already in the import, we need to
