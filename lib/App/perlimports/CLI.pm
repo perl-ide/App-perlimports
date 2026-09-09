@@ -85,6 +85,19 @@ has _opts => (
 );
 
 # off by default
+has _quiet => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return defined $self->_opts->quiet
+            ? $self->_opts->quiet
+            : 0;
+    },
+);
+
+# off by default
 has _read_stdin => (
     is      => 'ro',
     isa     => Bool,
@@ -178,6 +191,11 @@ sub _build_args {
         [
             'lint',
             'Act as a linter only. Do not edit any files.',
+        ],
+        [],
+        [
+            'quiet|q',
+            'Suppress the "<file> OK" summary and console log output.',
         ],
         [],
         [
@@ -402,6 +420,9 @@ sub run {
         : Log::Dispatch->new(
         outputs => [
             $self->_config->log_filename
+
+            # --quiet only quiets the console (STDERR). A log file (configured
+            # via --log-filename or the config file) keeps its log level.
             ? [
                 'File',
                 binmode   => ':encoding(UTF-8)',
@@ -412,10 +433,18 @@ sub run {
                 ]
             : [
                 'Screen',
-                min_level => $self->_config->log_level,
-                newline   => 1,
-                stderr    => 1,
-                utf8      => 1,
+
+                # --quiet suppresses noisy info/notice console output (e.g.
+                # the 🚀/📦 progress lines) but must still let genuine
+                # warnings and errors through -- including --lint failure
+                # diagnostics and --json output, which are logged at the
+                # error level. See GH #163.
+                min_level => $self->_quiet
+                ? 'warning'
+                : $self->_config->log_level,
+                newline => 1,
+                stderr  => 1,
+                utf8    => 1,
             ]
         ]
         );
@@ -503,8 +532,13 @@ FILENAME:
                     return $pi_doc->linter_success;
                 }
             );
-            if ( $linter_success && !$self->_json ) {
-                $logger->error( $filename . ' OK' );
+            if ( $linter_success && !$self->_json && !$self->_quiet ) {
+
+                # The lint *result* goes to STDOUT so that STDERR is reserved
+                # for diagnostics and log messages. This keeps a clean run
+                # silent on STDERR, which matters for tools (e.g. precious)
+                # that treat any STDERR output as a failure. See GH #163.
+                print STDOUT $filename . " OK\n";
             }
             elsif ( !$linter_success ) {
                 $exit_code = 1;
