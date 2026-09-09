@@ -1,10 +1,15 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Write the "<file> OK" --lint success summary to STDOUT instead of
+      STDERR, so a clean run leaves STDERR empty, and add a --quiet/-q flag
+      that suppresses the success summary and quiets info/notice-level
+      console log noise; genuine warnings and errors still reach STDERR
+      (GH#163) (Olaf Alders)
     - Also suppress the Sandbox::eval_pkg trial-load warning under its Perl
       5.44 wording ("Attempt to call missing import method"), which the 5.44
       dev cycle renamed from "undefined"; fixes a t/never-exports.t failure on
-      Fedora 45 (GH#181) (reported by mavit)
+      Fedora 45 (GH#181) (reported by @mavit)
 
 0.000063  2026-09-08 21:15:32Z
     - Suppress warnings leaked to STDERR when trial-loading modules in
