@@ -701,10 +701,7 @@ sub _original_side_comments {
     my $comments
         = $self->_include->find( sub { $_[1]->isa('PPI::Token::Comment') } );
     return q{} unless $comments;
-    return join q{ }, map {
-        ( my $content = $_->content ) =~ s{\s+\z}{};
-        $content;
-    } @{$comments};
+    return join q{ }, map { $_->content =~ s{\s+\z}{}r } @{$comments};
 }
 
 # Takes a string 'use SomeModule ...', returns a PPI:Statement:Include.
