@@ -54,6 +54,9 @@ subtest 'local module with exception' => sub {
 
 subtest 'trial-load warning recognized across Perl versions' => sub {
 
+    # We deliberately exercise the private predicate directly here.
+    ## no critic (Subroutines::ProtectPrivateSubs)
+
     # Perl reworded this diagnostic from "undefined" to "missing" in the 5.44
     # development cycle (see GH #181). Both wordings must be suppressed so the
     # noise never leaks to the user's terminal, regardless of the running Perl.
