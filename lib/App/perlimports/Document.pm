@@ -1000,6 +1000,8 @@ sub _is_used_fully_qualified {
                     $_[1]->content =~ m{\A${module_name}::[a-zA-Z0-9_]*\z}
                     || (   $_[1]->content eq ${module_name}
                         && $_[1]->snext_sibling eq '->' )
+                    || ( $_[1]->content eq ${module_name}
+                        && _is_indirect_object_notation( $_[1] ) )
                     )
                 )
                 || ( $_[1]->isa('PPI::Token::Symbol')
@@ -1018,6 +1020,38 @@ sub _is_used_fully_qualified {
     }
 
     return 0;
+}
+
+# Barewords which precede another bareword but do not introduce indirect object
+# syntax. These are declaration/import keywords (e.g. "sub Foo", "use Foo"),
+# where the following bareword is a name being defined or imported rather than a
+# class being acted upon.
+my %not_indirect_method = map { $_ => 1 } qw(
+    no
+    package
+    require
+    sub
+    use
+);
+
+# Detects indirect object syntax such as "new File $path" or "connect Database
+# $dsn", where a module name is used as the invocant of a method without an
+# arrow. In PPI this is a bareword whose previous significant sibling is another
+# bareword (the method name). This is a heuristic: erring towards treating the
+# module as used is the safe direction, since a false negative would remove an
+# import which is actually in use.
+
+sub _is_indirect_object_notation {
+    my $word = shift;
+
+    my $prev = $word->sprevious_sibling;
+    return 0 unless ref $prev && $prev->isa('PPI::Token::Word');
+
+    # The method name is a simple identifier; a package-qualified name before
+    # the module would not be indirect object syntax.
+    return 0 unless $prev->content =~ m{\A[a-zA-Z_]\w*\z};
+
+    return !$not_indirect_method{ $prev->content };
 }
 
 sub _is_ignored {
