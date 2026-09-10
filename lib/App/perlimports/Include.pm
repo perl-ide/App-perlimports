@@ -2,7 +2,7 @@ package App::perlimports::Include;
 
 use Moo;
 
-our $VERSION = '0.000065';
+our $VERSION = '0.000066';
 
 ## no critic (Bangs::ProhibitDebuggingModules)
 

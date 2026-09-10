@@ -4,7 +4,7 @@ package App::perlimports::Annotations;
 
 use Moo;
 
-our $VERSION = '0.000065';
+our $VERSION = '0.000066';
 
 use Types::Standard qw( ArrayRef Object );
 
