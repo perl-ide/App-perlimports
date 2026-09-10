@@ -66,7 +66,7 @@ on 'test' => sub {
 
 on 'configure' => sub {
   requires "ExtUtils::MakeMaker" => "0";
-  requires "perl" => "5.010";
+  requires "perl" => "5.013002";
 };
 
 on 'develop' => sub {

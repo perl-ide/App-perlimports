@@ -25,7 +25,7 @@
       "configure" : {
          "requires" : {
             "ExtUtils::MakeMaker" : "0",
-            "perl" : "5.010"
+            "perl" : "5.013002"
          }
       },
       "develop" : {
@@ -134,10 +134,10 @@
          "web" : "https://github.com/perl-ide/App-perlimports"
       }
    },
-   "version" : "0.000064",
+   "version" : "0.000065",
    "x_Dist_Zilla" : {
       "perl" : {
-         "version" : "5.042002"
+         "version" : "5.042000"
       },
       "plugins" : [
          {
@@ -200,7 +200,7 @@
          {
             "class" : "Dist::Zilla::Plugin::ContributorsFile",
             "name" : "@Author::OALDERS/ContributorsFile",
-            "version" : "0.4.0"
+            "version" : "0.3.0"
          },
          {
             "class" : "Dist::Zilla::Plugin::MetaJSON",
@@ -684,7 +684,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000064",
+                  "tag" : "v0.000065",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
@@ -883,7 +883,7 @@
       "Peter Oliver <git@mavit.org.uk>",
       "pyrrhlin <1197072+myrrhlin@users.noreply.github.com>"
    ],
-   "x_generated_by_perl" : "v5.42.2",
+   "x_generated_by_perl" : "v5.42.0",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.40",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later",
    "x_static_install" : 1

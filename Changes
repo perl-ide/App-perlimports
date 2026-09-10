@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000065  2026-09-10 14:43:00Z
     - Preserve `require Module;` statements by default rather than rewriting
       them to `use Module ();`. The two are not equivalent (`require` loads at
       runtime, `use` at compile time) and a `require` is frequently
