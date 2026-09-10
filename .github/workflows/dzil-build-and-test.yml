@@ -157,7 +157,7 @@ jobs:
     name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
-        uses: shogo82148/actions-setup-perl@v1.43.0
+        uses: shogo82148/actions-setup-perl@v1.43.1
         with:
           perl-version: ${{ matrix.perl-version }}
       - uses: actions/download-artifact@v8
@@ -199,7 +199,7 @@ jobs:
     name: Fewer deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
-        uses: shogo82148/actions-setup-perl@v1.43.0
+        uses: shogo82148/actions-setup-perl@v1.43.1
         with:
           perl-version: ${{ matrix.perl-version }}
       - uses: actions/download-artifact@v8
