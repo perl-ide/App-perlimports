@@ -151,6 +151,13 @@ has preserve_duplicates => (
     default => 1,
 );
 
+has preserve_require => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => 1,
+);
+
 has preserve_unused => (
     is      => 'ro',
     isa     => Bool,
@@ -270,6 +277,7 @@ never_export_modules_filename   = ""
 pad_brackets                    = false
 padding                         = true
 preserve_duplicates             = false
+preserve_require                = true
 preserve_unused                 = false
 sort                            = false
 tidy_whitespace                 = true

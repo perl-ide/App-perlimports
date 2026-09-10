@@ -141,6 +141,13 @@ has _pad_imports => (
     default  => 1,
 );
 
+has _preserve_require => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => 'preserve_require',
+    default  => 1,
+);
+
 has _tidy_whitespace => (
     is       => 'ro',
     isa      => Bool,
@@ -477,6 +484,13 @@ sub _build_is_translatable {
 
     return 0 if !$self->_include->type;
     return 0 if $self->_include->type ne 'require';
+
+    # A "require Foo;" is functionally distinct from "use Foo ();" -- require
+    # loads at runtime, use at compile time -- and is often deliberate. By
+    # default we leave requires untouched. Disable preserve_require to restore
+    # the old behaviour of translating them to "use Foo ();". See GH #76.
+    return 0 if $self->_preserve_require;
+
     return 0 if $self->module_name eq 'Exporter';
 
     # We can deal with a top level require.

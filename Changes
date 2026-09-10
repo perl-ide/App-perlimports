@@ -1,6 +1,12 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Preserve `require Module;` statements by default rather than rewriting
+      them to `use Module ();`. The two are not equivalent (`require` loads at
+      runtime, `use` at compile time) and a `require` is frequently
+      deliberate. Disable the new `preserve_require` option
+      (`--no-preserve-require`) to restore the previous translate-to-`use`
+      behaviour (GH#76) (Olaf Alders)
     - Handle `Env` instead of ignoring it: prune unused variables from a
       `use Env qw( ... )` statement and keep the ones which are actually used
       (including interpolated and bareword-scalar forms), rather than leaving

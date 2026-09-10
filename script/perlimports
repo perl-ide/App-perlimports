@@ -487,6 +487,24 @@ If left disabled, the above will probably be converted to:
 This allows you to determine manually how you'd like to handle the imports in
 question. Use this setting with care.
 
+=head2 --[no-]preserve-require
+
+When enabled (the default), C<require Module;> statements are left untouched.
+When disabled, a top-level C<require Module;> is translated to C<use Module
+();>.
+
+C<require Module;> is not equivalent to C<use Module ();>: C<require> loads the
+module at runtime, at the point where the statement appears, whereas C<use>
+loads it at compile time. A C<require> is frequently used deliberately (for
+example to defer loading, to load a module conditionally, or to break a
+circular dependency), so C<perlimports> preserves it by default. Disable this
+option if you'd prefer the old behaviour of rewriting requires as C<use Module
+();>.
+
+Note that requires which are already preserved regardless of this setting --
+such as those inside a conditional or block, or C<require Exporter;> -- are
+unaffected.
+
 =head2 --[no-]preserve-unused
 
 When enabled, unused modules will be removed. Defaults to preserving unused
