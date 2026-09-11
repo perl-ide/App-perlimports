@@ -503,6 +503,57 @@ sub implicit_export_names_match_values {
         join( q{}, sort $self->implicit_export_values );
 }
 
+# SPIKE (Sub::Identify): map each exportable coderef to the package where it
+# was actually defined. The @EXPORT / @EXPORT_OK lists tell us *what* a module
+# is willing to hand out, but not *where each symbol truly lives*. A module can
+# re-export subs it imported from elsewhere; only the coderef's own stash knows
+# the difference. See reexported_symbols below.
+has symbol_origins => (
+    is      => 'ro',
+    isa     => HashRef [Str],
+    lazy    => 1,
+    builder => '_build_symbol_origins',
+);
+
+sub _build_symbol_origins {
+    my $self = shift;
+
+    return {} unless $self->_maybe_require_module('Sub::Identify');
+
+    my $module = $self->_module_name;
+    return {} unless $self->_maybe_require_module($module);
+
+    # Every name the module is willing to export, from both @EXPORT and
+    # @EXPORT_OK. Tag names and non-sub sigils are skipped: Sub::Identify only
+    # reasons about coderefs.
+    my %names = map { $_ => 1 } @{ $self->at_export },
+        @{ $self->at_export_ok };
+
+    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    no strict 'refs';
+    my %origins;
+    for my $name ( keys %names ) {
+        ( my $bare = $name ) =~ s{^&}{};
+        next if $bare =~ m{\A[\$\@\%\*]};
+        next unless exists &{ $module . q{::} . $bare };
+        $origins{$bare}
+            = Sub::Identify::stash_name( \&{ $module . q{::} . $bare } );
+    }
+    use strict;
+    ## use critic
+
+    return \%origins;
+}
+
+# The exported symbols whose true origin is some *other* package -- i.e. the
+# module re-exports them rather than defining them itself.
+sub reexported_symbols {
+    my $self    = shift;
+    my $module  = $self->_module_name;
+    my $origins = $self->symbol_origins;
+    return sort grep { $origins->{$_} ne $module } keys %{$origins};
+}
+
 sub _maybe_require_module {
     my $self              = shift;
     my $module_to_require = shift;
