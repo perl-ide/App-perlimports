@@ -18,51 +18,51 @@ exclude = [
 type = "both"
 include = "**/.gitignore"
 cmd = [ "omegasort", "--sort=text" ]
-lint_flags = "--check"
-tidy_flags = "--in-place"
-ok_exit_codes = 0
-lint_failure_exit_codes = 1
+lint-flags = "--check"
+tidy-flags = "--in-place"
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
 
 # If you have an external stopwords file for use with Test::Spelling
 [commands.omegasort-stopwords]
 type = "both"
 include = ".stopwords"
 cmd = [ "omegasort", "--sort=text", "--case-insensitive" ]
-lint_flags = "--check"
-tidy_flags = "--in-place"
-ok_exit_codes = 0
-lint_failure_exit_codes = 1
+lint-flags = "--check"
+tidy-flags = "--in-place"
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
 
 [commands.perlimports]
 type = "both"
 include = [ "**/*.{pl,pm,t,psgi}" ]
 cmd = [ "perl", "-Ilib", "script/perlimports" ]
-lint_flags = ["--lint" ]
-tidy_flags = ["-i" ]
-ok_exit_codes = 0
-lint_failure_exit_codes = 1
-ignore_stderr = [".* OK"]
+lint-flags = ["--lint" ]
+tidy-flags = ["-i" ]
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
+ignore-stderr = [".* OK"]
 
 [commands.perltidy]
 type = "both"
 include = [ "**/*.{pl,pm,t,psgi}" ]
 cmd = [ "perltidy", "--profile=$PRECIOUS_ROOT/perltidyrc" ]
-lint_flags = [ "--assert-tidy", "--no-standard-output", "--outfile=/dev/null" ]
-tidy_flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
-ok_exit_codes = 0
-lint_failure_exit_codes = 2
+lint-flags = [ "--assert-tidy", "--no-standard-output", "--outfile=/dev/null" ]
+tidy-flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
+ok-exit-codes = 0
+lint-failure-exit-codes = 2
 
 [commands.perlcritic]
 type = "lint"
 include = [ "**/*.{pl,pm,psgi}" ]
 cmd = [ "perlcritic", "--profile=$PRECIOUS_ROOT/perlcriticrc" ]
-ok_exit_codes = 0
-lint_failure_exit_codes = 2
+ok-exit-codes = 0
+lint-failure-exit-codes = 2
 
 [commands.perlcritic-tests]
 type = "lint"
 include = [ "**/*.{t}" ]
 cmd = [ "perlcritic", "--profile=$PRECIOUS_ROOT/perlcriticrc", "--severity=3", "--theme=(core+pbp+bugs+maintenance+cosmetic+complexity+security+moose+tests) && !nontest" ]
-ok_exit_codes = 0
-lint_failure_exit_codes = 2
+ok-exit-codes = 0
+lint-failure-exit-codes = 2
 
