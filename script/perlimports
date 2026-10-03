@@ -663,6 +663,7 @@ configuration might look something like this:
     lint_flags = [ "--lint"]
     tidy_flags = [ "-i"]
     ok_exit_codes = 0
+    lint_failure_exit_codes = 1
     expect_stderr = true
 
     [commands.perltidy]
