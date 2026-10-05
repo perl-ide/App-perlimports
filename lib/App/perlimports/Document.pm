@@ -650,10 +650,12 @@ sub _build_ppi_document {
 #     POSIX => [],
 # }
 #
-# In lint mode, it never changes.  In edit mode, it starts out as a list of
-# original imports, but with each include that gets processed, this list gets
-# updated. We do this so that we can keep track of what previous modules
-# are really importing, avoiding duplicate imports.
+# It starts out as a list of original imports, but with each include that gets
+# processed, this list gets updated to what the include will import once
+# tidied (an empty list if the include is removed as unused). This happens in
+# both lint and edit mode, although lint mode never modifies the document. We
+# do this so that we can keep track of what previous modules are really
+# importing, avoiding duplicate imports.
 
 sub _build_found_imports {
     my $self = shift;
@@ -1216,6 +1218,10 @@ INCLUDE:
                 && $args[0] eq '()'
                 && !$self->_is_used_fully_qualified( $include->module ) ) {
 
+                # This include no longer imports anything, so later includes
+                # must not rely on it for symbols it used to import.
+                $self->_reset_found_import( $include->module, [] );
+
                 if ( $self->lint ) {
                     $self->_warn_diff_for_linter(
                         'appears to be unused and should be removed',
@@ -1262,6 +1268,15 @@ INCLUDE:
         else {
             $processed{ $include->module } = 1;
 
+            $self->logger->info("resetting imports for |$elem|");
+
+            # Track what this include will import once tidied, in lint mode
+            # too, so that later includes are checked against it.
+            $self->_reset_found_import(
+                $include->module,
+                _imports_for_include($elem)
+            );
+
             if ( $self->lint ) {
                 my $before = join q{ },
                     map { $_->content } $include->arguments;
@@ -1278,13 +1293,6 @@ INCLUDE:
                 }
                 next INCLUDE;
             }
-
-            $self->logger->info("resetting imports for |$elem|");
-
-            $self->_reset_found_import(
-                $include->module,
-                _imports_for_include($elem)
-            );
         }
     }
 
@@ -1657,10 +1665,10 @@ e.g.
 
   { Carp => ['croak', ..], ... }
 
-In lint mode, this attribute is never altered.
-
-In edit mode, when L<tidied_document> is called, with each include that gets
-processed, this list gets updated to what we think it should be.  We do this
+When L<tidied_document> or L<linter_success> is called, with each include
+that gets processed, this list gets updated to what we think it should be
+(an empty list if the include is removed as unused). Lint mode updates this
+attribute too, even though it never modifies the document.  We do this
 so that we can keep track of what previous modules are really importing, to
 avoid duplicate imports (same symbol name from different packages).
 

@@ -1,6 +1,12 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Keep a symbol imported when the same symbol is imported from more than
+      one module. Previously, removing an unused `use` statement could cause
+      the symbol to also be dropped from a later `use` statement, and the
+      linter could recommend dropping it from every `use` statement. The
+      linter now also agrees with tidying about which imports to keep
+      (GH#197) (Olaf Alders)
 
 0.000066  2026-10-05 15:56:06Z
     - Update the example precious config in the docs to use dashed keys

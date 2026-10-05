@@ -69,7 +69,7 @@ subtest lint => sub {
                 level   => 'error',
                 message => '@@ -5 +5 @@
 -use Socket qw(SO_REUSEPORT SOL_SOCKET);
-+use Socket ();
++use Socket qw( SO_REUSEPORT SOL_SOCKET );
 ',
             },
 

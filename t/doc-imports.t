@@ -9,7 +9,7 @@ use App::perlimports::Document ();
 use TestHelper                 qw( logger );
 use Test::More import => [qw( done_testing is is_deeply subtest )];
 
-subtest 'linting doesnt change found_imports' => sub {
+subtest 'linting tracks found_imports like tidying' => sub {
     my @log;
 
     my $doc = App::perlimports::Document->new(
@@ -18,8 +18,9 @@ subtest 'linting doesnt change found_imports' => sub {
         logger   => logger( \@log ),
     );
 
-    # expected value
+    # expected original and cleaned values
     my $original_imports = { Carp => [ 'confess', 'croak' ] };
+    my $clean_imports    = { Carp => ['croak'] };
 
     is_deeply $doc->found_imports, $original_imports,
         'found_imports before linting as expected';
@@ -31,8 +32,10 @@ subtest 'linting doesnt change found_imports' => sub {
         = grep { $_->{message} =~ /import arguments need tidying/ } @log;
     is $found, 2, 'log indicates Carp imports need fixing';
 
-    is_deeply $doc->found_imports, $original_imports,
-        'but doc found_imports unchanged in lint mode';
+    # Lint never modifies the document, but it tracks what each include will
+    # import once tidied, so that later includes are checked against that.
+    is_deeply $doc->found_imports, $clean_imports,
+        'doc found_imports reflect the tidied imports in lint mode';
 };
 
 subtest 'found_imports edited' => sub {
@@ -81,7 +84,7 @@ subtest 'found_imports edited' => sub {
     is $cdoc->linter_success, 1, 'lint succeeds';
 
     is_deeply $cdoc->found_imports, $clean_imports,
-        'linting does not change doc found_imports';
+        'linting an already tidy doc leaves found_imports unchanged';
 };
 
 done_testing();
