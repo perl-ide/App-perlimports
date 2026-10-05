@@ -1,6 +1,6 @@
 Revision history for App-perlimports
 
-{{$NEXT}}
+0.000066  2026-10-05 15:56:06Z
     - Update the example precious config in the docs to use dashed keys
       (e.g. `lint-flags` rather than `lint_flags`) and to add
       `lint-failure-exit-codes = 1` for perlimports (GH#196) (Dave Rolsky)
