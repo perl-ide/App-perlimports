@@ -648,6 +648,21 @@ Returns true if the keys and values in C<explicit_exports> match.
 Returns an integer representing the number of times we were able to execute
 eval statements for this package which did not pollute C<$@>.
 
+=head2 symbol_origins
+
+A HashRef mapping each exportable sub (from C<@EXPORT> and C<@EXPORT_OK>) to
+the package in which it was actually defined, as reported by
+L<Sub::Identify/stash_name>. Only subs are included; variables and tags are
+skipped. Returns an empty HashRef if L<Sub::Identify> or the module itself
+cannot be loaded.
+
+=head2 reexported_symbols
+
+Returns a sorted list of exportable sub names which were defined in some other
+package, i.e. symbols the module re-exports rather than defines itself. For
+example, a facade module like L<Test::Most> re-exports subs from L<Test::More>
+and friends.
+
 =head1 CAVEATS
 
 This may not work with modules using some creative way of managing symbol
