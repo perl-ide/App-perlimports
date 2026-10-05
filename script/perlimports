@@ -660,20 +660,21 @@ configuration might look something like this:
     type = "both"
     include = [ "**/*.{pl,pm,t,psgi}" ]
     cmd = [ "perlimports" ]
-    lint_flags = [ "--lint"]
-    tidy_flags = [ "-i"]
-    ok_exit_codes = 0
-    expect_stderr = true
+    lint-flags = [ "--lint"]
+    tidy-flags = [ "-i"]
+    ok-exit-codes = 0
+    lint-failure-exit-codes = 1
+    expect-stderr = true
 
     [commands.perltidy]
     type = "both"
     include = [ "**/*.{pl,pm,t,psgi}" ]
     cmd = [ "perltidy", "--profile=$PRECIOUS_ROOT/perltidyrc" ]
-    lint_flags = [ "--assert-tidy", "--no-standard-output", "--outfile=/dev/null" ]
-    tidy_flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
-    ok_exit_codes = 0
-    lint_failure_exit_codes = 2
-    expect_stderr = true
+    lint-flags = [ "--assert-tidy", "--no-standard-output", "--outfile=/dev/null" ]
+    tidy-flags = [ "--backup-and-modify-in-place", "--backup-file-extension=/" ]
+    ok-exit-codes = 0
+    lint-failure-exit-codes = 2
+    expect-stderr = true
 
 Note that L<https://github.com/houseabsolute/precious> runs plugins in order,
 so we've placed a L<perltidy> config after L<perlimports>. This is handy
