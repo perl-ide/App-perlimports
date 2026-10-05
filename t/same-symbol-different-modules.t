@@ -5,8 +5,9 @@ use warnings;
 
 use lib 'test-data/lib', 't/lib';
 
-use PPI::Document ();
-use TestHelper    qw( doc );
+use PPI::Document     ();
+use Test::Differences qw( eq_or_diff );
+use TestHelper        qw( doc );
 use Test::More import => [qw( diag done_testing is ok subtest )];
 
 # GH#197: when the same symbol is imported from more than one module, it must
@@ -119,6 +120,51 @@ for my $case ( @cases[ 0, 1 ] ) {
             ) or diag $diff;
             };
     }
+}
+
+for my $preserve_unused ( 0, 1 ) {
+    subtest
+        "exact lint errors (preserve_unused => $preserve_unused): $cases[1]{name}"
+        => sub {
+        my ( $doc, $log ) = _doc(
+            _script( $cases[1]{imports}, $cases[1]{calls} ),
+            lint            => 1,
+            preserve_unused => $preserve_unused,
+        );
+        is( $doc->linter_success, q{}, 'lint fails' );
+
+        ## no critic (ValuesAndExpressions::ProhibitImplicitNewlines)
+        eq_or_diff(
+            [ grep { $_->{level} eq 'error' } @{$log} ],
+            [
+                {
+                    level   => 'error',
+                    message => "\x{274c}"
+                        . ' Local::MaxA (import arguments need tidying) at none line 4',
+                },
+                {
+                    level   => 'error',
+                    message => '@@ -4 +4 @@
+-use Local::MaxA qw( max a_only );
++use Local::MaxA qw( a_only );
+',
+                },
+                {
+                    level   => 'error',
+                    message => "\x{274c}"
+                        . ' Local::MaxB (import arguments need tidying) at none line 5',
+                },
+                {
+                    level   => 'error',
+                    message => '@@ -5 +5 @@
+-use Local::MaxB qw( max b_only );
++use Local::MaxB qw( b_only max );
+',
+                },
+            ],
+            'linting errors logged'
+        );
+        };
 }
 
 done_testing();
