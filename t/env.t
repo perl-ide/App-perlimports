@@ -8,6 +8,7 @@ use lib 't/lib';
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
 use Test::More import => [qw( done_testing subtest )];
+use Test::Needs qw( Env );
 
 # Env ties environment variables to Perl variables. There is no @EXPORT to
 # discover: whatever you import is exactly what you asked for. So perlimports
