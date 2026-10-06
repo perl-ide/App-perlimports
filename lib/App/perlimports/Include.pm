@@ -463,7 +463,9 @@ sub _build_is_ignored {
     # to load Env. Skip the inspector checks below, which would ignore the
     # statement if Env is not installed (e.g. Fedora's split perl-Env
     # package). See GH #200.
-    return @{ $self->_found_imports // [] } ? 0 : 1 if $self->_is_env;
+    if ( $self->_is_env ) {
+        return @{ $self->_found_imports // [] } ? 0 : 1;
+    }
 
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;

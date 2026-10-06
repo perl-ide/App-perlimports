@@ -1261,7 +1261,8 @@ INCLUDE:
         }
 
         ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
-        # Let's see if the import itself might break something
+        # Let's see if the import itself might break something. Env is not
+        # loaded at all, so there is nothing to check. See _must_load().
         if ( $self->_must_load( $elem->module )
             and my $err
             = App::perlimports::Sandbox::eval_pkg( $elem->module, "$elem" ) )
