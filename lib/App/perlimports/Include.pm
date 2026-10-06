@@ -458,14 +458,7 @@ sub _build_is_ignored {
     # A bare "use Env;" imports every environment variable. There are no
     # explicit arguments to prune, so leave the statement untouched rather than
     # collapsing it to "use Env ();". See GH #23.
-    #
-    # Otherwise, the exports come from the statement itself, so we never need
-    # to load Env. Skip the inspector checks below, which would ignore the
-    # statement if Env is not installed (e.g. Fedora's split perl-Env
-    # package). See GH #200.
-    if ( $self->_is_env ) {
-        return @{ $self->_found_imports // [] } ? 0 : 1;
-    }
+    return 1 if $self->_is_env && !@{ $self->_found_imports // [] };
 
     # This will be rewritten as "use Foo ();"
     return 0 if $self->_will_never_export;

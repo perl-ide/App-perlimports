@@ -1,10 +1,9 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
-    - Prune unused `use Env` imports even when Env is not installed. Env's
-      exports come from the `use Env` statement itself, so it no longer
-      needs to be loaded. Fixes t/env.t failures on systems which ship Env
-      separately, e.g. Fedora's perl-Env (GH#200) (Olaf Alders)
+    - Fix t/env.t failures on systems where Env is not installed, e.g.
+      Fedora, which ships it in a separate perl-Env package. The tests now
+      cover both cases (GH#200) (Olaf Alders)
     - Keep a symbol imported when the same symbol is imported from more than
       one module. Previously, removing an unused `use` statement could cause
       the symbol to also be dropped from a later `use` statement, and the

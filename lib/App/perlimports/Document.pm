@@ -436,12 +436,9 @@ sub _build_includes {
                 || $_[1]->type eq 'require' )
                 && !$self->_is_ignored( $_[1] )
                 && !$self->_has_import_switches( $_[1]->module )
-                && (
-                !$self->_must_load( $_[1]->module )
-                || !App::perlimports::Sandbox::eval_pkg(
-                    $_[1]->module,
-                    "$_[1]"
-                )
+                && !App::perlimports::Sandbox::eval_pkg(
+                $_[1]->module,
+                "$_[1]"
                 );
         }
     ) || [];
@@ -1078,19 +1075,9 @@ sub _is_ignored {
         any { $element->module =~ /$_/ }
         grep { $_ } @{ $self->_ignore_modules_pattern || [] }
         )
-        || ( $self->_must_load( $element->module )
-        && $self->inspector_for( $element->module )
+        || ( $self->inspector_for( $element->module )
         && !$self->inspector_for( $element->module )->evals_ok );
     return $res;
-}
-
-# Env ties environment variables to Perl variables. The exports of a "use Env"
-# statement come from the statement itself, so we can process it without
-# loading Env, which may not even be installed. Fedora, for instance, ships it
-# in a separate perl-Env package. See GH #23 and GH #200.
-sub _must_load {
-    my ( undef, $module ) = @_;
-    return $module ne 'Env';
 }
 
 sub inspector_for {
@@ -1261,11 +1248,8 @@ INCLUDE:
         }
 
         ## no critic (Subroutines::ProhibitCallsToUnexportedSubs)
-        # Let's see if the import itself might break something. Env is not
-        # loaded at all, so there is nothing to check. See _must_load().
-        # Note: "and" rather than "&&", which would bind tighter than "=".
-        if ( $self->_must_load( $elem->module )
-            and my $err
+        # Let's see if the import itself might break something
+        if ( my $err
             = App::perlimports::Sandbox::eval_pkg( $elem->module, "$elem" ) )
         {
             $self->logger->warning(

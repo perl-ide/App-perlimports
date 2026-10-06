@@ -5,6 +5,7 @@ use warnings;
 
 use lib 't/lib';
 
+use Path::Tiny        qw( path );
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
 use Test::More import => [qw( done_testing fail ok plan subtest )];
@@ -15,9 +16,9 @@ use Test::More import => [qw( done_testing fail ok plan subtest )];
 # symbols and prunes the ones which are not used. See GH #23.
 #
 # Env is not always installed. Fedora, for instance, ships it in a separate
-# perl-Env package. Since the exports come from the statement itself,
-# perlimports should give the same results either way, so every case below
-# runs both with Env installed and with Env hidden. See GH #200.
+# perl-Env package. Like any other module which cannot be loaded, a "use Env"
+# statement is then left untouched. Every case below runs both with Env
+# installed and with Env hidden, so the tests pass either way. See GH #200.
 
 my @cases = (
     {
@@ -149,18 +150,30 @@ EOF
     },
 );
 
+# Without Env, every file should come back exactly as it went in.
 sub run_cases {
+    my $env_installed = shift;
+
     for my $case (@cases) {
         subtest $case->{name} => sub {
             my ($doc) = doc(
                 filename => $case->{filename},
                 %{ $case->{args} || {} },
             );
-            eq_or_diff(
-                $doc->tidied_document,
-                $case->{expected},
-                $case->{description},
-            );
+            if ($env_installed) {
+                eq_or_diff(
+                    $doc->tidied_document,
+                    $case->{expected},
+                    $case->{description},
+                );
+            }
+            else {
+                eq_or_diff(
+                    $doc->tidied_document,
+                    path( $case->{filename} )->slurp,
+                    'use Env is left untouched when Env cannot be loaded',
+                );
+            }
         };
     }
 }
@@ -181,7 +194,7 @@ subtest 'Env installed' => sub {
         }
         plan skip_all => 'Env is not installed';
     }
-    run_cases();
+    run_cases(1);
 };
 
 subtest 'Env not installed' => sub {
@@ -195,7 +208,7 @@ subtest 'Env not installed' => sub {
         @INC,
     );
     ok( !env_loads(), 'Env cannot be loaded' );
-    run_cases();
+    run_cases(0);
 };
 
 done_testing();
