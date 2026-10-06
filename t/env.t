@@ -5,26 +5,20 @@ use warnings;
 
 use lib 't/lib';
 
-use Path::Tiny        qw( path );
 use Test::Differences qw( eq_or_diff );
 use TestHelper        qw( doc );
-use Test::More import => [qw( done_testing fail ok plan subtest )];
+use Test::More import => [qw( done_testing subtest )];
+use Test::Needs qw( Env );
 
 # Env ties environment variables to Perl variables. There is no @EXPORT to
 # discover: whatever you import is exactly what you asked for. So perlimports
 # treats the arguments of each "use Env" statement as its own exportable
 # symbols and prunes the ones which are not used. See GH #23.
-#
-# Env is not always installed. Fedora, for instance, ships it in a separate
-# perl-Env package. Like any other module which cannot be loaded, a "use Env"
-# statement is then left untouched. Every case below runs both with Env
-# installed and with Env hidden, so the tests pass either way. See GH #200.
 
-my @cases = (
-    {
-        name     => 'used array import is preserved',
-        filename => 'test-data/env.pl',
-        expected => <<'EOF',
+subtest 'used array import is preserved' => sub {
+    my ($doc) = doc( filename => 'test-data/env.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -32,12 +26,17 @@ use Env qw( @PATH );
 
 my @copy = @PATH;
 EOF
-        description => '@PATH is kept because it is used',
-    },
-    {
-        name     => 'unused import is pruned to an empty list',
-        filename => 'test-data/env-unused.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        '@PATH is kept because it is used',
+    );
+};
+
+subtest 'unused import is pruned to an empty list' => sub {
+    my ($doc) = doc( filename => 'test-data/env-unused.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -45,12 +44,17 @@ use Env ();
 
 my $x = 1;
 EOF
-        description => 'unused @PATH becomes use Env ()',
-    },
-    {
-        name     => 'mixed imports keep only the used symbol',
-        filename => 'test-data/env-mixed.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'unused @PATH becomes use Env ()',
+    );
+};
+
+subtest 'mixed imports keep only the used symbol' => sub {
+    my ($doc) = doc( filename => 'test-data/env-mixed.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -58,12 +62,17 @@ use Env qw( @PATH );
 
 my @copy = @PATH;
 EOF
-        description => 'unused $HOME is dropped, used @PATH is kept',
-    },
-    {
-        name     => 'bareword scalar import is preserved as written',
-        filename => 'test-data/env-scalar.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'unused $HOME is dropped, used @PATH is kept',
+    );
+};
+
+subtest 'bareword scalar import is preserved as written' => sub {
+    my ($doc) = doc( filename => 'test-data/env-scalar.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -71,13 +80,17 @@ use Env qw( HOME );
 
 my $h = $HOME;
 EOF
-        description =>
-            'bareword HOME is kept (and not rewritten to $HOME) because $HOME is used',
-    },
-    {
-        name     => 'interpolated scalar counts as used',
-        filename => 'test-data/env-interpolated.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'bareword HOME is kept (and not rewritten to $HOME) because $HOME is used',
+    );
+};
+
+subtest 'interpolated scalar counts as used' => sub {
+    my ($doc) = doc( filename => 'test-data/env-interpolated.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -85,13 +98,17 @@ use Env qw( HOME );
 
 print "home is $HOME\n";
 EOF
-        description =>
-            'HOME is kept because $HOME is interpolated into a string',
-    },
-    {
-        name     => 'module version is preserved while pruning',
-        filename => 'test-data/env-version.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'HOME is kept because $HOME is interpolated into a string',
+    );
+};
+
+subtest 'module version is preserved while pruning' => sub {
+    my ($doc) = doc( filename => 'test-data/env-version.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -99,13 +116,17 @@ use Env 1.00 qw( @PATH );
 
 my @copy = @PATH;
 EOF
-        description =>
-            'the version stays, unused $HOME is dropped, used @PATH is kept',
-    },
-    {
-        name     => 'comma-separated (non-qw) args are handled',
-        filename => 'test-data/env-comma.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'the version stays, unused $HOME is dropped, used @PATH is kept',
+    );
+};
+
+subtest 'comma-separated (non-qw) args are handled' => sub {
+    my ($doc) = doc( filename => 'test-data/env-comma.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -113,31 +134,38 @@ use Env qw( @PATH );
 
 my @copy = @PATH;
 EOF
-        description =>
-            q{'HOME', '@PATH' list drops unused HOME and normalizes to qw()},
-    },
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        q{'HOME', '@PATH' list drops unused HOME and normalizes to qw()},
+    );
+};
+
+subtest 'preserve_unused => 0 removes an entirely unused use Env' => sub {
+    my ($doc)
+        = doc( filename => 'test-data/env-unused.pl', preserve_unused => 0 );
 
     # The whole statement is removed (this is the general unused-module
     # removal path, not specific to Env); the surrounding blank lines are
     # left as-is, as they are for any other removed import.
-    {
-        name     => 'preserve_unused => 0 removes an entirely unused use Env',
-        filename => 'test-data/env-unused.pl',
-        args     => { preserve_unused => 0 },
-        expected => <<'EOF',
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
 
 my $x = 1;
 EOF
-        description =>
-            'an unused use Env line is deleted, not left as use Env ()',
-    },
-    {
-        name     => 'bare use Env is left untouched',
-        filename => 'test-data/env-bare.pl',
-        expected => <<'EOF',
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'an unused use Env line is deleted, not left as use Env ()',
+    );
+};
+
+subtest 'bare use Env is left untouched' => sub {
+    my ($doc) = doc( filename => 'test-data/env-bare.pl' );
+
+    my $expected = <<'EOF';
 use strict;
 use warnings;
 
@@ -145,70 +173,11 @@ use Env;
 
 my $h = $HOME;
 EOF
-        description =>
-            'a bare "use Env;" imports everything and has no args to prune',
-    },
-);
-
-# Without Env, every file should come back exactly as it went in.
-sub run_cases {
-    my $env_installed = shift;
-
-    for my $case (@cases) {
-        subtest $case->{name} => sub {
-            my ($doc) = doc(
-                filename => $case->{filename},
-                %{ $case->{args} || {} },
-            );
-            if ($env_installed) {
-                eq_or_diff(
-                    $doc->tidied_document,
-                    $case->{expected},
-                    $case->{description},
-                );
-            }
-            else {
-                eq_or_diff(
-                    $doc->tidied_document,
-                    path( $case->{filename} )->slurp,
-                    'use Env is left untouched when Env cannot be loaded',
-                );
-            }
-        };
-    }
-}
-
-sub env_loads {
-    my $loaded = eval { require Env; 1 };
-    return $loaded;
-}
-
-subtest 'Env installed' => sub {
-    if ( !env_loads() ) {
-
-        # Don't make people install Env just to run the tests, but make sure
-        # CI covers this case.
-        if ( $ENV{CI} ) {
-            fail('Env must be installed in CI');
-            return;
-        }
-        plan skip_all => 'Env is not installed';
-    }
-    run_cases(1);
-};
-
-subtest 'Env not installed' => sub {
-    delete $INC{'Env.pm'};
-    local @INC = (
-        sub {
-            die "Can't locate Env.pm in \@INC (hidden by test)\n"
-                if $_[1] eq 'Env.pm';
-            return;
-        },
-        @INC,
+    eq_or_diff(
+        $doc->tidied_document,
+        $expected,
+        'a bare "use Env;" imports everything and has no args to prune',
     );
-    ok( !env_loads(), 'Env cannot be loaded' );
-    run_cases(0);
 };
 
 done_testing();

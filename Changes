@@ -1,9 +1,8 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
-    - Fix t/env.t failures on systems where Env is not installed, e.g.
-      Fedora, which ships it in a separate perl-Env package. The tests now
-      cover both cases (GH#200) (Olaf Alders)
+    - Skip t/env.t when Env is not installed, e.g. on Fedora, which ships it
+      in a separate perl-Env package (GH#200) (Olaf Alders)
     - Keep a symbol imported when the same symbol is imported from more than
       one module. Previously, removing an unused `use` statement could cause
       the symbol to also be dropped from a later `use` statement, and the
