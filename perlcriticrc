@@ -73,6 +73,10 @@ severity = 3
 [Variables::ProhibitPackageVars]
 add_packages = Test::Builder
 
+[Variables::ProhibitUnusedVarsStricter]
+# pushd returns a guard object that is kept only for its scope
+allow_if_computed_by = pushd
+
 [-ControlStructures::ProhibitCascadingIfElse]
 
 [-ErrorHandling::RequireCarping]

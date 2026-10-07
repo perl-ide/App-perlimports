@@ -83,7 +83,7 @@ sub _unit {
 }
 
 sub _classify {
-    my ( $self, $node, $annotations ) = @_;
+    my ( undef, $node, $annotations ) = @_;
 
     return 'hoist'  if $node->pragma;
     return 'hoist'  if $node->version;
@@ -95,7 +95,7 @@ sub _classify {
 
 # Group units into contiguous sections.
 sub _sections {
-    my ( $self, $units, $lines ) = @_;
+    my ( undef, $units, $lines ) = @_;
 
     my @sections;
     my @current;
@@ -126,7 +126,7 @@ sub _sections {
 
 # Return ( $new_section_text, $changed_bool ) for one section.
 sub _reorder_section {
-    my ( $self, $section, $lines ) = @_;
+    my ( undef, $section, $lines ) = @_;
 
     # If any two units share or overlap a physical line, reordering would
     # duplicate or merge the user's source. We cannot safely sort statements

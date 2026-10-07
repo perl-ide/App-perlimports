@@ -1573,7 +1573,7 @@ sub _maybe_cache_inspectors {
 }
 
 sub _is_word_interpreted_as_string {
-    my ( $self, $word ) = @_;
+    my ( undef, $word ) = @_;
 
     return unless $word->statement && $word->isa('PPI::Token::Word');
     my @children = $word->statement->schildren;

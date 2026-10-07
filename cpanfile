@@ -80,6 +80,7 @@ on 'develop' => sub {
   requires "Perl::Critic::Freenode" => "0";
   requires "Perl::Critic::Moose" => "0";
   requires "Perl::Critic::Policy::ValuesAndExpressions::ProhibitAccessOfPrivateData" => "v1.0.0";
+  requires "Perl::Critic::Policy::Variables::ProhibitUnusedVarsStricter" => "0.116";
   requires "Perl::Tidy" => "20180220";
   requires "Pod::Coverage::TrustPod" => "0";
   requires "Pod::Wordlist" => "0";
