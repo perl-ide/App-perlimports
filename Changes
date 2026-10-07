@@ -5,6 +5,10 @@ Revision history for App-perlimports
       for its import-time side effect of logging every LWP::UserAgent and
       HTTP::Tiny request, exports nothing, and was previously stripped
       entirely, silently disabling the logging (GH#195) (Olaf Alders)
+    - Tidy imports from MooseX::Types type libraries even when the library
+      has a Moose metaclass, as with MooseX::Types 0.50. Previously such
+      `use` statements were ignored, so missing imports were not added
+      (GH#202) (Olaf Alders)
     - Skip t/env.t when Env is not installed, e.g. on Fedora, which ships it
       in a separate perl-Env package (GH#200) (Olaf Alders)
     - Keep a symbol imported when the same symbol is imported from more than
