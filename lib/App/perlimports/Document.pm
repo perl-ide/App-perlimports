@@ -345,6 +345,7 @@ my %default_ignore = (
     'HTTP::Message::PSGI'            => 1,    # HTTP::Request::(to|from)_psgi
     'Import::Into'                   => 1,
     'local::lib'                     => 1,
+    'LWP::ConsoleLogger::Everywhere' => 1,    # wraps UAs to log requests
     'MLDBM'                          => 1,
     'Modern::Perl'                   => 1,
     'Mojo::Base'                     => 1,
