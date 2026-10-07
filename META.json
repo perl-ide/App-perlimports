@@ -39,7 +39,11 @@
             "Code::TidyAll::Plugin::UniqueLines" : "0.000003",
             "Parallel::ForkManager" : "1.19",
             "Perl::Critic" : "1.132",
+            "Perl::Critic::Bangs" : "1.10",
+            "Perl::Critic::Freenode" : "0",
+            "Perl::Critic::Moose" : "0",
             "Perl::Critic::Policy::ValuesAndExpressions::ProhibitAccessOfPrivateData" : "v1.0.0",
+            "Perl::Critic::Policy::Variables::ProhibitUnusedVarsStricter" : "0.116",
             "Perl::Tidy" : "20180220",
             "Pod::Coverage::TrustPod" : "0",
             "Pod::Wordlist" : "0",
@@ -134,7 +138,7 @@
          "web" : "https://github.com/perl-ide/App-perlimports"
       }
    },
-   "version" : "0.000066",
+   "version" : "0.000067",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.042002"
@@ -684,7 +688,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.000066",
+                  "tag" : "v0.000067",
                   "tag_format" : "v%V",
                   "tag_message" : "v%V"
                },
