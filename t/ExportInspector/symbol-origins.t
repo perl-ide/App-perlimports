@@ -8,7 +8,6 @@ use lib 'test-data/lib', 't/lib';
 use App::perlimports::ExportInspector ();
 use TestHelper                        qw( logger );
 use Test::More import => [qw( done_testing is is_deeply subtest )];
-use Test::Needs    qw( Sub::Identify );
 use Test::Warnings ();
 
 sub ei {
@@ -20,8 +19,6 @@ sub ei {
     );
 }
 
-# A module that both defines a sub natively and re-exports one it imported from
-# elsewhere. The export lists cannot distinguish the two; symbol_origins can.
 subtest 're-exporter is disambiguated by true origin' => sub {
     my $ei      = ei('Local::OriginReexporter');
     my $origins = $ei->symbol_origins;
@@ -44,19 +41,35 @@ subtest 're-exporter is disambiguated by true origin' => sub {
     );
 };
 
-# A plain Exporter module whose subs are all its own reports no re-exports.
 subtest 'native module reports no re-exports' => sub {
-    my $ei      = ei('Local::Round');
+    my $ei      = ei('Local::OriginSource');
     my $origins = $ei->symbol_origins;
 
     is(
-        $origins->{round}, 'Local::Round',
-        'round is attributed to Local::Round',
+        $origins->{imported_from_source}, 'Local::OriginSource',
+        'imported_from_source is attributed to Local::OriginSource',
     );
     is_deeply(
         [ $ei->reexported_symbols ], [],
         'no re-exports for a self-contained module',
     );
+};
+
+subtest 'exportable name without a sub is skipped' => sub {
+    my $origins = ei('Local::OriginMissingSub')->symbol_origins;
+
+    is_deeply(
+        $origins,
+        { defined_here => 'Local::OriginMissingSub' },
+        'only the defined sub has an origin',
+    );
+};
+
+subtest 'module which cannot be loaded has no origins' => sub {
+    my $ei = ei('Local::Does::Not::Exist');
+
+    is_deeply( $ei->symbol_origins,         {}, 'no origins' );
+    is_deeply( [ $ei->reexported_symbols ], [], 'no re-exports' );
 };
 
 done_testing();

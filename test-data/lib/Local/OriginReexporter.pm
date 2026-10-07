@@ -4,12 +4,12 @@ use parent 'Exporter';
 use strict;
 use warnings;
 
-# Pull a sub in from another module and then re-export it alongside a sub we
-# define natively. The export lists alone cannot tell these two apart -- only
-# the coderef's true origin package can.
+# Re-exports a sub from Local::OriginSource alongside one defined here.
 use Local::OriginSource qw( imported_from_source );
 
-our @EXPORT_OK = qw( defined_here imported_from_source );
+our $origin_var = 1;
+
+our @EXPORT_OK = qw( $origin_var defined_here imported_from_source );
 
 sub defined_here {
     return 'reexporter';

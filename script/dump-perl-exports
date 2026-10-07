@@ -52,6 +52,13 @@ if ( !$module ) {
     exit(1);
 }
 
+# Fail once, up front, rather than once per sandboxed eval.
+if ( !eval { use_module($module); 1 } ) {
+    ( my $error = $@ ) =~ s{ at \S+ line \d+\.\n\z}{\n};
+    print STDERR "Could not load $module\n$error";
+    exit(1);
+}
+
 my $ei = App::perlimports::ExportInspector->new(
     logger      => $logger,
     module_name => $module,
@@ -112,18 +119,37 @@ if ( @{ $ei->at_export_fail } ) {
     print $t->draw;
 }
 
+# Add an Origin column only when the module re-exports something.
+my ( $origins, $has_reexports );
+my $origin_col = sub {
+    if ( !$origins ) {
+        $origins       = $ei->symbol_origins;
+        $has_reexports = () = $ei->reexported_symbols;
+    }
+    return $has_reexports ? ('Origin') : ();
+};
+my $origin_of = sub {
+    return () unless $origin_col->();
+    ( my $bare = shift ) =~ s{^&}{};
+    return $origins->{$bare} // q{};
+};
+
 if ( $ei->has_implicit_exports ) {
     my $t = Text::SimpleTable::AutoWidth->new();
     if ( $ei->implicit_export_names_match_values ) {
-        $t->captions( ['Default Exported Symbols'] );
+        $t->captions( [ 'Default Exported Symbols', $origin_col->() ] );
         for my $symbol ( sort $ei->implicit_export_names ) {
-            $t->row($symbol);
+            $t->row( $symbol, $origin_of->($symbol) );
         }
     }
     else {
-        $t->captions( [ 'Default Export Symbol', 'Import Name' ] );
+        $t->captions(
+            [ 'Default Export Symbol', 'Import Name', $origin_col->() ] );
         for my $key ( sort $ei->implicit_export_names ) {
-            $t->row( $key, $ei->implicit_exports->{$key} );
+            $t->row(
+                $key, $ei->implicit_exports->{$key},
+                $origin_of->($key)
+            );
         }
     }
     print $t->draw;
@@ -140,15 +166,16 @@ if ( !keys %{$exports} ) {
     my $t = Text::SimpleTable::AutoWidth->new();
 
     if ( $ei->explicit_export_names_match_values ) {
-        $t->captions( ['All Exportable Symbols'] );
+        $t->captions( [ 'All Exportable Symbols', $origin_col->() ] );
         for my $symbol ( sort $ei->explicit_export_names ) {
-            $t->row($symbol);
+            $t->row( $symbol, $origin_of->($symbol) );
         }
     }
     else {
-        $t->captions( [ 'Explicit Export Symbol', 'Import Name' ] );
+        $t->captions(
+            [ 'Explicit Export Symbol', 'Import Name', $origin_col->() ] );
         for my $key ( sort $ei->explicit_export_names ) {
-            $t->row( $key, $exports->{$key} );
+            $t->row( $key, $exports->{$key}, $origin_of->($key) );
         }
     }
     print $t->draw;
@@ -207,5 +234,8 @@ C<dump-perl-exports>.
     dump-perl-exports Moose
 
     dump-perl-exports Moo
+
+If the module re-exports subs defined elsewhere (e.g. L<Test::Most>), the
+symbol tables get an C<Origin> column naming each sub's defining package.
 
 =cut
