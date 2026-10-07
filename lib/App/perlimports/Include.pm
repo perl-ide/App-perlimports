@@ -467,6 +467,11 @@ sub _build_is_ignored {
 
     return 0 if $self->_export_inspector->is_oo_class;
 
+    # A MooseX::Types type library can have a Moose metaclass (as with
+    # MooseX::Types 0.50), which would otherwise trip the uses_moose check
+    # below. See GH#202.
+    return 0 if $self->_export_inspector->is_moose_type_class;
+
     return 1 if $self->_export_inspector->is_moose_class;
 
     return 1 if $self->_export_inspector->uses_moose;
