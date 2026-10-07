@@ -1,5 +1,7 @@
 Revision history for App-perlimports
 
+{{$NEXT}}
+
 0.000067  2026-10-07 18:37:39Z
     - Ignore `use LWP::ConsoleLogger::Everywhere` by default. It is loaded only
       for its import-time side effect of logging every LWP::UserAgent and
