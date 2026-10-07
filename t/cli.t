@@ -332,7 +332,7 @@ subtest '--lint --log-level=notice noise (control)' => sub {
         '-f' => 'test-data/lint-success.pl',
     );
     my $cli = App::perlimports::CLI->new;
-    my ( $stdout, $stderr, $exit ) = capture {
+    my ( undef, $stderr, $exit ) = capture {
         $cli->run;
     };
     like(

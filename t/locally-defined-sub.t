@@ -8,7 +8,7 @@ use TestHelper        qw( doc );
 use Test::More import => [qw( done_testing )];
 use Test::Needs qw( Math::Round );
 
-my ( $doc, $log ) = doc(
+my ($doc) = doc(
     filename => 'test-data/lib/Local/Round.pm', preserve_unused => 0,
 );
 

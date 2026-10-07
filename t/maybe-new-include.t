@@ -47,7 +47,7 @@ sub make_doc {
 
 subtest 'tidied include with tidying' => sub {
     my $orig = 'use List::Util     qw( first );';
-    my ( $doc, $inc ) = make_doc( include => $orig );
+    my ( undef, $inc ) = make_doc( include => $orig );
     my $ppis = $inc->_include;                  # PPI:Statement:Include
         # with tidy_whitespace, the only way to get the original back is:
         # * statement was identical already, or,
@@ -79,7 +79,7 @@ EOTEXT
 
 subtest 'tidied include without tidying' => sub {
     my $orig = 'use List::Util     qw( first );';
-    my ( $doc, $inc ) = make_doc( include => $orig, tidy => 0 );
+    my ( undef, $inc ) = make_doc( include => $orig, tidy => 0 );
     my $ppis = $inc->_include;    # PPI:Statement:Include
         # without tidy_whitespace, always get back the original
         # if the only change was whitespace.
@@ -161,7 +161,7 @@ EOTEXT2
 
 subtest 'include w version no tidying' => sub {
     my $orig = 'use File::Temp  0.23  qw( tempfile tempdir );';
-    my ( $doc, $inc ) = make_doc( include => $orig, tidy => 0 );
+    my ( undef, $inc ) = make_doc( include => $orig, tidy => 0 );
     my $ppis = $inc->_include;    # PPI:Statement:Include
         # without tidy_whitespace, always get back the original
         # if the only change was whitespace.
@@ -202,7 +202,7 @@ use List::Util     qw(
     min
 );
 EORIG
-    my ( $doc, $inc ) = make_doc( include => $orig );
+    my ( undef, $inc ) = make_doc( include => $orig );
     my $ppis = $inc->_include;    # PPI:Statement:Include
         # with tidy_whitespace, the only way to get the original back is:
         # * statement was identical already, or,
