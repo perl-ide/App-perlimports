@@ -38,15 +38,15 @@ sub sorted_document {
     # Each element retains its trailing "\n"; line N is $lines[N - 1].
     my @lines = split /(?<=\n)/, $source;
 
-    my @units = map { $self->_unit( $_, $annotations, \@lines ) } @{$found};
+    my @units = map { _unit( $_, $annotations, \@lines ) } @{$found};
 
-    my @sections = $self->_sections( \@units, \@lines );
+    my @sections = _sections( \@units, \@lines );
 
     # Rewrite bottom-up so earlier line numbers stay valid across splices.
     my $changed = 0;
     for my $section ( reverse @sections ) {
         my ( $new_text, $section_changed )
-            = $self->_reorder_section( $section, \@lines );
+            = _reorder_section( $section, \@lines );
         next unless $section_changed;
 
         $changed = 1;
@@ -60,7 +60,7 @@ sub sorted_document {
 
 # Build a unit hashref describing one include and the source lines it owns.
 sub _unit {
-    my ( $self, $node, $annotations, $lines ) = @_;
+    my ( $node, $annotations, $lines ) = @_;
 
     my $start    = $node->line_number;
     my $newlines = () = $node->content =~ /\n/g;
@@ -77,13 +77,13 @@ sub _unit {
         lead  => $lead,
         start => $start,
         end   => $end,
-        class => $self->_classify( $node, $annotations ),
+        class => _classify( $node, $annotations ),
         key   => lc( $node->module ),
     };
 }
 
 sub _classify {
-    my ( undef, $node, $annotations ) = @_;
+    my ( $node, $annotations ) = @_;
 
     return 'hoist'  if $node->pragma;
     return 'hoist'  if $node->version;
@@ -95,7 +95,7 @@ sub _classify {
 
 # Group units into contiguous sections.
 sub _sections {
-    my ( undef, $units, $lines ) = @_;
+    my ( $units, $lines ) = @_;
 
     my @sections;
     my @current;
@@ -126,7 +126,7 @@ sub _sections {
 
 # Return ( $new_section_text, $changed_bool ) for one section.
 sub _reorder_section {
-    my ( undef, $section, $lines ) = @_;
+    my ( $section, $lines ) = @_;
 
     # If any two units share or overlap a physical line, reordering would
     # duplicate or merge the user's source. We cannot safely sort statements

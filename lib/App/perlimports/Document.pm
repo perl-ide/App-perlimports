@@ -585,7 +585,7 @@ sub _build_possible_imports {
         # cant validate class/instance method names:
         next if !$word->isa('PPI::Token::Symbol') && is_method_call($word);
 
-        next if $self->_is_word_interpreted_as_string($word);
+        next if _is_word_interpreted_as_string($word);
 
         next if is_package_declaration($word);
 
@@ -1573,7 +1573,7 @@ sub _maybe_cache_inspectors {
 }
 
 sub _is_word_interpreted_as_string {
-    my ( undef, $word ) = @_;
+    my ($word) = @_;
 
     return unless $word->statement && $word->isa('PPI::Token::Word');
     my @children = $word->statement->schildren;
