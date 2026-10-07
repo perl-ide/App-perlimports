@@ -1,6 +1,10 @@
 Revision history for App-perlimports
 
 {{$NEXT}}
+    - Ignore `use LWP::ConsoleLogger::Everywhere` by default. It is loaded only
+      for its import-time side effect of logging every LWP::UserAgent and
+      HTTP::Tiny request, exports nothing, and was previously stripped
+      entirely, silently disabling the logging (GH#195) (Olaf Alders)
     - Skip t/env.t when Env is not installed, e.g. on Fedora, which ships it
       in a separate perl-Env package (GH#200) (Olaf Alders)
     - Keep a symbol imported when the same symbol is imported from more than
