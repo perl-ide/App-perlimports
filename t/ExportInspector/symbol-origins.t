@@ -20,24 +20,22 @@ sub ei {
 }
 
 subtest 're-exporter is disambiguated by true origin' => sub {
-    my $ei      = ei('Local::OriginReexporter');
-    my $origins = $ei->symbol_origins;
+    my $ei = ei('Local::OriginReexporter');
 
-    is(
-        $origins->{defined_here},
-        'Local::OriginReexporter',
-        'natively-defined sub is attributed to the module itself',
-    );
-    is(
-        $origins->{imported_from_source},
-        'Local::OriginSource',
-        're-exported sub is attributed to its true origin package',
+    is_deeply(
+        $ei->symbol_origins,
+        {
+            also_from_source     => 'Local::OriginSource',
+            defined_here         => 'Local::OriginReexporter',
+            imported_from_source => 'Local::OriginSource',
+        },
+        'subs attributed to their true origin; & stripped; variable skipped',
     );
 
     is_deeply(
-        [ sort $ei->reexported_symbols ],
-        ['imported_from_source'],
-        'reexported_symbols lists only the foreign symbol',
+        [ $ei->reexported_symbols ],
+        [qw( also_from_source imported_from_source )],
+        'reexported_symbols lists only the foreign symbols, sorted',
     );
 };
 

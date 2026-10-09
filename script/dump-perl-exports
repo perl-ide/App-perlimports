@@ -238,4 +238,6 @@ C<dump-perl-exports>.
 If the module re-exports subs defined elsewhere (e.g. L<Test::Most>), the
 symbol tables get an C<Origin> column naming each sub's defining package.
 
+Exits with a status of 1 if the module cannot be loaded.
+
 =cut

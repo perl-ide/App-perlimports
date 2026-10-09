@@ -524,22 +524,24 @@ sub _build_symbol_origins {
         unless $INC{ module_notional_filename($module) }
         || $self->_maybe_require_module($module);
 
-    # Only subs have an origin.
     my %names = map { $_ => 1 } @{ $self->at_export },
         @{ $self->at_export_ok };
 
-    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-    no strict 'refs';
     my %origins;
-    for my $name ( keys %names ) {
-        ( my $bare = $name ) =~ s{^&}{};
-        next if $bare =~ m{\A[\$\@\%\*]};
-        next unless exists &{ $module . q{::} . $bare };
-        $origins{$bare}
-            = Sub::Identify::stash_name( \&{ $module . q{::} . $bare } );
+    {
+        ## no critic (TestingAndDebugging::ProhibitNoStrict)
+        no strict 'refs';
+        for my $name ( keys %names ) {
+
+            # Only subs have an origin.
+            ( my $bare = $name ) =~ s{^&}{};
+            next if $bare =~ m{\A[\$\@\%\*]};
+            next unless exists &{ $module . q{::} . $bare };
+            $origins{$bare}
+                = Sub::Identify::stash_name( \&{ $module . q{::} . $bare } );
+        }
+        ## use critic
     }
-    use strict;
-    ## use critic
 
     return \%origins;
 }
@@ -646,8 +648,11 @@ eval statements for this package which did not pollute C<$@>.
 A HashRef mapping each sub in C<@EXPORT> and C<@EXPORT_OK> to the package in
 which it was defined, per L<Sub::Identify/stash_name>. Empty if the module
 cannot be loaded or does not use C<@EXPORT> and C<@EXPORT_OK> (e.g.
-L<Sub::Exporter>). Loads the module into the current process, outside the
-sandbox.
+L<Sub::Exporter>). Requires the module directly (not via a sandboxed C<use>)
+if it is not already loaded.
+
+Aliased core subs report their real stash, so on newer Perls
+L<Scalar::Util/blessed> has an origin of C<builtin>.
 
 =head2 reexported_symbols
 
