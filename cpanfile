@@ -29,6 +29,7 @@ requires "Scalar::Util" => "0";
 requires "Sereal::Decoder" => "0";
 requires "Sereal::Encoder" => "0";
 requires "Sub::HandlesVia" => "0";
+requires "Sub::Identify" => "0";
 requires "Symbol::Get" => "0.10";
 requires "TOML::Tiny" => "0.16";
 requires "Text::Diff" => "0";
