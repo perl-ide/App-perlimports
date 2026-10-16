@@ -5,11 +5,15 @@ use warnings;
 
 use Test::More import => [qw( done_testing subtest )];
 use Test::Needs qw( Moose );
-use Test::Script 1.27 qw(
+use Test::Script 1.29 qw(
     script_compiles
+    script_fails
     script_runs
     script_stderr_is
     script_stderr_like
+    script_stdout_is
+    script_stdout_like
+    script_stdout_unlike
 );
 
 script_compiles('script/dump-perl-exports');
@@ -73,14 +77,77 @@ subtest 'Local::ViaExporter' => sub {
     script_stderr_is( q{}, 'no errors' );
 };
 
-subtest 'Not Found' => sub {
+subtest 'Origin column for re-exported subs' => sub {
     script_runs(
+        [
+            'script/dump-perl-exports',
+            '--libs',   'test-data/lib',
+            '--module', 'Local::OriginReexporter'
+        ]
+    );
+    script_stderr_is( q{}, 'no errors' );
+    script_stdout_like(
+        qr{\|\s+imported_from_source\s+\|\s+Local::OriginSource\s+\|},
+        're-exported sub shows its true origin'
+    );
+    script_stdout_like(
+        qr{\|\s+defined_here\s+\|\s+Local::OriginReexporter\s+\|},
+        'native sub shows the module itself'
+    );
+    script_stdout_like(
+        qr{\|\s+\$origin_var\s+\|\s+\|},
+        'exported variable has a blank origin'
+    );
+};
+
+subtest 'Origin column for re-exported default exports' => sub {
+    script_runs(
+        [
+            'script/dump-perl-exports',
+            '--libs',   'test-data/lib',
+            '--module', 'Local::OriginDefaultReexporter'
+        ]
+    );
+    script_stderr_is( q{}, 'no errors' );
+    script_stdout_like(
+        qr{\|\s+Default Exported Symbols\s+\|\s+Origin\s+\|},
+        'default exports table has an Origin column'
+    );
+    script_stdout_like(
+        qr{\|\s+All Exportable Symbols\s+\|\s+Origin\s+\|},
+        'exportable symbols table has an Origin column'
+    );
+    script_stdout_like(
+        qr{\|\s+imported_from_source\s+\|\s+Local::OriginSource\s+\|},
+        're-exported sub shows its true origin'
+    );
+};
+
+subtest 'No Origin column without re-exports' => sub {
+    script_runs(
+        [
+            'script/dump-perl-exports',
+            '--libs',   'test-data/lib',
+            '--module', 'Local::OriginSource'
+        ]
+    );
+    script_stderr_is( q{}, 'no errors' );
+    script_stdout_unlike( qr{\|\s+Origin\s+\|}, 'no Origin column' );
+};
+
+subtest 'Not Found' => sub {
+    script_fails(
         [
             'script/dump-perl-exports', '--module',
             'Local::Does::Not::Exist::Foo'
-        ]
+        ],
+        { exit => 1 },
     );
-    script_stderr_like( qr{Can't locate}, 'error when module not found' );
+    script_stderr_like(
+        qr{\ACould not load Local::Does::Not::Exist::Foo\nCan't locate [^\n]+\n\z},
+        'single error when module not found'
+    );
+    script_stdout_is( q{}, 'no tables printed' );
 };
 
 done_testing();
