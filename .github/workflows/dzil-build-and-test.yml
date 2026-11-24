@@ -26,9 +26,10 @@ jobs:
       image: perldocker/perl-tester:5.42
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # Dependabot does not track these pins (script SHA, TAG, --tag); bump by hand.
+      # Pinned by hand (Dependabot can't see these); bump the script SHA and TAG together.
       - name: Install ubi
-        run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/88c2ce36af284e675921dc00f9aafcbd49129883/bootstrap/bootstrap-ubi.sh | TAG=v0.13.0 sh
+        shell: bash
+        run: curl --fail --show-error --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/88c2ce36af284e675921dc00f9aafcbd49129883/bootstrap/bootstrap-ubi.sh | TAG=v0.13.0 sh
       - name: Install omegasort
         run: ubi --project houseabsolute/omegasort --tag v0.2.1 --in /usr/local/bin
       - name: Install precious
