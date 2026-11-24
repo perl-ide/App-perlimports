@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-latest]
+        os: [ubuntu-24.04]
         perl-version:
           - '5.24'
           - '5.26'
@@ -154,6 +154,11 @@ jobs:
           - '5.38'
           - '5.40'
           - '5.42'
+        # macOS runners are scarce and jobs can sit in the queue until
+        # cancelled, so only test the latest Perl there.
+        include:
+          - os: macos-latest
+            perl-version: '5.42'
     name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
