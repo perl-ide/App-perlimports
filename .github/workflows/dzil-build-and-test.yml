@@ -10,6 +10,9 @@ on:
       - '*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -22,13 +25,17 @@ jobs:
     container:
       image: perldocker/perl-tester:5.42
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Pinned by hand (Dependabot can't see these); bump the script SHA and TAG together.
       - name: Install ubi
-        run: curl --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
+        shell: bash
+        run: curl --fail --show-error --silent --location https://raw.githubusercontent.com/houseabsolute/ubi/88c2ce36af284e675921dc00f9aafcbd49129883/bootstrap/bootstrap-ubi.sh | TAG=v0.13.0 sh
       - name: Install omegasort
-        run: ubi --project houseabsolute/omegasort --in /usr/local/bin
+        run: ubi --project houseabsolute/omegasort --tag v0.2.1 --in /usr/local/bin
       - name: Install precious
-        run: ubi --project houseabsolute/precious --in /usr/local/bin
+        run: ubi --project houseabsolute/precious --tag v1.0.0 --in /usr/local/bin
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
       - name: Run Tests
@@ -41,7 +48,7 @@ jobs:
         run: auto-build-and-test-dist
       - name: Run precious
         run: precious lint --all
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: build_dir
           path: build_dir
@@ -116,22 +123,36 @@ jobs:
     container:
       image: perldocker/perl-tester:5.42
     steps:
-      - uses: actions/checkout@v7.0.1 # codecov wants to be inside a Git repository
-      - uses: actions/download-artifact@v8
+      # codecov wants to be inside a Git repository
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: build_dir
           path: .
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
         continue-on-error: true
-      - name: Install deps and test
-        run: cpan-install-dist-deps && test-dist
+      - name: Install deps
+        run: cpan-install-dist-deps
+      - name: Test with coverage
+        run: test-dist
         env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
           HARNESS_OPTIONS: j2
           HARNESS_PERL_SWITCHES: '-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data'
+      # Only this step's env has the token, which limits accidental exposure but is
+      # no boundary against code run by earlier steps. Dependabot and fork PRs get no
+      # secrets, so skip the upload then.
+      - name: Upload coverage to Codecov
+        run: |
+          if [ -n "$CODECOV_TOKEN" ]; then
+            cover -report codecov
+          fi
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
   test-job:
     needs: build-job
     runs-on: ${{ matrix.os }}
@@ -162,17 +183,17 @@ jobs:
     name: More deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
-        uses: shogo82148/actions-setup-perl@v1.44.4
+        uses: shogo82148/actions-setup-perl@3b59bd33efdae98406a9bc4b75a4aa041e11993a # v1.44.4
         with:
           perl-version: ${{ matrix.perl-version }}
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: build_dir
           path: .
       - name: install test-needs deps
         run: cpm install -g --cpanfile test-needs-cpanfile
         continue-on-error: true
-      - uses: perl-actions/setup-cpm@v1
+      - uses: perl-actions/setup-cpm@fffc509393becdb9b4d894af16591b7757afe94e # v1.0.1
         with:
           version: compat
       - name: install deps using cpm
@@ -204,14 +225,14 @@ jobs:
     name: Fewer deps ${{ matrix.perl-version }} on ${{ matrix.os }}
     steps:
       - name: Set Up Perl
-        uses: shogo82148/actions-setup-perl@v1.44.4
+        uses: shogo82148/actions-setup-perl@3b59bd33efdae98406a9bc4b75a4aa041e11993a # v1.44.4
         with:
           perl-version: ${{ matrix.perl-version }}
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: build_dir
           path: .
-      - uses: perl-actions/setup-cpm@v1
+      - uses: perl-actions/setup-cpm@fffc509393becdb9b4d894af16591b7757afe94e # v1.0.1
         with:
           version: compat
       - name: install deps using cpm
