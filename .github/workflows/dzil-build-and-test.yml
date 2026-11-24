@@ -141,9 +141,13 @@ jobs:
         env:
           HARNESS_OPTIONS: j2
           HARNESS_PERL_SWITCHES: '-MDevel::Cover=+ignore,^local/|^t/|^xt|^test-data'
-      # Only this step sees the token, not dependency installs or the test suite.
+      # Only this step's env has the token, keeping it from dependency installs and tests.
       - name: Upload coverage to Codecov
-        run: cover -report codecov
+        # Dependabot and fork PRs get no secrets; test-dist skipped the upload then too.
+        run: |
+          if [ -n "$CODECOV_TOKEN" ]; then
+            cover -report codecov
+          fi
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
       - name: Upload coverage reports to Codecov with GitHub Action
